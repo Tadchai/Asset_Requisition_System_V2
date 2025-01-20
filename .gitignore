@@ -109,3 +109,4 @@ _ReSharper*/
 
 # Windows system files
 Thumbs.db
+api/appsettings.json

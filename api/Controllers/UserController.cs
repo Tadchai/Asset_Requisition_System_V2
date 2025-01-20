@@ -105,7 +105,7 @@ namespace api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Update([FromBody] UpdateUserRequest request)
+        public async Task<IActionResult> UpdateUser([FromBody] UpdateUserRequest request)
         {
             if (await _context.Users.AnyAsync(u => u.Username == request.Username && u.UserId != request.UserId))
                 return new JsonResult(new MessageResponse { Message = "Name is already in use.", StatusCode = HttpStatusCode.Conflict });

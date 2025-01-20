@@ -17,7 +17,7 @@ public partial class RequisitionRequest
 
     public string Status { get; set; } = null!;
 
-    public int? InstaceId { get; set; }
+    public int? InstanceId { get; set; }
 
     public string? ReasonRejected { get; set; }
 
@@ -27,7 +27,9 @@ public partial class RequisitionRequest
 
     public virtual Category Category { get; set; } = null!;
 
-    public virtual Instance? Instace { get; set; }
+    public virtual Instance? Instance { get; set; }
 
     public virtual User Requester { get; set; } = null!;
+
+    public virtual User? Responsible { get; set; }
 }

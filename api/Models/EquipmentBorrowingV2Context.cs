@@ -24,6 +24,8 @@ public partial class EquipmentBorrowingV2Context : DbContext
 
     public virtual DbSet<RequisitionRequest> RequisitionRequests { get; set; }
 
+    public virtual DbSet<RequisitionReturn> RequisitionReturns { get; set; }
+
     public virtual DbSet<Role> Roles { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
@@ -84,7 +86,9 @@ public partial class EquipmentBorrowingV2Context : DbContext
 
             entity.HasIndex(e => e.CategoryId, "FK_RequisitionRequests_CategoryId");
 
-            entity.HasIndex(e => e.InstaceId, "FK_RequisitionRequests_InstaceId");
+            entity.HasIndex(e => e.InstanceId, "FK_RequisitionRequests_InstaceId");
+
+            entity.HasIndex(e => e.ResponsibleId, "FK_RequisitionRequests_ResponsibleId");
 
             entity.HasIndex(e => e.RequesterId, "FK_RequisitionRequests_UserId");
 
@@ -99,14 +103,26 @@ public partial class EquipmentBorrowingV2Context : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_RequisitionRequests_CategoryId");
 
-            entity.HasOne(d => d.Instace).WithMany(p => p.RequisitionRequests)
-                .HasForeignKey(d => d.InstaceId)
+            entity.HasOne(d => d.Instance).WithMany(p => p.RequisitionRequests)
+                .HasForeignKey(d => d.InstanceId)
                 .HasConstraintName("FK_RequisitionRequests_InstaceId");
 
-            entity.HasOne(d => d.Requester).WithMany(p => p.RequisitionRequests)
+            entity.HasOne(d => d.Requester).WithMany(p => p.RequisitionRequestRequesters)
                 .HasForeignKey(d => d.RequesterId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_RequisitionRequests_UserId");
+
+            entity.HasOne(d => d.Responsible).WithMany(p => p.RequisitionRequestResponsibles)
+                .HasForeignKey(d => d.ResponsibleId)
+                .HasConstraintName("FK_RequisitionRequests_ResponsibleId");
+        });
+
+        modelBuilder.Entity<RequisitionReturn>(entity =>
+        {
+            entity.HasKey(e => e.ReturnId).HasName("PRIMARY");
+
+            entity.Property(e => e.ReasonReturn).HasMaxLength(250);
+            entity.Property(e => e.Status).HasColumnType("enum('Pending','Completed')");
         });
 
         modelBuilder.Entity<Role>(entity =>

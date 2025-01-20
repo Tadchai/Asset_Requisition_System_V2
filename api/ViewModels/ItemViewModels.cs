@@ -12,6 +12,29 @@ namespace api.ViewModels
         Missing
     }
 
+    public class CategoryResponse
+    {
+        public int CategoryId { get; set; }
+        public string CategoryName { get; set; }
+        public string Description { get; set; }
+    }
+
+    public class ClassificationResponse
+    {
+        public int ClassificationId { get; set; }
+        public string CategoryName { get; set; }
+        public string ClassificationName { get; set; }
+        public string Description { get; set; }
+    }
+
+    public class InstanceResponse
+    {
+        public int InstanceId { get; set; }
+        public string CategoryName { get; set; }
+        public string ClassificationName { get; set; }
+        public string AssetId { get; set; }
+    }
+
     public class CreateCategoryRequest
     {
         public string Name { get; set; }
@@ -64,4 +87,20 @@ namespace api.ViewModels
     {
         public int InstanceId { get; set; }
     }
+
+    public class GetAssetIdResponse
+    {
+        public string CategoryName { get; set; }
+        public string ClassificationName { get; set; }
+        public string AssetId { get; set; }
+        public string Username { get; set; }
+        public int InstanceId { get; set; }
+    }
+
+    public class SetAssetIdRequest
+    {
+        public int InstanceId { get; set; }
+        public InstanceStatus Status { get; set; }
+    }
+
 }

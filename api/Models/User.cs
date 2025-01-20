@@ -13,7 +13,9 @@ public partial class User
 
     public string Salt { get; set; } = null!;
 
-    public virtual ICollection<RequisitionRequest> RequisitionRequests { get; set; } = new List<RequisitionRequest>();
+    public virtual ICollection<RequisitionRequest> RequisitionRequestRequesters { get; set; } = new List<RequisitionRequest>();
+
+    public virtual ICollection<RequisitionRequest> RequisitionRequestResponsibles { get; set; } = new List<RequisitionRequest>();
 
     public virtual ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
 }
