@@ -43,7 +43,6 @@ namespace api.Controllers
         static bool VerifyPassword(string enteredPassword, string storedSalt, string storedHashedPassword)
         {
             string hashedPassword = HashPassword(enteredPassword, storedSalt);
-
             return hashedPassword == storedHashedPassword;
         }
 
@@ -93,15 +92,20 @@ namespace api.Controllers
         {
             try
             {
-                var userData = await _context.Users.SingleAsync(u => u.Username == request.Username);
-                var loginResult = VerifyPassword(request.Password, userData.Password, userData.Salt);
-                return new JsonResult(loginResult);
+                var userModel = await _context.Users.SingleOrDefaultAsync(u => u.Username == request.Username);
+                if (userModel == null)
+                    return new JsonResult(new MessageResponse { Message = "Invalid username or password.", StatusCode = HttpStatusCode.BadRequest });
+
+                var verifyResult = VerifyPassword(request.Password,userModel.Salt, userModel.Password );
+                if (!verifyResult)
+                    return new JsonResult(new MessageResponse { Message = "Invalid username or password.", StatusCode = HttpStatusCode.BadRequest });
+
+                return new JsonResult(new MessageResponse {Id = userModel.UserId, Message = "Login successful.", StatusCode = HttpStatusCode.OK });
             }
             catch (Exception ex)
             {
                 return new JsonResult(new MessageResponse { Message = $"An error occurred: {ex.Message}", StatusCode = HttpStatusCode.InternalServerError });
             }
-
         }
 
         [HttpPost]

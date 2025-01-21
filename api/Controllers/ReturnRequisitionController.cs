@@ -27,12 +27,12 @@ namespace api.Controllers
             {
                 try
                 {
-                    var requisitionRequestModel = await _context.RequisitionRequests.SingleAsync(r => r.RequesterId == request.RequesterId && r.InstanceId == request.InstanceId);
+                    var instanceModel = await _context.Instances.SingleAsync(i => i.InstanceId == request.InstanceId);
                     var requisitionReturnModel = new RequisitionReturn
                     {
                         ReasonReturn = request.ReasonReturn,
                         Status = ReturnStatus.Pending.ToString(),
-                        RequestId = requisitionRequestModel.RequestId
+                        RequestId = instanceModel.RequestId.Value
                     };
 
                     await _context.RequisitionReturns.AddAsync(requisitionReturnModel);

@@ -50,7 +50,7 @@ namespace api.Controllers
             }
         }
 
-        [HttpPost]
+        [HttpGet]
         public async Task<IActionResult> GetRequest([FromQuery] int userId)
         {
             try
