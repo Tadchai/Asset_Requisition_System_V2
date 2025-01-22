@@ -28,7 +28,8 @@ namespace api.ViewModels
 
     public class GetUserResponse
     {
-        public string Username { get; set;}
+        public int UserId { get; set;}
+        public string Username { get; set; }
         public List<string> RoleName { get; set; }
     }
 }

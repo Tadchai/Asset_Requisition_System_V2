@@ -138,7 +138,9 @@ public partial class EquipmentBorrowingV2Context : DbContext
 
             entity.Property(e => e.Password).HasMaxLength(250);
             entity.Property(e => e.Salt).HasMaxLength(250);
-            entity.Property(e => e.Username).HasMaxLength(50);
+            entity.Property(e => e.Username)
+                .HasMaxLength(50)
+                .UseCollation("utf8mb4_bin");
         });
 
         modelBuilder.Entity<UserRole>(entity =>

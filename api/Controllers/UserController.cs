@@ -49,6 +49,10 @@ namespace api.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
         {
+            var userModel = await _context.Users.AnyAsync(u => u.Username == request.Username);
+            if (userModel)
+                return new JsonResult(new MessageResponse { Message = "Name is already in use.", StatusCode = HttpStatusCode.Conflict });
+
             using (var transaction = await _context.Database.BeginTransactionAsync())
             {
                 try
@@ -96,11 +100,11 @@ namespace api.Controllers
                 if (userModel == null)
                     return new JsonResult(new MessageResponse { Message = "Invalid username or password.", StatusCode = HttpStatusCode.BadRequest });
 
-                var verifyResult = VerifyPassword(request.Password,userModel.Salt, userModel.Password );
+                var verifyResult = VerifyPassword(request.Password, userModel.Salt, userModel.Password);
                 if (!verifyResult)
                     return new JsonResult(new MessageResponse { Message = "Invalid username or password.", StatusCode = HttpStatusCode.BadRequest });
 
-                return new JsonResult(new MessageResponse {Id = userModel.UserId, Message = "Login successful.", StatusCode = HttpStatusCode.OK });
+                return new JsonResult(new MessageResponse { Id = userModel.UserId, Message = "Login successful.", StatusCode = HttpStatusCode.OK });
             }
             catch (Exception ex)
             {
@@ -165,10 +169,11 @@ namespace api.Controllers
             var users = await (from u in _context.Users
                                join ur in _context.UserRoles on u.UserId equals ur.UserId
                                join r in _context.Roles on ur.RoleId equals r.RoleId
-                               group r.RoleName by u.Username into userGroup
+                               group r.RoleName by new { u.UserId, u.Username } into userGroup
                                select new GetUserResponse
                                {
-                                   Username = userGroup.Key,
+                                   UserId = userGroup.Key.UserId,
+                                   Username = userGroup.Key.Username,
                                    RoleName = userGroup.ToList()
                                }).ToListAsync();
 
