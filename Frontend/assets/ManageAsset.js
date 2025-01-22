@@ -1,3 +1,10 @@
+function ToManageUserPage() {
+  window.location.href = "/Frontend/ManageUser.html"; 
+}
+function ToManageAssetInSystemPage(){
+  window.location.href = "/Frontend/ManageAssetInSystem.html"
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
     const userId = localStorage.getItem("userId");
     if (!userId) {
@@ -122,7 +129,7 @@ table.innerHTML = `
             <td>${item.categoryName}</td>
             <td>${item.classificationName}</td>
             <td>${item.assetId}</td>
-            <td><button class="btn-confirm" onclick="confirmAction(${item.assetId})">ยืนยัน</button></td> <!-- เพิ่มปุ่มในคอลัมน์ใหม่ -->
+            <td><button class="btn-confirm" onclick="confirmAction(${item.requestId})">ยืนยัน</button></td> 
         </tr>
     `
       )
@@ -188,7 +195,7 @@ const openRequisitionModalBtn = document.getElementById("openRequisitionModalBtn
       if (response.ok) {
         alert(result.message || 'ส่งข้อมูลสำเร็จ');
         requisitionModal.style.display = 'none'; // ปิด Modal หลังส่งสำเร็จ
-        displayRequest(data)
+        refreshTableAssetList()
       } else {
         alert(result.message || 'เกิดข้อผิดพลาดในการส่งข้อมูล');
       }
@@ -197,6 +204,21 @@ const openRequisitionModalBtn = document.getElementById("openRequisitionModalBtn
       alert('ไม่สามารถเชื่อมต่อกับ API ได้');
     }
   });
+
+  async function refreshTableAssetList() {
+    try {
+      const userId = localStorage.getItem("userId");
+      const url = `http://localhost:5009/RequestRequisition/GetRequest?userId=${userId}`;
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error("Failed to fetch updated data");
+      }
+      const data = await response.json();
+      displayRequest(data); // เรียกฟังก์ชันเดิมเพื่อแสดงข้อมูลใหม่
+    } catch (error) {
+      console.error("Error refreshing table:", error);
+    }
+  }
 
 if (data.length === 0) {
   container.innerHTML += "<p>ไม่มีข้อมูลทรัพย์สินที่ถืออยู่</p>";
@@ -410,3 +432,51 @@ window.addEventListener("click", (event) => {
     requisitionModal.style.display = "none";
   }
 });
+
+
+document.getElementById("asset-container").appendChild(table);
+
+// ฟังก์ชันสำหรับยืนยันการรับทรัพย์สิน
+async function confirmAction(requestId) {
+  const confirmData = { RequestId: requestId }; // เตรียมข้อมูลสำหรับส่งไปยัง API
+
+  try {
+    const response = await fetch("http://localhost:5009/RequestRequisition/ConfirmRequest", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(confirmData), // ส่งข้อมูลในรูปแบบ JSON
+    });
+
+    const result = await response.json();
+
+    if (response.ok) {
+      alert(result.message || "ยืนยันการรับทรัพย์สินสำเร็จ");
+      // รีเฟรชตารางหรืออัปเดตข้อมูลใหม่
+      refreshTable();
+    } else {
+      alert(resultmessage || "เกิดข้อผิดพลาดในการยืนยัน");
+    }
+  } catch (error) {
+    console.error("Error confirming request:", error);
+    alert("ไม่สามารถเชื่อมต่อกับ API ได้");
+  }
+}
+
+// ฟังก์ชันสำหรับรีเฟรชตารางหลังจากยืนยัน
+async function refreshTable() {
+  try {
+    const userId = localStorage.getItem("userId");
+    const url = `http://localhost:5009/RequestRequisition/GetConfirmList?requesterId=${userId}`;
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error("Failed to fetch updated data");
+    }
+    const data = await response.json();
+    displayConfirm(data); // เรียกฟังก์ชันเดิมเพื่อแสดงข้อมูลใหม่
+  } catch (error) {
+    console.error("Error refreshing table:", error);
+  }
+}
+
