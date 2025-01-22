@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Asset Management</title>
+  <link rel="stylesheet" type="text/css" href="/Frontend/CSS/ManageUser.css" />
+  <style>
+    .button-container {
+      display: flex; 
+      justify-content: center; 
+      align-items: center; 
+      gap: 10px; 
+  }  
+  </style>
+</head>
+
+<body>
+  <!-- Navbar -->
+  <div class="navbar">
+    <div class="nav-title">Asset Management System</div>
+    <div class="nav-menu">
+      <div class="nav-item" id="AssetSystem">ทรัพย์สินทั้งหมดในระบบ</div>
+      <div class="nav-item" id="ManageCategory">จัดการCategory</div>
+      <div class="nav-item" id="ManageClassification">จัดการClassification</div>
+      <div class="nav-item" id="ManageInstance">จัดการInstance</div>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-item" onclick="ToManageAssetPage()">
+      จัดการทรัพย์สินที่ถือครอง
+    </div>
+    <div class="sidebar-item" onclick="ToManageUserPage()">จัดการผู้ใช้งานในระบบ</div>
+    <div class="sidebar-item">จัดการทรัพย์สินในระบบ</div>
+    <div class="sidebar-item">จัดการใบขอเบิก/คืน</div>
+    <div class="sidebar-item">ภาพรวมของทรัพย์สิน</div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div id="asset-container" class="asset-container">
+      <!-- ข้อมูลทรัพย์สินจะถูกแสดงที่นี่ -->
+    </div>
+  </div>
+
+  <!-- Modal Asset-->
+  <div id="AssetModal" class="modal">
+    <div class="modal-content">
+      <span id="closeAssetModalBtn" class="close-btn">&times;</span>
+      <h2>Details</h2>
+      <p style="text-align: left;"><strong>Category Name:</strong> <span id="categoryName"></span></p>
+      <p style="text-align: left;"><strong>Category Description:</strong> <span id="categoryDescription"></span></p>
+      <p style="text-align: left;"><strong>Classification Name:</strong> <span id="classificationName"></span></p>
+      <p style="text-align: left;"><strong>Classification Description:</strong> <span id="classificationDescription"></span></p>
+      <p style="text-align: left;"><strong>Asset ID:</strong> <span id="assetId"></span></p>
+      <p style="text-align: left;"><strong>Username:</strong> <span id="username"></span></p>
+      <p style="text-align: left;"><strong>Status:</strong> <span id="status"></span></p><br>
+      <div class="button-container">
+      <button id="btnLost" class="submit-btn" data-status=2 >สูญหาย</button>
+      <button id="btnEnd" class="submit-btn" data-status=1 style="display: none; background-color: red;" >สิ้นสุดการใช้งาน</button>
+      <button id="btnRestore" class="submit-btn" data-status=0 style="display: none; background-color: gray;" >เรียกคืน</button>
+    </div>
+    </div>
+    
+  </div>
+
+  <!-- Modal Category-->
+  <div id="CategoryModal" class="modal">
+    <div class="modal-content">
+      <span id="closeModalBtn" class="close-btn">&times;</span>
+      <h2>สร้างCategory</h2>
+      <form id="userForm">
+        <div class="form-group">
+          <label for="CategoryName">CategoryName</label>
+          <input type="text" id="CategoryName" name="CategoryName" required>
+        </div>
+        <div class="form-group">
+          <label for="CategoryDescription">CategoryDescription</label>
+          <input type="text" id="CategoryDescription" name="CategoryDescription" required>
+        </div>
+        <button type="button" id="submitCategory" class="submit-btn">ยืนยัน</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="CategoryEditModal" class="modal">
+    <div class="modal-content">
+      <span id="closeEditModalBtn" class="close-btn">&times;</span>
+      <h2>แก้ไขCategory</h2>
+      <form id="userForm">
+        <div class="form-group">
+          <label for="CategoryEditName">CategoryName</label>
+          <input type="text" id="CategoryEditName" name="CategoryEditName" required>
+        </div>
+        <div class="form-group">
+          <label for="CategoryEditDescription">CategoryDescription</label>
+          <input type="text" id="CategoryEditDescription" name="CategoryEditDescription" required>
+        </div>
+        <button type="button" id="submitEditCategory" class="submit-btn">ยืนยัน</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Classification-->
+  <div id="ClassificationModal" class="modal">
+    <div class="modal-content">
+      <span id="closeClassificationModal" class="close-btn">&times;</span>
+      <h2>สร้างClassification</h2>
+      <form id="userForm">
+        <div class="form-group">
+          <label for="SelectCategory">เลือกCategory</label>
+          <select id="SelectCategory">
+            <option value="">-- กรุณาเลือกCategory --</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="ClassificationName">ClassificationName</label>
+          <input type="text" id="ClassificationName" name="ClassificationName" required>
+        </div>
+        <div class="form-group">
+          <label for="ClassificationDescription">ClassificationDescription</label>
+          <input type="text" id="ClassificationDescription" name="ClassificationDescription" required>
+        </div>
+        <button type="button" id="submitClassification" class="submit-btn">ยืนยัน</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="ClassificationEditModal" class="modal">
+    <div class="modal-content">
+      <span id="closeEditClassificationModal" class="close-btn">&times;</span>
+      <h2>แก้ไขClassification</h2>
+      <form id="userForm">
+        <div class="form-group">
+          <label for="ClassificationEditName">ClassificationName</label>
+          <input type="text" id="ClassificationEditName" name="ClassificationEditName" required>
+        </div>
+        <div class="form-group">
+          <label for="ClassificationEditDescription">ClassificationDescription</label>
+          <input type="text" id="ClassificationEditDescription" name="ClassificationEditDescription" required>
+        </div>
+        <button type="button" id="submitEditClassification" class="submit-btn">ยืนยัน</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Instance-->
+  <div id="InstanceModal" class="modal">
+    <div class="modal-content">
+      <span id="closeInstanceModal" class="close-btn">&times;</span>
+      <h2>สร้างInstance</h2>
+      <form id="userForm">
+        <div class="form-group">
+          <label for="SelectClassification">เลือกClassification</label>
+          <select id="SelectClassification">
+            <option value="">-- กรุณาเลือกClassification --</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="InstanceName">InstanceName</label>
+          <input type="text" id="InstanceName" name="InstanceName" required>
+        </div>
+        <button type="button" id="submitInstance" class="submit-btn">ยืนยัน</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="InstanceEditModal" class="modal">
+    <div class="modal-content">
+      <span id="closeEditInstanceModal" class="close-btn">&times;</span>
+      <h2>แก้ไขInstance</h2>
+      <form id="userForm">
+        <div class="form-group">
+          <label for="InstanceEditName">InstanceName</label>
+          <input type="text" id="InstanceEditName" name="InstanceEditName" required>
+        </div>
+        <button type="button" id="submitEditInstance" class="submit-btn">ยืนยัน</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="assets/ManageAssetInSystem.js" defer></script>
+</body>
+
+</html>

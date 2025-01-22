@@ -91,10 +91,13 @@ namespace api.ViewModels
     public class GetAssetIdResponse
     {
         public string CategoryName { get; set; }
+        public string CategoryDescription { get; set; }
         public string ClassificationName { get; set; }
+        public string ClassificationDescription { get; set; }
         public string AssetId { get; set; }
         public string Username { get; set; }
         public int InstanceId { get; set; }
+        public string Status { get; set; }
     }
 
     public class SetAssetIdRequest

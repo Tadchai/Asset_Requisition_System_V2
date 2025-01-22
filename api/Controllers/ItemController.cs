@@ -43,6 +43,27 @@ namespace api.Controllers
         }
 
         [HttpGet]
+        public async Task<IActionResult> GetCategoryById([FromQuery] int categoryId)
+        {
+            try
+            {
+                var categoryModel = await (from c in _context.Categories
+                                           where c.CategoryId == categoryId
+                                           select new CategoryResponse
+                                           {
+                                               CategoryName = c.Name,
+                                               Description = c.Description
+                                           }).SingleAsync();
+
+                return new JsonResult(categoryModel);
+            }
+            catch (Exception ex)
+            {
+                return new JsonResult(new MessageResponse { Message = $"An error occurred: {ex.Message}", StatusCode = HttpStatusCode.InternalServerError });
+            }
+        }
+
+        [HttpGet]
         public async Task<IActionResult> GetClassification()
         {
             try
@@ -56,6 +77,29 @@ namespace api.Controllers
                                                     ClassificationName = cs.Name,
                                                     Description = cs.Description
                                                 }).ToListAsync();
+
+                return new JsonResult(classificationList);
+            }
+            catch (Exception ex)
+            {
+                return new JsonResult(new MessageResponse { Message = $"An error occurred: {ex.Message}", StatusCode = HttpStatusCode.InternalServerError });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetClassificationById([FromQuery] int classificationId)
+        {
+            try
+            {
+                var classificationList = await (from cs in _context.Classifications
+                                                join c in _context.Categories on cs.CategoryId equals c.CategoryId
+                                                where cs.ClassificationId == classificationId
+                                                select new ClassificationResponse
+                                                {
+                                                    CategoryName = c.Name,
+                                                    ClassificationName = cs.Name,
+                                                    Description = cs.Description
+                                                }).SingleAsync();
 
                 return new JsonResult(classificationList);
             }
@@ -80,6 +124,30 @@ namespace api.Controllers
                                               ClassificationName = cs.Name,
                                               AssetId = i.AssetId
                                           }).ToListAsync();
+
+                return new JsonResult(instanceList);
+            }
+            catch (Exception ex)
+            {
+                return new JsonResult(new MessageResponse { Message = $"An error occurred: {ex.Message}", StatusCode = HttpStatusCode.InternalServerError });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetInstanceById([FromQuery] int instanceId)
+        {
+            try
+            {
+                var instanceList = await (from i in _context.Instances
+                                          join cs in _context.Classifications on i.ClassificationId equals cs.ClassificationId
+                                          join c in _context.Categories on cs.CategoryId equals c.CategoryId
+                                          where i.InstanceId == instanceId
+                                          select new InstanceResponse
+                                          {
+                                              CategoryName = c.Name,
+                                              ClassificationName = cs.Name,
+                                              AssetId = i.AssetId
+                                          }).SingleAsync();
 
                 return new JsonResult(instanceList);
             }
@@ -331,8 +399,46 @@ namespace api.Controllers
                                              ClassificationName = cs.Name,
                                              AssetId = i.AssetId,
                                              Username = x.Username,
+                                             Status = i.Status,
                                              InstanceId = i.InstanceId
                                          }).ToListAsync();
+
+                return new JsonResult(AssetIdList);
+            }
+            catch (Exception ex)
+            {
+                return new JsonResult(new MessageResponse { Message = $"An error occurred: {ex.Message}", StatusCode = HttpStatusCode.InternalServerError });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAssetIdById([FromQuery] int instanceId)
+        {
+            try
+            {
+                var AssetIdList = await (from c in _context.Categories
+                                         join cs in _context.Classifications on c.CategoryId equals cs.CategoryId
+                                         join i in _context.Instances on cs.ClassificationId equals i.ClassificationId
+                                         join x in from r in _context.RequisitionRequests
+                                                   join u in _context.Users on r.RequesterId equals u.UserId
+                                                   select new
+                                                   {
+                                                       r.RequestId,
+                                                       u.Username
+                                                   } on i.RequestId equals x.RequestId into xJoin
+                                         from x in xJoin.DefaultIfEmpty()
+                                         where i.InstanceId == instanceId
+                                         select new GetAssetIdResponse
+                                         {
+                                             CategoryName = c.Name,
+                                             CategoryDescription = c.Description,
+                                             ClassificationName = cs.Name,
+                                             ClassificationDescription = cs.Description,
+                                             AssetId = i.AssetId,
+                                             Username = x.Username,
+                                             Status = i.Status,
+                                             InstanceId = i.InstanceId
+                                         }).SingleAsync();
 
                 return new JsonResult(AssetIdList);
             }
@@ -367,7 +473,7 @@ namespace api.Controllers
 
                     await _context.SaveChangesAsync();
                     await transaction.CommitAsync();
-                    return new JsonResult(new MessageResponse { Message = "Category Updated successfully.", StatusCode = HttpStatusCode.Created });
+                    return new JsonResult(new MessageResponse { Message = "AssetId Status Updated  successfully.", StatusCode = HttpStatusCode.OK });
                 }
                 catch (Exception ex)
                 {
