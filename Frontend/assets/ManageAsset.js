@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", async () =>
     return;
   }
 
-  const url = `http://localhost:5009/RequestRequisition/GetAssetList?requesterId=${userId}`;
+  const url = `http://localhost:5009/RequestRequisition/GetUserAsset?requesterId=${userId}`;
 
   try
   {
@@ -49,7 +49,7 @@ document
       return;
     }
 
-    const url = `http://localhost:5009/RequestRequisition/GetAssetList?requesterId=${userId}`;
+    const url = `http://localhost:5009/RequestRequisition/GetUserAsset?requesterId=${userId}`;
 
     try
     {
@@ -128,7 +128,7 @@ function displayConfirm(data)
 {
   const container = document.getElementById("asset-container");
   container.innerHTML =
-    '<div class="table-header">ยืนยันการได้รับทรัพย์สิน</div>'; // ล้างข้อมูลเก่าก่อน
+    '<div class="table-header">รายการยืนยันการได้รับทรัพย์สิน</div>'; // ล้างข้อมูลเก่าก่อน
 
   if (data.length === 0)
   {
@@ -142,8 +142,8 @@ function displayConfirm(data)
   <thead>
     <tr>
         <th>ลำดับที่</th>
-        <th>หมวดหมู่</th>
-        <th>การจำแนกประเภท</th>
+        <th>หมวดหมู่ของทรัพย์สิน</th>
+        <th>การจำแนกประเภทของทรัพย์สิน</th>
         <th>รหัสทรัพย์สิน</th>
         <th>ยืนยันการได้รับ</th> 
     </tr>
@@ -175,7 +175,7 @@ function displayRequest(data)
   const container = document.getElementById("asset-container");
   container.innerHTML =
     `<div style="display: flex; align-items: center;">
-  <div style="flex-grow: 1; text-align: center;" class="table-header">ใบคำขออนุมัติการเบิก</div>
+  <div style="flex-grow: 1; text-align: center;" class="table-header">รายการใบคำขออนุมัติการเบิก</div>
   <div><button id="openRequisitionModalBtn">สร้างใบคำขออนุมัติการเบิก</button></div>
 </div>
 `;
@@ -274,7 +274,7 @@ function displayRequest(data)
       <thead>
         <tr>
           <th>ลำดับที่</th>
-          <th>หมวดหมู่</th>
+          <th>หมวดหมู่ของทรัพย์สิน</th>
           <th>คุณสมบัติที่ต้องการ</th>
           <th>วันที่ต้องการใช้งาน </th>
           <th>เหตุผลในการขอเบิก</th>
@@ -311,7 +311,7 @@ function displayAssets(data)
 {
   const container = document.getElementById("asset-container");
   container.innerHTML =
-    '<div class="table-header">ทรัพย์สินที่ถือครอง</div>'; // ล้างข้อมูลเก่าก่อน
+    '<div class="table-header">รายการทรัพย์สินที่ถือครอง</div>'; // ล้างข้อมูลเก่าก่อน
 
   if (data.length === 0)
   {
@@ -325,8 +325,8 @@ function displayAssets(data)
   <thead>
     <tr>
       <th>ลำดับที่</th>
-      <th>หมวดหมู่</th>
-      <th>การจำแนกประเภท</th>
+      <th>หมวดหมู่ของทรัพย์สิน</th>
+      <th>การจำแนกทรัพย์สิน</th>
       <th>รหัสทรัพย์สิน</th>
     </tr>
   </thead>
@@ -364,7 +364,7 @@ openReturnAssetModalBtn.addEventListener("click", async () =>
   {
     const requesterId = localStorage.getItem("userId");
     const response = await fetch(
-      `http://localhost:5009/RequestRequisition/GetAssetList?requesterId=${requesterId}`
+      `http://localhost:5009/RequestRequisition/GetUserAsset?requesterId=${requesterId}`
     );
     const data = await response.json();
 
@@ -436,27 +436,6 @@ submitReturnBtn.addEventListener('click', async () =>
   }
 });
 
-
-
-
-
-// เปิด Modal สำหรับใบคำขออนุมัติการเบิก
-const openRequisitionModalBtn = document.getElementById("openRequisitionModalBtn");
-const requisitionModal = document.getElementById("requisitionModal");
-const closeRequisitionModalBtn = document.getElementById("closeRequisitionModalBtn");
-
-openRequisitionModalBtn.addEventListener("click", async () =>
-{
-  requisitionModal.style.display = "block";
-  loadCategoriesRequisition();  // ดึงข้อมูลหมวดหมู่จาก API สำหรับใบคำขออนุมัติการเบิก
-});
-
-// ปิด Modal สำหรับใบคำขออนุมัติการเบิก
-closeRequisitionModalBtn.addEventListener("click", () =>
-{
-  requisitionModal.style.display = "none";
-});
-
 // ฟังก์ชันดึงข้อมูลหมวดหมู่จาก API สำหรับใบคำขออนุมัติการเบิก
 async function loadCategoriesRequisition()
 {
@@ -501,7 +480,7 @@ window.addEventListener("click", (event) =>
 });
 
 
-document.getElementById("asset-container").appendChild(table);
+
 
 // ฟังก์ชันสำหรับยืนยันการรับทรัพย์สิน
 async function confirmAction(requestId)

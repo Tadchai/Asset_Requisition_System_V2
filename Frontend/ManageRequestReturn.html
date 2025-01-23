@@ -13,9 +13,9 @@
   <div class="navbar">
     <div class="nav-title">Asset Management System</div>
     <div class="nav-menu">
-      <div class="nav-item" id="RequestReturnList">ภาพรวมใบขอเบิก/คืน</div>
-      <div class="nav-item" id="RequestList">รายการใบขอเบิก</div>
-      <div class="nav-item" id="ReturnList">รายการใบคืน</div>
+      <div class="nav-item" id="RequestReturnList">ภาพรวมของใบคำร้องขอเบิก/คืน</div>
+      <div class="nav-item" id="RequestList">ใบคำร้องขอเบิกทั้งหมดในระบบ</div>
+      <div class="nav-item" id="ReturnList">ใบคืนทรัพย์สินทั้งหมดในระบบ</div>
     </div>
   </div>
 
@@ -58,19 +58,18 @@
   <div id="RequestModal" class="modal">
     <div class="modal-content">
       <span id="closeRequestModalBtn" class="close-btn">&times;</span>
-      <h2>Details</h2>
-      <p style="text-align: left;"><strong>Username:</strong> <span id="Username"></span></p>
-      <p style="text-align: left;"><strong>CategoryName:</strong> <span id="CategoryName"></span></p>
-      <p style="text-align: left;"><strong>Requirement:</strong> <span id="Requirement"></span></p>
-      <p style="text-align: left;"><strong>DueDate:</strong> <span id="DueDate"></span></p>
-      <p style="text-align: left;"><strong>ReasonRequest:</strong> <span id="ReasonRequest"></span></p>
-      <p style="text-align: left;"><strong>Status:</strong> <span id="Status"></span></p>
-      <br>
+      <h2>รายระเอียดคำร้องการขอเบิก</h2>
+      <p style="text-align: left;"><strong>ชื่อผู้ขอเบิก:</strong> <br><span id="Username"></span></p>
+      <p style="text-align: left;"><strong>หมวดหมู่ของทรัพย์สิน:</strong> <br><span id="CategoryName"></span></p>
+      <p style="text-align: left;"><strong>คุณสมบัติที่ต้องการ:</strong> <br><span id="Requirement"></span></p>
+      <p style="text-align: left;"><strong>วันที่ต้องการใช้งาน:</strong> <br><span id="DueDate"></span></p>
+      <p style="text-align: left;"><strong>เหตุผลในการขอเบิก:</strong> <br><span id="ReasonRequest"></span></p>
+      <p style="text-align: left;"><strong>สถานะคำร้อง:</strong> <br><span id="Status"></span></p>
 
       <div class="form-group">
-        <label for="decisionSelect">การตัดสินใจ</label>
+        <label for="decisionSelect">ตั้งสถานะคำร้อง</label>
         <select id="decisionSelect" onchange="handleDecisionChange()">
-          <option value="">-- กรุณาเลือกการตัดสินใจ --</option>
+          <option value="">-- กรุณาเลือกสถานะ --</option>
           <option value="1">ยอมรับ</option>
           <option value="2">ปฏิเสธ</option>
         </select>

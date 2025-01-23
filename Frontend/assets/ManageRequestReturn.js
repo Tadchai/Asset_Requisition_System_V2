@@ -82,11 +82,11 @@ function displayRequestList(data)
   document.getElementById("single-view").style.display = "flex"
   const container = document.getElementById("asset-container");
   container.innerHTML =
-    '<div class="table-header">รายการใบขอเบิกทั้งหมดในระบบ</div>';
+    '<div class="table-header">รายการใบคำร้องขอเบิกทั้งหมดในระบบ</div>';
 
   if (data.length === 0)
   {
-    container.innerHTML += "<p>ไม่มีข้อมูลทรัพย์สินที่ถืออยู่</p>";
+    container.innerHTML += "<p>ไม่มีใบคำร้องขอเบิก</p>";
     return;
   }
 
@@ -95,13 +95,13 @@ function displayRequestList(data)
         <thead>
           <tr>
             <th>ลำดับที่</th>
-            <th>Username</th>
-            <th>CategoryName</th>
-            <th>Requirement</th>
-            <th>DueDate</th>
-            <th>ReasonRequest</th>
-            <th>Status</th>
-            <th>แก้ไขStatus</th>
+            <th>ชื่อผู้ขอเบิก</th>
+            <th>หมวดหมู่ของทรัพย์สิน</th>
+            <th>คุณสมบัติที่ต้องการ</th>
+            <th>วันที่ต้องการใช้งาน</th>
+            <th>เหตุผลในการขอเบิก</th>
+            <th>สถานะคำร้อง</th>
+            <th>แก้ไขสถานะ</th>
           </tr>
         </thead>
         <tbody>
@@ -138,7 +138,7 @@ function displayReturnList(data)
   document.getElementById("single-view").style.display = "flex"
   const container = document.getElementById("asset-container");
   container.innerHTML =
-    '<div class="table-header">รายการใบคืนทั้งหมดในระบบ</div>';
+    '<div class="table-header">รายการใบคืนทรัพย์สินทั้งหมดในระบบ</div>';
 
   if (data.length === 0)
   {
@@ -151,12 +151,12 @@ function displayReturnList(data)
         <thead>
           <tr>
             <th>ลำดับที่</th>
-            <th>Username</th>
-            <th>CategoryName</th>
-            <th>ClassificationName</th>
-            <th>AssetId</th>
-            <th>ReasonReturn</th>
-            <th>Status</th>
+            <th>ชื่อผู้คืน</th>
+            <th>หมวดหมู่ของทรัพย์สิน</th>
+            <th>การจำแนกประเภทของทรัพย์สิน</th>
+            <th>รหัสทรัพย์สิน</th>
+            <th>เหตุผลในการคืน</th>
+            <th>สถานะใบคืน</th>
             <th>ยืนยัน</th>
           </tr>
         </thead>
@@ -203,9 +203,9 @@ async function fetchAssetData()
     ]);
 
     // แสดงผลข้อมูลแต่ละตาราง
-    displayRequestTable('Pending Requests', pendingData, 'pending-container');
-    displayRequestTable('Allocated Assets', allocatedData, 'allocated-container');
-    displayReturnTable('Returned Assets', returnedData, 'returned-container');
+    displayRequestTable('รายการใบคำร้องขอเบิกรอดำเนินการ', pendingData, 'pending-container');
+    displayRequestTable('รายการใบคำร้องขอเบิกที่ยังไม่เสร็จสมบูรณ์', allocatedData, 'allocated-container');
+    displayReturnTable('รายการใบคืนทรัพย์สินรอดำเนินการ', returnedData, 'returned-container');
   } catch (error)
   {
     console.error('Error fetching asset data:', error);
@@ -223,7 +223,7 @@ function displayRequestTable(title, data, containerId)
 
   if (data.length === 0)
   {
-    container.innerHTML += "<p>ไม่มีข้อมูล</p>";
+    container.innerHTML += "<p>ไม่มีใบคำร้องขอเบิก</p>";
     return;
   }
 
@@ -232,9 +232,9 @@ function displayRequestTable(title, data, containerId)
         <thead>
           <tr>
             <th>ลำดับที่</th>
-            <th>Username</th>
-            <th>CategoryName</th>
-            <th>DueDate</th>
+            <th>ชื่อผู้ขอเบิก</th>
+            <th>หมวดหมู่ของทรัพย์สิน</th>
+            <th>วันที่ต้องการใช้งาน</th>
           </tr>
         </thead>
         <tbody>
@@ -263,7 +263,7 @@ function displayReturnTable(title, data, containerId)
 
   if (data.length === 0)
   {
-    container.innerHTML += "<p>ไม่มีข้อมูล</p>";
+    container.innerHTML += "<p>ไม่มีใบคืนทรัพย์สิน</p>";
     return;
   }
 
@@ -272,10 +272,10 @@ function displayReturnTable(title, data, containerId)
         <thead>
           <tr>
             <th>ลำดับที่</th>
-            <th>Username</th>
-            <th>CategoryName</th>
-            <th>ClassificationName</th>
-            <th>AssetId</th>
+            <th>ชื่อผู้คืน</th>
+            <th>หมวดหมู่ของทรัพย์สิน</th>
+            <th>การจำแนกประเภทของทรัพย์สิน</th>
+            <th>รหัสทรัพย์สิน</th>
           </tr>
         </thead>
         <tbody>
@@ -300,7 +300,7 @@ function displayReturnTable(title, data, containerId)
 
 async function confirmAction(returnId, instanceId)
 {
-  const userConfirmation = confirm("คุณแน่ใจหรือไม่ว่าต้องการยืนยันการดำเนินการนี้?");
+  const userConfirmation = confirm("คุณแน่ใจหรือไม่ว่าต้องการยืนยันการเปลี่ยนแปลงสถานะนี้?");
 
   if (!userConfirmation)
   {

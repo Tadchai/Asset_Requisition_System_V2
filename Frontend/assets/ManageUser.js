@@ -101,11 +101,11 @@ function displayUsers(data)
 {
     const container = document.getElementById("asset-container");
     container.innerHTML =
-        '<div class="table-header">ราชื่อผู้ใช้งานทั้งหมดในระบบ</div>'; // ล้างข้อมูลเก่าก่อน
+        '<div class="table-header">รายชื่อผู้ใช้งานทั้งหมดในระบบ</div>'; // ล้างข้อมูลเก่าก่อน
 
     if (data.length === 0)
     {
-        container.innerHTML += "<p>ไม่มีข้อมูลทรัพย์สินที่ถืออยู่</p>";
+        container.innerHTML += "<p>ไม่มีผู้ใช้งานในระบบ</p>";
         return;
     }
 
@@ -116,7 +116,7 @@ function displayUsers(data)
         <tr>
           <th>ลำดับที่</th>
           <th>ชื่อผู้ใช้งาน</th>
-          <th>บทบาท</th>
+          <th>บทบาทของผู้ใช้งาน</th>
           <th>แก้ไขผู้ใช้งาน</th>
         </tr>
       </thead>

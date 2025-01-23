@@ -127,7 +127,7 @@ function displayAssetId(data)
 
   if (data.length === 0)
   {
-    container.innerHTML += "<p>ไม่มีข้อมูลทรัพย์สินที่ถืออยู่</p>";
+    container.innerHTML += "<p>ไม่มีข้อมูลทรัพย์สิน</p>";
     return;
   }
 
@@ -136,12 +136,12 @@ function displayAssetId(data)
       <thead>
         <tr>
           <th>ลำดับที่</th>
-          <th>CategoryName</th>
-          <th>ClassificationName</th>
-          <th>AssetId</th>
-          <th>Username</th>
-          <th>Status</th>
-          <th>แก้ไขStatus</th>
+          <th>หมวดหมู่ของทรัพย์สิน</th>
+          <th>การจำแนกประเภทของทรัพย์สิน</th>
+          <th>รหัสทรัพย์สิน</th>
+          <th>ชื่อผู้ถือครองทรัพย์สิน</th>
+          <th>สถานะของทรัพย์สิน</th>
+          <th>แก้ไขสถานะ</th>
         </tr>
       </thead>
       <tbody>
@@ -172,12 +172,12 @@ function displayCategory(data)
   const container = document.getElementById("asset-container");
   container.innerHTML =
     `<div style="display: flex; align-items: center;">
-     <div style="flex-grow: 1; text-align: center;" class="table-header">Categoryทั้งหมดในระบบ</div>
-     <div><button id="openCategoryModalBtn">สร้างCategory</button></div></div>`;
+     <div style="flex-grow: 1; text-align: center;" class="table-header">หมวดหมู่ของทรัพย์สินทั้งหมดในระบบ</div>
+     <div><button id="openCategoryModalBtn">สร้างหมวดหมู่ของทรัพย์สิน</button></div></div>`;
 
   if (data.length === 0)
   {
-    container.innerHTML += "<p>ไม่มีข้อมูลทรัพย์สินที่ถืออยู่</p>";
+    container.innerHTML += "<p>ไม่มีข้อมูลหมวดหมู่ของทรัพย์สิน</p>";
     return;
   }
 
@@ -186,9 +186,9 @@ function displayCategory(data)
       <thead>
         <tr>
           <th>ลำดับที่</th>
-          <th>CategoryName</th>
-          <th>Description</th>
-          <th>แก้ไขCategory</th>
+          <th>หมวดหมู่ของทรัพย์สิน</th>
+          <th>คำอธิบายของหมวดหมู่ของทรัพย์สิน</th>
+          <th>แก้ไขหมวดหมู่ของทรัพย์สิน</th>
         </tr>
       </thead>
       <tbody>
@@ -271,12 +271,12 @@ function displayClassification(data)
   const container = document.getElementById("asset-container");
   container.innerHTML =
     `<div style="display: flex; align-items: center;">
-     <div style="flex-grow: 1; text-align: center;" class="table-header">Classificationทั้งหมดในระบบ</div>
-     <div><button id="openClassificationModalBtn">สร้างClassification</button></div></div>`;
+     <div style="flex-grow: 1; text-align: center;" class="table-header">การจำแนกประเภทของทรัพย์สินทั้งหมดในระบบ</div>
+     <div><button id="openClassificationModalBtn">สร้างการจำแนกประเภทของทรัพย์สิน</button></div></div>`;
 
   if (data.length === 0)
   {
-    container.innerHTML += "<p>ไม่มีข้อมูลทรัพย์สินที่ถืออยู่</p>";
+    container.innerHTML += "<p>ไม่มีข้อมูลการจำแนกประเภทของทรัพย์สิน</p>";
     return;
   }
 
@@ -285,10 +285,10 @@ function displayClassification(data)
       <thead>
         <tr>
           <th>ลำดับที่</th>
-          <th>CategoryName</th>
-          <th>ClassificationName</th>
-          <th>Description</th>
-          <th>แก้ไขClassification</th>
+          <th>หมวดหมู่ของทรัพย์สิน</th>
+          <th>การจำแนกประเภทของทรัพย์สิน</th>
+          <th>คำอธิบายการจำแนกประเภทของทรัพย์สิน</th>
+          <th>แก้ไขการจำแนกประเภทของทรัพย์สิน</th>
         </tr>
       </thead>
       <tbody>
@@ -402,12 +402,12 @@ function displayInstance(data)
   const container = document.getElementById("asset-container");
   container.innerHTML =
     `<div style="display: flex; align-items: center;">
-     <div style="flex-grow: 1; text-align: center;" class="table-header">Instanceทั้งหมดในระบบ</div>
-     <div><button id="openInstanceModalBtn">สร้างInstance</button></div></div>`;
+     <div style="flex-grow: 1; text-align: center;" class="table-header">รหัสทรัพย์สินทั้งหมดในระบบ</div>
+     <div><button id="openInstanceModalBtn">สร้างรหัสทรัพย์สิน</button></div></div>`;
 
   if (data.length === 0)
   {
-    container.innerHTML += "<p>ไม่มีข้อมูลทรัพย์สินที่ถืออยู่</p>";
+    container.innerHTML += "<p>ไม่มีข้อมูลรหัสทรัพย์สิน</p>";
     return;
   }
 
@@ -416,10 +416,10 @@ function displayInstance(data)
       <thead>
         <tr>
           <th>ลำดับที่</th>
-          <th>CategoryName</th>
-          <th>ClassificationName</th>
-          <th>InstanceName</th>
-          <th>แก้ไขInstance</th>
+          <th>หมวดหมู่ของทรัพย์สิน</th>
+          <th>การจำแนกประเภทของทรัพย์สิน</th>
+          <th>รหัสทรัพย์สิน</th>
+          <th>แก้ไขรหัสทรัพย์สิน</th>
         </tr>
       </thead>
       <tbody>
@@ -458,7 +458,7 @@ function displayInstance(data)
         if (response.ok)
         {
           const SelectClassification = document.getElementById("SelectClassification");
-          SelectClassification.innerHTML = '<option value="">-- กรุณาเลือกClassification --</option>';
+          SelectClassification.innerHTML = '<option value="">-- กรุณาเลือกการจำแนกประเภทของทรัพย์สิน --</option>';
           data.forEach((item) =>
           {
             const option = document.createElement("option");

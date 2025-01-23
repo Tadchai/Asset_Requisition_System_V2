@@ -225,7 +225,7 @@ namespace api.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAssetList([FromQuery] int requesterId)
+        public async Task<IActionResult> GetUserAsset([FromQuery] int requesterId)
         {
             try
             {
@@ -233,7 +233,9 @@ namespace api.Controllers
                                       join i in _context.Instances on r.InstanceId equals i.InstanceId
                                       join cs in _context.Classifications on i.ClassificationId equals cs.ClassificationId
                                       join c in _context.Categories on cs.CategoryId equals c.CategoryId
-                                      where r.RequesterId == requesterId && r.Status == RequestStatus.Completed.ToString()
+                                      join rt in _context.RequisitionReturns on r.RequestId equals rt.RequestId into ReturnJoin
+                                      from rt in ReturnJoin.DefaultIfEmpty()
+                                      where r.RequesterId == requesterId && r.Status == RequestStatus.Completed.ToString() && rt.Status != ReturnStatus.Completed.ToString()
                                       select new AssetListResponse
                                       {
                                           RequestId = r.RequestId,
