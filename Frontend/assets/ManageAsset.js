@@ -10,6 +10,11 @@ function ToManageRequestReturnPage()
 {
   window.location.href = "/Frontend/ManageRequestReturn.html"
 }
+function ToLoginPage()
+{
+    localStorage.removeItem('userId');
+    window.location.href = "/Frontend/login.html"
+}
 
 document.addEventListener("DOMContentLoaded", async () =>
 {

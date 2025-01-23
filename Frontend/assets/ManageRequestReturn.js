@@ -10,6 +10,11 @@ function ToManageAssetPage()
 {
   window.location.href = "/Frontend/ManageAsset.html"
 }
+function ToLoginPage()
+{
+    localStorage.removeItem('userId');
+    window.location.href = "/Frontend/login.html"
+}
 
 document.addEventListener("DOMContentLoaded", async () =>
 {
