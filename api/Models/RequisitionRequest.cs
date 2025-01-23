@@ -11,7 +11,7 @@ public partial class RequisitionRequest
 
     public string Requirement { get; set; } = null!;
 
-    public DateTime DueDate { get; set; }
+    public DateOnly DueDate { get; set; }
 
     public string ReasonRequest { get; set; } = null!;
 

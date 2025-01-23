@@ -92,7 +92,6 @@ public partial class EquipmentBorrowingV2Context : DbContext
 
             entity.HasIndex(e => e.RequesterId, "FK_RequisitionRequests_UserId");
 
-            entity.Property(e => e.DueDate).HasColumnType("datetime");
             entity.Property(e => e.ReasonRejected).HasMaxLength(250);
             entity.Property(e => e.ReasonRequest).HasMaxLength(250);
             entity.Property(e => e.Requirement).HasMaxLength(250);

@@ -7,6 +7,10 @@ function ToManageAssetInSystemPage()
 {
     window.location.href = "/Frontend/ManageAssetInSystem.html"
 }
+function ToManageRequestReturnPage()
+{
+    window.location.href = "/Frontend/ManageRequestReturn.html"
+}
 
 document.addEventListener("DOMContentLoaded", async () =>
 {

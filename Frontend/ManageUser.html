@@ -19,12 +19,10 @@
 
   <!-- Sidebar -->
   <div class="sidebar">
-    <div class="sidebar-item" onclick="ToManageAssetPage()">
-      จัดการทรัพย์สินที่ถือครอง
-    </div>
+    <div class="sidebar-item" onclick="ToManageAssetPage()">จัดการทรัพย์สินที่ถือครอง</div>
     <div class="sidebar-item">จัดการผู้ใช้งานในระบบ</div>
     <div class="sidebar-item" onclick="ToManageAssetInSystemPage()">จัดการทรัพย์สินในระบบ</div>
-    <div class="sidebar-item">จัดการใบขอเบิก/คืน</div>
+    <div class="sidebar-item" onclick="ToManageRequestReturnPage()">จัดการใบขอเบิก/คืน</div>
     <div class="sidebar-item">ภาพรวมของทรัพย์สิน</div>
   </div>
 
@@ -41,7 +39,7 @@
       <span id="closeModalBtn" class="close-btn">&times;</span>
       <h2 id="modalTitle">กรอกข้อมูลผู้ใช้</h2>
       <form id="userForm">
-        <input type="hidden" id="userId" name="userId"> 
+        <input type="hidden" id="userId" name="userId">
         <div class="form-group">
           <label for="username">Username</label>
           <input type="text" id="username" name="username" required>
@@ -52,13 +50,13 @@
         </div>
         <div class="form-group">
           <label> hr</label><input type="checkbox" name="hr" id="hrRole">
-          
+
           <label> procurement</label>
           <input type="checkbox" name="procurement" id="procurementRole">
         </div>
         <button type="button" id="editBtn" class="submit-btn" style="display: none;">แก้ไข</button>
         <button type="button" id="submitBtn" class="submit-btn">ยืนยัน</button>
-      </form>      
+      </form>
     </div>
   </div>
 

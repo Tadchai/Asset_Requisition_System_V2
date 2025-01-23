@@ -146,6 +146,35 @@ namespace api.Controllers
             }
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetRequestListById(int requestId)
+        {
+            try
+            {
+                var requestList = await (from r in _context.RequisitionRequests
+                                         join u in _context.Users on r.RequesterId equals u.UserId
+                                         join c in _context.Categories on r.CategoryId equals c.CategoryId
+                                         where r.RequestId == requestId
+                                         select new GetRequestListResponse
+                                         {
+                                             Username = u.Username,
+                                             CategoryName = c.Name,
+                                             Requirement = r.Requirement,
+                                             DueDate = r.DueDate,
+                                             ReasonRequest = r.ReasonRequest,
+                                             Status = r.Status,
+                                             RequestId = r.RequestId
+                                         })
+                                        .SingleAsync();
+
+                return new JsonResult(requestList);
+            }
+            catch (Exception ex)
+            {
+                return new JsonResult(new MessageResponse { Message = $"An error occurred: {ex.Message}", StatusCode = HttpStatusCode.InternalServerError });
+            }
+        }
+
         [HttpPost]
         public async Task<IActionResult> ConfirmRequest([FromBody] ConfirmRequest request)
         {

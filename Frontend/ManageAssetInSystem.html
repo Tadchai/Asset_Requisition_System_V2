@@ -8,11 +8,11 @@
   <link rel="stylesheet" type="text/css" href="/Frontend/CSS/ManageUser.css" />
   <style>
     .button-container {
-      display: flex; 
-      justify-content: center; 
-      align-items: center; 
-      gap: 10px; 
-  }  
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+    }
   </style>
 </head>
 
@@ -30,12 +30,10 @@
 
   <!-- Sidebar -->
   <div class="sidebar">
-    <div class="sidebar-item" onclick="ToManageAssetPage()">
-      จัดการทรัพย์สินที่ถือครอง
-    </div>
+    <div class="sidebar-item" onclick="ToManageAssetPage()">จัดการทรัพย์สินที่ถือครอง</div>
     <div class="sidebar-item" onclick="ToManageUserPage()">จัดการผู้ใช้งานในระบบ</div>
     <div class="sidebar-item">จัดการทรัพย์สินในระบบ</div>
-    <div class="sidebar-item">จัดการใบขอเบิก/คืน</div>
+    <div class="sidebar-item" onclick="ToManageRequestReturnPage()">จัดการใบขอเบิก/คืน</div>
     <div class="sidebar-item">ภาพรวมของทรัพย์สิน</div>
   </div>
 
@@ -54,17 +52,19 @@
       <p style="text-align: left;"><strong>Category Name:</strong> <span id="categoryName"></span></p>
       <p style="text-align: left;"><strong>Category Description:</strong> <span id="categoryDescription"></span></p>
       <p style="text-align: left;"><strong>Classification Name:</strong> <span id="classificationName"></span></p>
-      <p style="text-align: left;"><strong>Classification Description:</strong> <span id="classificationDescription"></span></p>
+      <p style="text-align: left;"><strong>Classification Description:</strong> <span
+          id="classificationDescription"></span></p>
       <p style="text-align: left;"><strong>Asset ID:</strong> <span id="assetId"></span></p>
       <p style="text-align: left;"><strong>Username:</strong> <span id="username"></span></p>
       <p style="text-align: left;"><strong>Status:</strong> <span id="status"></span></p><br>
       <div class="button-container">
-      <button id="btnLost" class="submit-btn" data-status=2 >สูญหาย</button>
-      <button id="btnEnd" class="submit-btn" data-status=1 style="display: none; background-color: red;" >สิ้นสุดการใช้งาน</button>
-      <button id="btnRestore" class="submit-btn" data-status=0 style="display: none; background-color: gray;" >เรียกคืน</button>
+        <button id="btnLost" class="submit-btn" data-status=2>สูญหาย</button>
+        <button id="btnEnd" class="submit-btn" data-status=1
+          style="display: none; background-color: red;">สิ้นสุดการใช้งาน</button>
+        <button id="btnRestore" class="submit-btn" data-status=0
+          style="display: none; background-color: gray;">เรียกคืน</button>
+      </div>
     </div>
-    </div>
-    
   </div>
 
   <!-- Modal Category-->

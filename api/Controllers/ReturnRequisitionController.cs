@@ -75,9 +75,12 @@ namespace api.Controllers
                                                  ClassificationName = z.ClassificationName,
                                                  AssetId = z.AssetId,
                                                  ReasonReturn = rt.ReasonReturn,
+                                                 Status = rt.Status,
                                                  InstanceId = z.InstanceId,
                                                  ReturnId = rt.ReturnId
-                                             }).ToListAsync();
+                                             })
+                                             .OrderBy(rt => rt.Status != ReturnStatus.Pending.ToString())
+                                             .ToListAsync();
 
                 return new JsonResult(ReturnAssetList);
             }
@@ -119,30 +122,30 @@ namespace api.Controllers
             try
             {
                 var pendingReturnList = await (from rt in _context.RequisitionReturns
-                                             join rq in _context.RequisitionRequests on rt.RequestId equals rq.RequestId
-                                             join z in from i in _context.Instances
-                                                       join cs in _context.Classifications on i.ClassificationId equals cs.ClassificationId
-                                                       join c in _context.Categories on cs.CategoryId equals c.CategoryId
-                                                       select new
-                                                       {
-                                                           i.InstanceId,
-                                                           CategoryName = c.Name,
-                                                           ClassificationName = cs.Name,
-                                                           i.AssetId
-                                                       } on rq.InstanceId equals z.InstanceId into zJoin
-                                             from z in zJoin.DefaultIfEmpty()
-                                             join u in _context.Users on rq.RequesterId equals u.UserId
-                                             where rt.Status == ReturnStatus.Pending.ToString()
-                                             select new GetReturnAssetListResponse
-                                             {
-                                                 Username = u.Username,
-                                                 CategoryName = z.CategoryName,
-                                                 ClassificationName = z.ClassificationName,
-                                                 AssetId = z.AssetId,
-                                                 ReasonReturn = rt.ReasonReturn,
-                                                 InstanceId = z.InstanceId,
-                                                 ReturnId = rt.ReturnId
-                                             }).ToListAsync();
+                                               join rq in _context.RequisitionRequests on rt.RequestId equals rq.RequestId
+                                               join z in from i in _context.Instances
+                                                         join cs in _context.Classifications on i.ClassificationId equals cs.ClassificationId
+                                                         join c in _context.Categories on cs.CategoryId equals c.CategoryId
+                                                         select new
+                                                         {
+                                                             i.InstanceId,
+                                                             CategoryName = c.Name,
+                                                             ClassificationName = cs.Name,
+                                                             i.AssetId
+                                                         } on rq.InstanceId equals z.InstanceId into zJoin
+                                               from z in zJoin.DefaultIfEmpty()
+                                               join u in _context.Users on rq.RequesterId equals u.UserId
+                                               where rt.Status == ReturnStatus.Pending.ToString()
+                                               select new GetReturnAssetListResponse
+                                               {
+                                                   Username = u.Username,
+                                                   CategoryName = z.CategoryName,
+                                                   ClassificationName = z.ClassificationName,
+                                                   AssetId = z.AssetId,
+                                                   ReasonReturn = rt.ReasonReturn,
+                                                   InstanceId = z.InstanceId,
+                                                   ReturnId = rt.ReturnId
+                                               }).ToListAsync();
 
                 return new JsonResult(pendingReturnList);
             }

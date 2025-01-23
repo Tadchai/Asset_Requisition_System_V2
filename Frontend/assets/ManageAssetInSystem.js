@@ -6,6 +6,10 @@ function ToManageAssetPage()
 {
   window.location.href = "/Frontend/ManageAsset.html"
 }
+function ToManageRequestReturnPage()
+{
+  window.location.href = "/Frontend/ManageRequestReturn.html"
+}
 
 document.addEventListener("DOMContentLoaded", async () =>
 {
@@ -160,8 +164,6 @@ function displayAssetId(data)
     `;
 
   container.appendChild(table);
-
-
 }
 
 
@@ -833,7 +835,7 @@ async function editStatusAction(instanceId)
 
     usernameValue = data.username;
     updateButtonVisibility()
-    
+
   } catch (error)
   {
     console.error("Error fetching Instance data:", error);
@@ -853,65 +855,78 @@ document.getElementById("closeAssetModalBtn").addEventListener("click", () =>
   AssetModal.style.display = "none";
 });
 
-function updateButtonVisibility() {
+function updateButtonVisibility()
+{
   const btnEnd = document.getElementById("btnEnd");
   const btnRestore = document.getElementById("btnRestore");
 
-  if (!usernameValue) {
+  if (!usernameValue)
+  {
     btnEnd.style.display = "flex";
-  } else {
+  } else
+  {
     btnEnd.style.display = "none";
   }
 
-  if (usernameValue) {
-      btnRestore.style.display = "flex";
-  } else {
-      btnRestore.style.display = "none";
+  if (usernameValue)
+  {
+    btnRestore.style.display = "flex";
+  } else
+  {
+    btnRestore.style.display = "none";
   }
 }
 
-document.getElementById("btnLost").addEventListener("click", function () {
+document.getElementById("btnLost").addEventListener("click", function ()
+{
   const status = this.getAttribute("data-status");
   const instanceId = this.getAttribute("data-instance-id");
   statusClick(status, instanceId);
 });
-document.getElementById("btnEnd").addEventListener("click", function () {
+document.getElementById("btnEnd").addEventListener("click", function ()
+{
   const status = this.getAttribute("data-status");
   const instanceId = this.getAttribute("data-instance-id");
   statusClick(status, instanceId);
 });
-document.getElementById("btnRestore").addEventListener("click", function () {
+document.getElementById("btnRestore").addEventListener("click", function ()
+{
   const status = this.getAttribute("data-status");
   const instanceId = this.getAttribute("data-instance-id");
   statusClick(status, instanceId);
 });
 
 
-async function statusClick(status ,instanceId) {
-  const confirmData = { 
+async function statusClick(status, instanceId)
+{
+  const confirmData = {
     Status: parseInt(status),
     InstanceId: instanceId
-  }; 
+  };
 
-  try {
+  try
+  {
     const response = await fetch("http://localhost:5009/Item/SetAssetId", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(confirmData), 
+      body: JSON.stringify(confirmData),
     });
 
     const result = await response.json();
 
-    if (response.status == 200 ) {
-      alert(result.message );
+    if (response.status == 200)
+    {
+      alert(result.message);
       refreshTableAssetId();
       AssetModal.style.display = "none";
-    } else {
+    } else
+    {
       alert(result.message);
     }
-  } catch (error) {
+  } catch (error)
+  {
     console.error("Error confirming request:", error);
     alert("ไม่สามารถเชื่อมต่อกับ API ได้");
   }

@@ -2,42 +2,42 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Asset Management</title>
-    <link rel="stylesheet" type="text/css" href="/Frontend/CSS/ManageAsset.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Asset Management</title>
+  <link rel="stylesheet" type="text/css" href="/Frontend/CSS/ManageAsset.css">
 </head>
 
 <body>
-    <!-- Navbar -->
-    <div class="navbar">
-        <div class="nav-title">Asset Management System</div>
-        <div class="nav-menu">
-            <div class="nav-item" id="nav-held-assets">ทรัพย์สินที่ถือครอง</div>
-            <div class="nav-item" id="nav-held-request">ใบคำขออนุมัติการเบิก</div>
-            <div class="nav-item" id="nav-held-Confirm">ยืนยันการได้รับทรัพย์สิน</div>
-            <div class="nav-item" id="openReturnAssetModalBtn">สร้างใบคืนทรัพย์สิน</div>
-        </div>
+  <!-- Navbar -->
+  <div class="navbar">
+    <div class="nav-title">Asset Management System</div>
+    <div class="nav-menu">
+      <div class="nav-item" id="nav-held-assets">ทรัพย์สินที่ถือครอง</div>
+      <div class="nav-item" id="nav-held-request">ใบคำขออนุมัติการเบิก</div>
+      <div class="nav-item" id="nav-held-Confirm">ยืนยันการได้รับทรัพย์สิน</div>
+      <div class="nav-item" id="openReturnAssetModalBtn">สร้างใบคืนทรัพย์สิน</div>
     </div>
+  </div>
 
-    <!-- Sidebar -->
-    <div class="sidebar">
-        <div class="sidebar-item">จัดการทรัพย์สินที่ถือครอง</div>
-        <div class="sidebar-item" onclick="ToManageUserPage()">จัดการผู้ใช้งานในระบบ</div>
-        <div class="sidebar-item" onclick="ToManageAssetInSystemPage()">จัดการทรัพย์สินในระบบ</div>
-        <div class="sidebar-item">จัดการใบขอเบิก/คืน</div>
-        <div class="sidebar-item">ภาพรวมของทรัพย์สิน</div>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-item">จัดการทรัพย์สินที่ถือครอง</div>
+    <div class="sidebar-item" onclick="ToManageUserPage()">จัดการผู้ใช้งานในระบบ</div>
+    <div class="sidebar-item" onclick="ToManageAssetInSystemPage()">จัดการทรัพย์สินในระบบ</div>
+    <div class="sidebar-item" onclick="ToManageRequestReturnPage()">จัดการใบขอเบิก/คืน</div>
+    <div class="sidebar-item">ภาพรวมของทรัพย์สิน</div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div id="asset-container" class="asset-container">
+      <!-- ข้อมูลทรัพย์สินจะถูกแสดงที่นี่ -->
     </div>
+  </div>
 
-    <!-- Main Content -->
-    <div class="main-content">
-        <div id="asset-container" class="asset-container">
-            <!-- ข้อมูลทรัพย์สินจะถูกแสดงที่นี่ -->
-        </div>
-    </div>
-
-<!-- Modal สำหรับใบคืนทรัพย์สิน -->
-<div class="modal" id="returnAssetModal">
+  <!-- Modal สำหรับใบคืนทรัพย์สิน -->
+  <div class="modal" id="returnAssetModal">
     <div class="modal-content">
       <span class="close-btn" id="closeReturnAssetModalBtn">&times;</span>
       <h3>ใบคืนทรัพย์สิน</h3>
@@ -54,7 +54,7 @@
       <button class="submit-btn" id="submitReturnBtn">ส่งข้อมูล</button>
     </div>
   </div>
-  
+
   <!-- Modal สำหรับใบคำขออนุมัติการเบิก -->
   <div class="modal" id="requisitionModal">
     <div class="modal-content">
@@ -81,8 +81,8 @@
       <button class="submit-btn" id="submitRequisitionBtn">ส่งข้อมูล</button>
     </div>
   </div>
-  
-    <script src="assets/ManageAsset.js" defer></script>
+
+  <script src="assets/ManageAsset.js" defer></script>
 </body>
 
 </html>

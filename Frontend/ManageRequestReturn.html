@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Asset Management</title>
+  <link rel="stylesheet" type="text/css" href="/Frontend/CSS/ManageRequestReturn.css" />
+</head>
+
+<body>
+  <!-- Navbar -->
+  <div class="navbar">
+    <div class="nav-title">Asset Management System</div>
+    <div class="nav-menu">
+      <div class="nav-item" id="RequestReturnList">ภาพรวมใบขอเบิก/คืน</div>
+      <div class="nav-item" id="RequestList">รายการใบขอเบิก</div>
+      <div class="nav-item" id="ReturnList">รายการใบคืน</div>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-item" onclick="ToManageAssetPage()">จัดการทรัพย์สินที่ถือครอง</div>
+    <div class="sidebar-item" onclick="ToManageUserPage()">จัดการผู้ใช้งานในระบบ</div>
+    <div class="sidebar-item" onclick="ToManageAssetInSystemPage()">จัดการทรัพย์สินในระบบ</div>
+    <div class="sidebar-item">จัดการใบขอเบิก/คืน</div>
+    <div class="sidebar-item">ภาพรวมของทรัพย์สิน</div>
+  </div>
+
+  <!-- New Main Content -->
+  <div class="main-content" id="multi-view">
+    <!-- คอลัมน์ซ้าย -->
+    <div id="left-column">
+      <div id="pending-container" class="asset-container">
+        <!-- Pending จะถูกแสดงที่นี่ -->
+      </div>
+      <div id="allocated-container" class="asset-container">
+        <!-- Allocated จะถูกแสดงที่นี่ -->
+      </div>
+    </div>
+
+    <!-- คอลัมน์ขวา -->
+    <div id="right-column">
+      <div id="returned-container" class="asset-container">
+        <!-- Returned จะถูกแสดงที่นี่ -->
+      </div>
+    </div>
+  </div>
+
+  <!-- แบบหน้าเดียว -->
+  <div id="single-view" class="main-content-2" style="display: none;">
+    <div id="asset-container" class="asset-container-2">
+      <!-- ข้อมูลทรัพย์สินทั้งหมดจะถูกแสดงที่นี่ -->
+    </div>
+  </div>
+
+  <div id="RequestModal" class="modal">
+    <div class="modal-content">
+      <span id="closeRequestModalBtn" class="close-btn">&times;</span>
+      <h2>Details</h2>
+      <p style="text-align: left;"><strong>Username:</strong> <span id="Username"></span></p>
+      <p style="text-align: left;"><strong>CategoryName:</strong> <span id="CategoryName"></span></p>
+      <p style="text-align: left;"><strong>Requirement:</strong> <span id="Requirement"></span></p>
+      <p style="text-align: left;"><strong>DueDate:</strong> <span id="DueDate"></span></p>
+      <p style="text-align: left;"><strong>ReasonRequest:</strong> <span id="ReasonRequest"></span></p>
+      <p style="text-align: left;"><strong>Status:</strong> <span id="Status"></span></p>
+      <br>
+
+      <div class="form-group">
+        <label for="decisionSelect">การตัดสินใจ</label>
+        <select id="decisionSelect" onchange="handleDecisionChange()">
+          <option value="">-- กรุณาเลือกการตัดสินใจ --</option>
+          <option value="1">ยอมรับ</option>
+          <option value="2">ปฏิเสธ</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <div id="acceptOptions" style="display: none; margin-top: 10px;">
+          <label for="assetSelectRequisition">เลือกทรัพย์สิน</label>
+          <select id="assetSelectRequisition">
+            <option value="">-- กรุณาเลือกทรัพย์สิน --</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div id="rejectReason" style="display: none; margin-top: 10px;">
+          <label for="rejectReasonInput">เหตุผลการปฏิเสธ</label>
+          <textarea id="rejectReasonInput" placeholder="กรุณาใส่เหตุผล"></textarea>
+        </div>
+      </div>
+      <br>
+
+      <button id="submitDecisionBtn" onclick="submitDecision()">ยืนยัน</button>
+    </div>
+  </div>
+
+  <script src="assets/ManageRequestReturn.js" defer></script>
+</body>
+
+</html>
