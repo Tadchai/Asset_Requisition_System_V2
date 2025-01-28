@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using api.Models;
 using api.ViewModels;
@@ -23,6 +24,7 @@ namespace api.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateReturn([FromBody] CreateReturnAssetRequest request)
         {
+            var userIdFromToken = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             using (var transaction = await _context.Database.BeginTransactionAsync())
             {
                 try
@@ -32,7 +34,7 @@ namespace api.Controllers
                     {
                         ReasonReturn = request.ReasonReturn,
                         Status = ReturnStatus.Pending.ToString(),
-                        RequestId = instanceModel.RequestId.Value
+                        RequestId = int.Parse(userIdFromToken)
                     };
 
                     await _context.RequisitionReturns.AddAsync(requisitionReturnModel);

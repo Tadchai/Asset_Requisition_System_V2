@@ -22,7 +22,7 @@ namespace api.ViewModels
     {
         public int UserId { get; set; }
         public string Username { get; set; }
-        public string Password { get; set; }
+        public string? Password { get; set; }
         public List<int> RoleId { get; set; } = new List<int>();
     }
 

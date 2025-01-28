@@ -23,7 +23,6 @@ namespace api.ViewModels
         public string Requirement { get; set; }
         public DateOnly DueDate { get; set; }
         public string ReasonRequest { get; set; }
-        public int RequesterId { get; set; }
     }
 
     public class GetRequestResponse
@@ -82,7 +81,6 @@ namespace api.ViewModels
     public class CreateReturnAssetRequest
     {
         public int InstanceId { get; set; }
-        public int RequesterId { get; set; }
         public string ReasonReturn { get; set; }
     }
 

@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using api.Models;
 using api.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -38,12 +39,6 @@ namespace api.Controllers
                 }
                 return builder.ToString();
             }
-        }
-
-        static bool VerifyPassword(string enteredPassword, string storedSalt, string storedHashedPassword)
-        {
-            string hashedPassword = HashPassword(enteredPassword, storedSalt);
-            return hashedPassword == storedHashedPassword;
         }
 
         [HttpPost]
@@ -92,27 +87,6 @@ namespace api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> login([FromBody] LoginUserRequest request)
-        {
-            try
-            {
-                var userModel = await _context.Users.SingleOrDefaultAsync(u => u.Username == request.Username);
-                if (userModel == null)
-                    return new JsonResult(new MessageResponse { Message = "Invalid username or password.", StatusCode = HttpStatusCode.BadRequest });
-
-                var verifyResult = VerifyPassword(request.Password, userModel.Salt, userModel.Password);
-                if (!verifyResult)
-                    return new JsonResult(new MessageResponse { Message = "Invalid username or password.", StatusCode = HttpStatusCode.BadRequest });
-
-                return new JsonResult(new MessageResponse { Id = userModel.UserId, Message = "Login successful.", StatusCode = HttpStatusCode.OK });
-            }
-            catch (Exception ex)
-            {
-                return new JsonResult(new MessageResponse { Message = $"An error occurred: {ex.Message}", StatusCode = HttpStatusCode.InternalServerError });
-            }
-        }
-
-        [HttpPost]
         public async Task<IActionResult> UpdateUser([FromBody] UpdateUserRequest request)
         {
             if (await _context.Users.AnyAsync(u => u.Username == request.Username && u.UserId != request.UserId))
@@ -123,11 +97,13 @@ namespace api.Controllers
                 try
                 {
                     var userModel = await _context.Users.SingleAsync(u => u.UserId == request.UserId);
-                    var hashPassword = HashPassword(request.Password, userModel.Salt);
-
+                    if (!string.IsNullOrWhiteSpace(request.Password))
+                    {
+                        var hashPassword = HashPassword(request.Password, userModel.Salt);
+                        userModel.Password = hashPassword;
+                    }
                     userModel.Username = request.Username;
-                    userModel.Password = hashPassword;
-
+                    
                     var storedUserRole = await _context.UserRoles.Where(r => r.UserId == request.UserId).Select(r => r.RoleId).ToListAsync();
                     foreach (var newRole in request.RoleId)
                     {
@@ -179,12 +155,14 @@ namespace api.Controllers
 
             return new JsonResult(users);
         }
+
         [HttpGet]
-        public async Task<IActionResult> GetUserNew()
+        public async Task<IActionResult> GetUserById(int userId)
         {
             var queryUserRole = (from u in _context.Users
                                  join ur in _context.UserRoles on u.UserId equals ur.UserId
                                  join r in _context.Roles on ur.RoleId equals r.RoleId
+                                 where u.UserId == userId
                                  select new
                                  {
                                      u.Username,
@@ -199,7 +177,7 @@ namespace api.Controllers
                                             Username = y.Key,
                                             RoleName = y.ToList()
                                         })
-                                        .ToList();
+                                        .Single();
 
             return new JsonResult(existingUserWithRole);
         }

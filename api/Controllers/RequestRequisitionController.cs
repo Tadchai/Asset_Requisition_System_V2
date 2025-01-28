@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using api.Models;
 using api.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -23,6 +25,7 @@ namespace api.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateRequest([FromBody] CreateRequisitionRequest request)
         {
+            var userIdFromToken = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             using (var transaction = await _context.Database.BeginTransactionAsync())
             {
                 try
@@ -34,7 +37,7 @@ namespace api.Controllers
                         DueDate = request.DueDate,
                         ReasonRequest = request.ReasonRequest,
                         Status = RequestStatus.Pending.ToString(),
-                        RequesterId = request.RequesterId
+                        RequesterId = int.Parse(userIdFromToken)
                     };
                     await _context.RequisitionRequests.AddAsync(requisitionRequestModel);
                     await _context.SaveChangesAsync();
@@ -69,7 +72,11 @@ namespace api.Controllers
                                            Status = r.Status,
                                            AssetId = i.AssetId,
                                            ReasonRejected = r.ReasonRejected,
-                                       }).ToListAsync();
+                                       })
+                                       .OrderBy(r => r.Status != RequestStatus.Pending.ToString())
+                                       .ThenBy(r => r.Status != RequestStatus.Allocated.ToString())
+                                       .ThenBy(r => r.Status != RequestStatus.Rejected.ToString())
+                                       .ToListAsync();
 
                 return new JsonResult(responses);
             }
@@ -271,7 +278,9 @@ namespace api.Controllers
                                              ReasonRequest = r.ReasonRequest,
                                              Status = r.Status,
                                              RequestId = r.RequestId
-                                         }).ToListAsync();
+                                         })
+                                         .OrderBy(r => r.DueDate)
+                                         .ToListAsync();
 
                 return new JsonResult(requestList);
             }

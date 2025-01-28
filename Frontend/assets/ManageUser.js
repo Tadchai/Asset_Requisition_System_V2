@@ -13,34 +13,44 @@ function ToManageRequestReturnPage()
 }
 function ToLoginPage()
 {
-    localStorage.removeItem('userId');
+    localStorage.removeItem('token');
     window.location.href = "/Frontend/login.html"
 }
-
-document.addEventListener("DOMContentLoaded", async () =>
+function getResultFromToken()
 {
-    const userId = localStorage.getItem("userId");
-    if (!userId)
+    let token = localStorage.getItem('token');
+    if (!token)
     {
         alert("กรุณาเข้าสู่ระบบก่อนใช้งาน");
         return;
     }
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    console.log(payload);
+    return payload;
+}
 
-    const url = `http://localhost:5009/User/GetUser`;
-
+document.addEventListener("DOMContentLoaded", async () =>
+{
     try
     {
-        const response = await fetch(url);
-        if (!response.ok)
+        let token = localStorage.getItem('token');
+        const response = await fetch(`http://localhost:5009/User/GetUser`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            }
+        });
+        const result = await response.json();
+
+        if (response.status == 200)
         {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            displayUsers(result);
+        } else
+        {
+            alert(result.message);
         }
-        const data = await response.json();
-        displayUsers(data);
     } catch (error)
     {
         console.error("Error fetching asset list:", error);
-        alert("ไม่สามารถโหลดข้อมูลได้");
     }
 });
 
@@ -55,17 +65,15 @@ document.getElementById("submitBtn").addEventListener("click", async () =>
         return;
     }
 
-    // Default role is [1]
     const roles = [1];
 
-    // Check if additional roles are selected
     if (document.querySelector("input[name='hr']").checked)
     {
-        roles.push(2); // Assuming role ID for 'hr' is 2
+        roles.push(2);
     }
     if (document.querySelector("input[name='procurement']").checked)
     {
-        roles.push(3); // Assuming role ID for 'procurement' is 3
+        roles.push(3);
     }
 
     const payload = {
@@ -76,10 +84,12 @@ document.getElementById("submitBtn").addEventListener("click", async () =>
 
     try
     {
+        let token = localStorage.getItem('token');
         const response = await fetch("http://localhost:5009/User/CreateUser", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
+                'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify(payload),
         });
@@ -88,17 +98,16 @@ document.getElementById("submitBtn").addEventListener("click", async () =>
 
         if (result.statusCode === 201)
         {
-            alert(result.message || "สร้างผู้ใช้สำเร็จ");
-            closeModal(); // ปิด Modal หลังจากสร้างผู้ใช้สำเร็จ
+            alert(result.message);
+            closeModal();
             location.reload();
         } else
         {
-            alert(result.message || "เกิดข้อผิดพลาดในการสร้างผู้ใช้");
+            alert(result.message);
         }
     } catch (error)
     {
         console.error("Error:", error);
-        alert("เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์");
     }
 });
 
@@ -106,7 +115,7 @@ function displayUsers(data)
 {
     const container = document.getElementById("asset-container");
     container.innerHTML =
-        '<div class="table-header">รายชื่อผู้ใช้งานทั้งหมดในระบบ</div>'; // ล้างข้อมูลเก่าก่อน
+        '<div class="table-header">รายชื่อผู้ใช้งานทั้งหมดในระบบ</div>';
 
     if (data.length === 0)
     {
@@ -153,24 +162,25 @@ function displayUsers(data)
             return;
         }
 
-        // แปลง roleName เป็น RoleId
         const roles = [1];
-        if (document.getElementById("hrRole").checked) roles.push(2); // RoleId สำหรับ hr
-        if (document.getElementById("procurementRole").checked) roles.push(3); // RoleId สำหรับ procurement
+        if (document.getElementById("hrRole").checked) roles.push(2);
+        if (document.getElementById("procurementRole").checked) roles.push(3);
 
         const payload = {
             UserId: userId,
             Username: username,
-            Password: password || undefined, // ไม่เปลี่ยนรหัสผ่านหากไม่กรอก
+            Password: password || null,
             RoleId: roles,
         };
 
         try
         {
+            let token = localStorage.getItem('token');
             const response = await fetch("http://localhost:5009/User/UpdateUser", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify(payload),
             });
@@ -182,8 +192,8 @@ function displayUsers(data)
                 alert(result.message || "แก้ไขผู้ใช้สำเร็จ");
                 document.getElementById("submitBtn").style.display = "flex";
                 document.getElementById("editBtn").style.display = "none";
-                closeModal(); // ปิด Modal หลังจากแก้ไขสำเร็จ
-                location.reload(); // โหลดหน้าข้อมูลใหม่
+                closeModal();
+                location.reload();
             } else
             {
                 alert(result.message || "เกิดข้อผิดพลาดในการแก้ไขผู้ใช้");
@@ -191,11 +201,9 @@ function displayUsers(data)
         } catch (error)
         {
             console.error("Error:", error);
-            alert("เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์");
         }
     });
 
-    // เพิ่มตารางลงใน container
     container.appendChild(table);
 }
 
@@ -230,26 +238,56 @@ window.onclick = (event) =>
     }
 };
 
-// เปิด Modal พร้อมข้อมูลเก่า
 async function openEditModal(userId)
 {
-    // ตั้งค่า default หรือรีเซ็ตฟอร์ม
-    document.getElementById("userId").value = userId || ""; // ใส่ userId ถ้าจำเป็น
-    document.getElementById("username").value = ""; // เคลียร์ช่องกรอกชื่อผู้ใช้
-    document.getElementById("password").value = ""; // เคลียร์ช่องกรอกรหัสผ่าน
-    document.getElementById("hrRole").checked = false; // เคลียร์ checkbox
+    // รีเซ็ตฟอร์ม
+    document.getElementById("userId").value = userId || "";
+    document.getElementById("username").value = "";
+    document.getElementById("password").value = "";
+    document.getElementById("hrRole").checked = false;
     document.getElementById("procurementRole").checked = false;
 
     // เปลี่ยนชื่อ Modal เป็น "แก้ไขข้อมูลผู้ใช้"
     document.getElementById("modalTitle").textContent = "แก้ไขข้อมูลผู้ใช้";
 
-    // แสดง Modal
-    modal.style.display = "flex";
-
+    // ซ่อนปุ่ม Submit และแสดงปุ่ม Edit
     document.getElementById("editBtn").style.display = "flex";
     document.getElementById("submitBtn").style.display = "none";
 
+    try
+    {
+        const userData = getResultFromToken()
+        let userId = parseInt(userData.nameid)
+        let token = localStorage.getItem('token');
+        const response = await fetch(`http://localhost:5009/User/GetUserById?userId=${userId}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            }
+        });
+        if (!response.ok)
+        {
+            throw new Error("Failed to fetch user data");
+        }
+
+        const result = await response.json();
+
+        // เติมข้อมูลในฟอร์ม
+        document.getElementById("username").value = result.username || "";
+
+        // ตรวจสอบและติ๊ก checkbox ตาม roleName
+        const roles = result.roleName || [];
+        document.getElementById("hrRole").checked = roles.includes("hr");
+        document.getElementById("procurementRole").checked = roles.includes("procurement");
+
+        // แสดง Modal หลังจากเติมข้อมูล
+        document.getElementById("myModal").style.display = "flex";
+    } catch (error)
+    {
+        console.error("Error fetching user data:", error);
+    }
 }
+
+
 
 
 // เพิ่มฟังก์ชันให้ปุ่มแก้ไขในตาราง

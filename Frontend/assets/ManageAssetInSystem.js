@@ -12,24 +12,27 @@ function ToManageRequestReturnPage()
 }
 function ToLoginPage()
 {
-    localStorage.removeItem('userId');
+    localStorage.removeItem('token');
     window.location.href = "/Frontend/login.html"
 }
-
-document.addEventListener("DOMContentLoaded", async () =>
+function getResultFromToken()
 {
-  const userId = localStorage.getItem("userId");
-  if (!userId)
+  let token = localStorage.getItem('token');
+  if (!token)
   {
     alert("กรุณาเข้าสู่ระบบก่อนใช้งาน");
     return;
   }
+  const payload = JSON.parse(atob(token.split('.')[1]));
+  console.log(payload);
+  return payload;
+}
 
-  const url = `http://localhost:5009/Item/GetAssetId`;
-
+document.addEventListener("DOMContentLoaded", async () =>
+{
   try
   {
-    const response = await fetch(url);
+    const response = await fetch(`http://localhost:5009/Item/GetAssetId`);
     if (!response.ok)
     {
       throw new Error(`HTTP error! status: ${response.status}`);

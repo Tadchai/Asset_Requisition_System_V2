@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using api.Models;
 using api.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,6 +12,7 @@ namespace api.Controllers
 {
     [ApiController]
     [Route("[controller]/[action]")]
+    //[Authorize]
     public class ItemController : ControllerBase
     {
         private readonly EquipmentBorrowingV2Context _context;
@@ -376,6 +378,7 @@ namespace api.Controllers
                 }
             }
         }
+        
 
         [HttpGet]
         public async Task<IActionResult> GetAssetId()
@@ -401,7 +404,9 @@ namespace api.Controllers
                                              Username = x.Username,
                                              Status = i.Status,
                                              InstanceId = i.InstanceId
-                                         }).ToListAsync();
+                                         })
+                                         .OrderBy(i => i.Status != InstanceStatus.Available.ToString())
+                                         .ToListAsync();
 
                 return new JsonResult(AssetIdList);
             }
@@ -483,5 +488,29 @@ namespace api.Controllers
             }
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetFreeInstance()
+        {
+            try
+            {
+                var instanceList = await (from i in _context.Instances
+                                          join cs in _context.Classifications on i.ClassificationId equals cs.ClassificationId
+                                          join c in _context.Categories on cs.CategoryId equals c.CategoryId
+                                          where i.RequestId == null && i.Status == InstanceStatus.Available.ToString()
+                                          select new InstanceResponse
+                                          {
+                                              InstanceId = i.InstanceId,
+                                              CategoryName = c.Name,
+                                              ClassificationName = cs.Name,
+                                              AssetId = i.AssetId
+                                          }).ToListAsync();
+
+                return new JsonResult(instanceList);
+            }
+            catch (Exception ex)
+            {
+                return new JsonResult(new MessageResponse { Message = $"An error occurred: {ex.Message}", StatusCode = HttpStatusCode.InternalServerError });
+            }
+        }
     }
 }

@@ -5,7 +5,7 @@ document.getElementById('login-form').addEventListener('submit', async function 
     const password = document.getElementById('password').value;
 
     try {
-        const response = await fetch('http://localhost:5009/User/login', {
+        const response = await fetch('http://localhost:5009/Auth/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -16,7 +16,7 @@ document.getElementById('login-form').addEventListener('submit', async function 
         const result = await response.json();
 
         if (result.statusCode === 200) {
-            localStorage.setItem('userId', result.id);
+            localStorage.setItem('token', result.token);
             window.location.href = '/Frontend/ManageAsset.html'; 
         } else {
             alert(result.message);

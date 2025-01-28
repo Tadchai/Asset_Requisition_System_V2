@@ -12,8 +12,20 @@ function ToManageAssetPage()
 }
 function ToLoginPage()
 {
-    localStorage.removeItem('userId');
+    localStorage.removeItem('token');
     window.location.href = "/Frontend/login.html"
+}
+function getResultFromToken()
+{
+  let token = localStorage.getItem('token');
+  if (!token)
+  {
+    alert("กรุณาเข้าสู่ระบบก่อนใช้งาน");
+    return;
+  }
+  const payload = JSON.parse(atob(token.split('.')[1]));
+  console.log(payload);
+  return payload;
 }
 
 document.addEventListener("DOMContentLoaded", async () =>
@@ -147,7 +159,7 @@ function displayReturnList(data)
 
   if (data.length === 0)
   {
-    container.innerHTML += "<p>ไม่มีข้อมูลทรัพย์สินที่ถืออยู่</p>";
+    container.innerHTML += "<p>ไม่มีใบคืนทรัพย์</p>";
     return;
   }
 
@@ -311,12 +323,11 @@ async function confirmAction(returnId, instanceId)
   {
     return;
   }
-
-  console.log(returnId);
-  console.log(instanceId);
+  const userData = getResultFromToken()
+  let userId = parseInt(userData.nameid)
 
   const data = {
-    ResponsibleId: localStorage.getItem("userId"),
+    ResponsibleId: userId,
     ReturnId: returnId,
     InstanceId: instanceId
   };
@@ -450,7 +461,7 @@ async function loadAssets()
 {
   try
   {
-    const response = await fetch("http://localhost:5009/Item/GetInstance");
+    const response = await fetch("http://localhost:5009/Item/GetFreeInstance");
     const assets = await response.json();
 
     const assetSelect = document.getElementById("assetSelectRequisition");
@@ -476,13 +487,15 @@ async function submitDecision()
   const decision = document.getElementById("decisionSelect").value;
   const selectedAsset = document.getElementById("assetSelectRequisition").value;
   const rejectReason = document.getElementById("rejectReasonInput").value;
+  const userData = getResultFromToken()
+  let userId = parseInt(userData.nameid)
 
   const data = {
     RequestId: requestId,
     Status: parseInt(decision),
     InstanceId: decision === "1" ? selectedAsset : null,
     ReasonRejected: decision === "2" ? rejectReason : null,
-    ResponsibleId: localStorage.getItem("userId")
+    ResponsibleId: userId
   };
 
   try

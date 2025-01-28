@@ -12,30 +12,127 @@ function ToManageRequestReturnPage()
 }
 function ToLoginPage()
 {
-    localStorage.removeItem('userId');
-    window.location.href = "/Frontend/login.html"
+  localStorage.removeItem('token');
+  window.location.href = "/Frontend/login.html"
 }
-
-document.addEventListener("DOMContentLoaded", async () =>
+function getResultFromToken()
 {
-  const userId = localStorage.getItem("userId");
-  if (!userId)
+  let token = localStorage.getItem('token');
+  if (!token)
   {
     alert("กรุณาเข้าสู่ระบบก่อนใช้งาน");
     return;
   }
+  const payload = JSON.parse(atob(token.split('.')[1]));
+  console.log(payload);
+  return payload;
+}
 
-  const url = `http://localhost:5009/RequestRequisition/GetUserAsset?requesterId=${userId}`;
+document.addEventListener("DOMContentLoaded", async () =>
+{
+  const userData = getResultFromToken()
+  let userId = parseInt(userData.nameid)
 
   try
   {
-    const response = await fetch(url);
-    if (!response.ok)
+    let token = localStorage.getItem('token');
+    const response = await fetch(`http://localhost:5009/RequestRequisition/GetUserAsset?requesterId=${userId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      }
+    });
+    const result = await response.json();
+
+    if (response.status == 200)
     {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      displayAssets(result);
+    } else
+    {
+      alert(result.message);
     }
-    const data = await response.json();
-    displayAssets(data);
+  } catch (error)
+  {
+    console.error("Error fetching asset list:", error);
+  }
+});
+
+document.getElementById("nav-held-assets").addEventListener("click", async () =>
+{
+  const userData = getResultFromToken()
+  let userId = parseInt(userData.nameid)
+
+  try
+  {
+    let token = localStorage.getItem('token');
+    const response = await fetch(`http://localhost:5009/RequestRequisition/GetUserAsset?requesterId=${userId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      }
+    });
+    const result = await response.json();
+
+    if (response.status == 200)
+    {
+      displayAssets(result);
+    } else
+    {
+      alert(result.message);
+    }
+  } catch (error)
+  {
+    console.error("Error fetching asset list:", error);
+  }
+});
+
+document.getElementById("nav-held-request").addEventListener("click", async () =>
+{
+  const userData = getResultFromToken()
+  let userId = parseInt(userData.nameid)
+
+  try
+  {
+    let token = localStorage.getItem('token');
+    const response = await fetch(`http://localhost:5009/RequestRequisition/GetRequest?userId=${userId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      }
+    });
+    const result = await response.json();
+
+    if (response.status == 200)
+    {
+      displayRequest(result);
+    } else
+    {
+      alert(result.message);
+    }
+  } catch (error)
+  {
+    console.error("Error fetching asset list:", error);
+  }
+});
+document.getElementById("nav-held-Confirm").addEventListener("click", async () =>
+{
+  const userData = getResultFromToken()
+  let userId = parseInt(userData.nameid)
+
+  try
+  {
+    let token = localStorage.getItem('token');
+    const response = await fetch(`http://localhost:5009/RequestRequisition/GetConfirmList?requesterId=${userId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    const result = await response.json();
+
+    if (response.status == 200)
+    {
+      displayConfirm(result);
+    } else
+    {
+      alert(result.message);
+    }
   } catch (error)
   {
     console.error("Error fetching asset list:", error);
@@ -43,105 +140,18 @@ document.addEventListener("DOMContentLoaded", async () =>
   }
 });
 
-document
-  .getElementById("nav-held-assets")
-  .addEventListener("click", async () =>
-  {
-    const userId = localStorage.getItem("userId");
-    if (!userId)
-    {
-      alert("กรุณาเข้าสู่ระบบก่อนใช้งาน");
-      return;
-    }
-
-    const url = `http://localhost:5009/RequestRequisition/GetUserAsset?requesterId=${userId}`;
-
-    try
-    {
-      const response = await fetch(url);
-      if (!response.ok)
-      {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      displayAssets(data);
-    } catch (error)
-    {
-      console.error("Error fetching asset list:", error);
-      alert("ไม่สามารถโหลดข้อมูลได้");
-    }
-  });
-
-document
-  .getElementById("nav-held-request")
-  .addEventListener("click", async () =>
-  {
-    const userId = localStorage.getItem("userId");
-    if (!userId)
-    {
-      alert("กรุณาเข้าสู่ระบบก่อนใช้งาน");
-      return;
-    }
-
-    const url = `http://localhost:5009/RequestRequisition/GetRequest?userId=${userId}`;
-
-    try
-    {
-      const response = await fetch(url);
-      if (!response.ok)
-      {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      displayRequest(data);
-    } catch (error)
-    {
-      console.error("Error fetching asset list:", error);
-      alert("ไม่สามารถโหลดข้อมูลได้");
-    }
-  });
-document
-  .getElementById("nav-held-Confirm")
-  .addEventListener("click", async () =>
-  {
-    const userId = localStorage.getItem("userId");
-    if (!userId)
-    {
-      alert("กรุณาเข้าสู่ระบบก่อนใช้งาน");
-      return;
-    }
-
-    const url = `http://localhost:5009/RequestRequisition/GetConfirmList?requesterId=${userId}`;
-
-    try
-    {
-      const response = await fetch(url);
-      if (!response.ok)
-      {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      displayConfirm(data);
-    } catch (error)
-    {
-      console.error("Error fetching asset list:", error);
-      alert("ไม่สามารถโหลดข้อมูลได้");
-    }
-  });
-
 function displayConfirm(data)
 {
   const container = document.getElementById("asset-container");
   container.innerHTML =
-    '<div class="table-header">รายการยืนยันการได้รับทรัพย์สิน</div>'; // ล้างข้อมูลเก่าก่อน
+    '<div class="table-header">รายการยืนยันการได้รับทรัพย์สิน</div>';
 
   if (data.length === 0)
   {
-    container.innerHTML += "<p>ไม่มีข้อมูลทรัพย์สินที่ถืออยู่</p>";
+    container.innerHTML += "<p>ไม่มีรายการยืนยันการได้รับทรัพย์สิน</p>";
     return;
   }
 
-  // สร้างตาราง
   const table = document.createElement("table");
   table.innerHTML = `
   <thead>
@@ -170,8 +180,6 @@ function displayConfirm(data)
   </tbody>
 `;
 
-
-  // เพิ่มตารางลงใน container
   container.appendChild(table);
 }
 
@@ -185,91 +193,9 @@ function displayRequest(data)
 </div>
 `;
 
-  const openRequisitionModalBtn = document.getElementById("openRequisitionModalBtn");
-  if (openRequisitionModalBtn)
-  {
-    openRequisitionModalBtn.addEventListener("click", async () =>
-    {
-      requisitionModal.style.display = "flex";
-      loadCategoriesRequisition();
-    });
-  }
-
-  const closeRequisitionModalBtn = document.getElementById("closeRequisitionModalBtn");
-  if (closeRequisitionModalBtn)
-  {
-    closeRequisitionModalBtn.addEventListener("click", () =>
-    {
-      requisitionModal.style.display = "none";
-    });
-  }
-
-  submitRequisitionBtn.addEventListener('click', async () =>
-  {
-    const selectedAsset = assetSelectRequisition.value;
-    const returnMessage = document.getElementById('returnMessageRequisition').value;
-    const resonMessage = document.getElementById('reasonMessageRequisition').value;
-    const dueDate = document.getElementById('dateSelectRequisition').value;
-
-    // เตรียมข้อมูลสำหรับส่งไปยัง API
-    const requestData = {
-      RequesterId: localStorage.getItem("userId"),
-      CategoryId: parseInt(selectedAsset), // ใช้ InstanceId ที่เลือก
-      Requirement: returnMessage, // ข้อความที่ผู้ใช้ใส่
-      ReasonRequest: resonMessage,
-      DueDate: dueDate
-    };
-
-    try
-    {
-      const response = await fetch('http://localhost:5009/RequestRequisition/CreateRequest', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(requestData)
-      });
-
-      const result = await response.json();
-
-      if (response.ok)
-      {
-        alert(result.message || 'ส่งข้อมูลสำเร็จ');
-        requisitionModal.style.display = 'none'; // ปิด Modal หลังส่งสำเร็จ
-        refreshTableAssetList()
-      } else
-      {
-        alert(result.message || 'เกิดข้อผิดพลาดในการส่งข้อมูล');
-      }
-    } catch (error)
-    {
-      console.error('Error sending data to API:', error);
-      alert('ไม่สามารถเชื่อมต่อกับ API ได้');
-    }
-  });
-
-  async function refreshTableAssetList()
-  {
-    try
-    {
-      const userId = localStorage.getItem("userId");
-      const url = `http://localhost:5009/RequestRequisition/GetRequest?userId=${userId}`;
-      const response = await fetch(url);
-      if (!response.ok)
-      {
-        throw new Error("Failed to fetch updated data");
-      }
-      const data = await response.json();
-      displayRequest(data); // เรียกฟังก์ชันเดิมเพื่อแสดงข้อมูลใหม่
-    } catch (error)
-    {
-      console.error("Error refreshing table:", error);
-    }
-  }
-
   if (data.length === 0)
   {
-    container.innerHTML += "<p>ไม่มีข้อมูลทรัพย์สินที่ถืออยู่</p>";
+    container.innerHTML += "<p>ไม่มีใบคำขออนุมัติการเบิก</p>";
     return;
   }
 
@@ -299,7 +225,7 @@ function displayRequest(data)
             <td>${item.dueDate}</td>
             <td>${item.reasonRequest}</td>
             <td>${item.status}</td>
-            <td>${item.assetId}</td>
+            <td>${item.assetId || '-'}</td>
             <td>${item.reasonRejected || '-'}</td>
           </tr>
         `
@@ -310,6 +236,94 @@ function displayRequest(data)
 
   // เพิ่มตารางลงใน container
   container.appendChild(table);
+
+  const openRequisitionModalBtn = document.getElementById("openRequisitionModalBtn");
+  if (openRequisitionModalBtn)
+  {
+    openRequisitionModalBtn.addEventListener("click", async () =>
+    {
+      requisitionModal.style.display = "flex";
+      loadCategoriesRequisition();
+    });
+  }
+
+  const closeRequisitionModalBtn = document.getElementById("closeRequisitionModalBtn");
+  if (closeRequisitionModalBtn)
+  {
+    closeRequisitionModalBtn.addEventListener("click", () =>
+    {
+      requisitionModal.style.display = "none";
+    });
+  }
+
+  submitRequisitionBtn.addEventListener('click', async () =>
+  {
+    const selectedAsset = assetSelectRequisition.value;
+    const returnMessage = document.getElementById('returnMessageRequisition').value;
+    const resonMessage = document.getElementById('reasonMessageRequisition').value;
+    const dueDate = document.getElementById('dateSelectRequisition').value;
+
+    const requestData = {
+      CategoryId: parseInt(selectedAsset),
+      Requirement: returnMessage,
+      ReasonRequest: resonMessage,
+      DueDate: dueDate
+    };
+
+    try
+    {
+      let token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:5009/RequestRequisition/CreateRequest', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(requestData)
+      });
+
+      const result = await response.json();
+
+      if (response.status == 201)
+      {
+        alert(result.message);
+        refreshTableAssetList()
+        requisitionModal.style.display = 'none';
+      } else
+      {
+        alert(result.message);
+      }
+    } catch (error)
+    {
+      console.error('Error sending data to API:', error);
+    }
+  });
+
+  async function refreshTableAssetList()
+  {
+    const userData = getResultFromToken()
+    let userId = parseInt(userData.nameid)
+    try
+    {
+      const response = await fetch(`http://localhost:5009/RequestRequisition/GetRequest?userId=${userId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
+      });
+      const result = await response.json();
+
+      if (response.status == 200)
+      {
+        displayRequest(result);
+      } else
+      {
+        alert(result.message);
+      }
+    } catch (error)
+    {
+      console.error("Error refreshing table:", error);
+    }
+  }
 }
 
 function displayAssets(data)
@@ -320,7 +334,7 @@ function displayAssets(data)
 
   if (data.length === 0)
   {
-    container.innerHTML += "<p>ไม่มีข้อมูลทรัพย์สินที่ถืออยู่</p>";
+    container.innerHTML += "<p>ไม่มีทรัพย์สินที่ถืออยู่</p>";
     return;
   }
 
@@ -367,10 +381,15 @@ openReturnAssetModalBtn.addEventListener("click", async () =>
   // ดึงข้อมูลจาก API
   try
   {
-    const requesterId = localStorage.getItem("userId");
+    const userData = getResultFromToken()
+    let requesterId = parseInt(userData.nameid)
+    let token = localStorage.getItem('token');
     const response = await fetch(
-      `http://localhost:5009/RequestRequisition/GetUserAsset?requesterId=${requesterId}`
-    );
+      `http://localhost:5009/RequestRequisition/GetUserAsset?requesterId=${requesterId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      }
+    });
     const data = await response.json();
 
     if (response.ok)
@@ -407,19 +426,21 @@ submitReturnBtn.addEventListener('click', async () =>
   const selectedAsset = assetSelect.value;
   const returnMessage = document.getElementById('returnMessage').value;
 
+
   // เตรียมข้อมูลสำหรับส่งไปยัง API
   const requestData = {
-    RequesterId: localStorage.getItem("userId"),
     InstanceId: parseInt(selectedAsset), // ใช้ InstanceId ที่เลือก
     ReasonReturn: returnMessage // ข้อความที่ผู้ใช้ใส่
   };
 
   try
   {
+    let token = localStorage.getItem('token');
     const response = await fetch('http://localhost:5009/ReturnRequisition/CreateReturn', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify(requestData)
     });
@@ -428,11 +449,11 @@ submitReturnBtn.addEventListener('click', async () =>
 
     if (response.ok)
     {
-      alert(result.Message || 'ส่งข้อมูลสำเร็จ');
+      alert(result.message || 'ส่งข้อมูลสำเร็จ');
       modal.style.display = 'none'; // ปิด Modal หลังส่งสำเร็จ
     } else
     {
-      alert(result.Message || 'เกิดข้อผิดพลาดในการส่งข้อมูล');
+      alert(result.message || 'เกิดข้อผิดพลาดในการส่งข้อมูล');
     }
   } catch (error)
   {
@@ -446,7 +467,11 @@ async function loadCategoriesRequisition()
 {
   try
   {
-    const response = await fetch('http://localhost:5009/Item/GetCategory');
+    const response = await fetch('http://localhost:5009/Item/GetCategory', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      }
+    });
     if (!response.ok)
     {
       throw new Error('Failed to fetch categories');
@@ -499,7 +524,7 @@ async function confirmAction(requestId)
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(confirmData), // ส่งข้อมูลในรูปแบบ JSON
+      body: JSON.stringify(confirmData),
     });
 
     const result = await response.json();
@@ -507,7 +532,6 @@ async function confirmAction(requestId)
     if (response.ok)
     {
       alert(result.message || "ยืนยันการรับทรัพย์สินสำเร็จ");
-      // รีเฟรชตารางหรืออัปเดตข้อมูลใหม่
       refreshTable();
     } else
     {
@@ -523,17 +547,27 @@ async function confirmAction(requestId)
 // ฟังก์ชันสำหรับรีเฟรชตารางหลังจากยืนยัน
 async function refreshTable()
 {
+  const userData = getResultFromToken()
+  let requesterId = parseInt(userData.nameid)
   try
   {
-    const userId = localStorage.getItem("userId");
-    const url = `http://localhost:5009/RequestRequisition/GetConfirmList?requesterId=${userId}`;
-    const response = await fetch(url);
-    if (!response.ok)
+    let token = localStorage.getItem('token');
+    const url = `http://localhost:5009/RequestRequisition/GetConfirmList?requesterId=${requesterId}`;
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      }
+    });
+
+    const result = await response.json();
+
+    if (response.status == 200)
     {
-      throw new Error("Failed to fetch updated data");
+      displayConfirm(result);
+    } else
+    {
+      alert(result.message);
     }
-    const data = await response.json();
-    displayConfirm(data); // เรียกฟังก์ชันเดิมเพื่อแสดงข้อมูลใหม่
   } catch (error)
   {
     console.error("Error refreshing table:", error);
