@@ -42,7 +42,6 @@ namespace api.ViewModels
         public RequestStatus Status { get; set; }
         public int? InstanceId { get; set; }
         public string? ReasonRejected { get; set; }
-        public int ResponsibleId { get; set; }
     }
 
     public class GetRequestListResponse
@@ -100,6 +99,5 @@ namespace api.ViewModels
     { 
         public int InstanceId { get; set; }
         public int ReturnId { get; set; }
-        public int ResponsibleId { get; set; }
     }
 }

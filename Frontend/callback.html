@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Callback</title>
+</head>
+
+<body>
+    <script>
+        //import script
+        (async () =>
+        {
+            try
+            {//แก้ให้enum เป็นเลข แล้วตั้งenumในfrontendแทน
+                const urlParams = new URLSearchParams(window.location.search); //ใส่stateด้วย
+                const code = urlParams.get("code");
+
+                const params = new URLSearchParams();
+                params.append("client_id", "RequisitionClient");
+                params.append("client_secret", "Ua9B9SlffSdh44M3mTk6JkLMvEFv3cyj");
+                params.append("grant_type", "authorization_code");
+                params.append("code", code);
+                params.append( "redirect_uri","http://127.0.0.1:5002/Frontend/Callback.html");
+
+                const accessResponse = await fetch(
+                    "http://localhost:8080/realms/Requisition/protocol/openid-connect/token",
+                    {
+                        method: "POST",
+                        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                        body: params,
+                    }
+                );
+
+                const accessData = await accessResponse.json();
+                localStorage.setItem("token", accessData.access_token);
+
+                const tokenResponse = await fetch(
+                    "http://127.0.0.1:5009/Auth/CheckSubject", {
+                        headers: {
+                            'Authorization': `Bearer ${accessData.access_token}`,
+                        }
+                    });
+                if (tokenResponse.status == 200)
+                {
+                    window.location.href = "/Frontend/ManageAsset.html";
+                } else
+                {
+                    alert(result.message);
+                }
+            } catch (error)
+            {
+                console.error("Error :", error);
+            }
+        })();
+    </script>
+</body>
+
+</html>

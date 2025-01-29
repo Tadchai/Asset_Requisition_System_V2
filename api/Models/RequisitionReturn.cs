@@ -14,4 +14,8 @@ public partial class RequisitionReturn
     public int RequestId { get; set; }
 
     public int? ResponsibleId { get; set; }
+
+    public virtual RequisitionRequest Request { get; set; } = null!;
+
+    public virtual User? Responsible { get; set; }
 }

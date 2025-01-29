@@ -9,13 +9,11 @@ public partial class User
 
     public string Username { get; set; } = null!;
 
-    public string Password { get; set; } = null!;
-
-    public string Salt { get; set; } = null!;
+    public string SubjectId { get; set; } = null!;
 
     public virtual ICollection<RequisitionRequest> RequisitionRequestRequesters { get; set; } = new List<RequisitionRequest>();
 
     public virtual ICollection<RequisitionRequest> RequisitionRequestResponsibles { get; set; } = new List<RequisitionRequest>();
 
-    public virtual ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
+    public virtual ICollection<RequisitionReturn> RequisitionReturns { get; set; } = new List<RequisitionReturn>();
 }

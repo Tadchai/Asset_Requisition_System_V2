@@ -18,7 +18,6 @@ namespace api.ViewModels
     }
     public class MessageResponse
     {
-        public string Token { get; set; }
         public int? Id { get; set; }
         public string Message { get; set; }
         public HttpStatusCode StatusCode{ get; set; }

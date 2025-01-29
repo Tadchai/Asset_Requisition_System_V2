@@ -31,5 +31,7 @@ public partial class RequisitionRequest
 
     public virtual User Requester { get; set; } = null!;
 
+    public virtual ICollection<RequisitionReturn> RequisitionReturns { get; set; } = new List<RequisitionReturn>();
+
     public virtual User? Responsible { get; set; }
 }

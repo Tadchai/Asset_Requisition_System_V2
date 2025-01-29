@@ -15,18 +15,6 @@ function ToLoginPage()
     localStorage.removeItem('token');
     window.location.href = "/Frontend/login.html"
 }
-function getResultFromToken()
-{
-  let token = localStorage.getItem('token');
-  if (!token)
-  {
-    alert("กรุณาเข้าสู่ระบบก่อนใช้งาน");
-    return;
-  }
-  const payload = JSON.parse(atob(token.split('.')[1]));
-  console.log(payload);
-  return payload;
-}
 
 document.addEventListener("DOMContentLoaded", async () =>
 {
@@ -54,11 +42,14 @@ document.getElementById("RequestReturnList").addEventListener("click", async () 
 
 document.getElementById("RequestList").addEventListener("click", async () =>
 {
-  const url = `http://localhost:5009/RequestRequisition/GetRequestList`;
-
   try
   {
-    const response = await fetch(url);
+    let token = localStorage.getItem('token');
+    const response = await fetch(`http://localhost:5009/RequestRequisition/GetRequestList`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      }
+    });
     if (!response.ok)
     {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -74,11 +65,14 @@ document.getElementById("RequestList").addEventListener("click", async () =>
 
 document.getElementById("ReturnList").addEventListener("click", async () =>
 {
-  const url = `http://localhost:5009/ReturnRequisition/GetReturnList`;
-
   try
   {
-    const response = await fetch(url);
+    let token = localStorage.getItem('token');
+    const response = await fetch(`http://localhost:5009/ReturnRequisition/GetReturnList`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      }
+    });
     if (!response.ok)
     {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -205,21 +199,31 @@ function displayReturnList(data)
   container.appendChild(table);
 }
 
-// ฟังก์ชันดึงข้อมูลจาก API
 async function fetchAssetData()
 {
   try
   {
     document.getElementById("multi-view").style.display = "grid"
     document.getElementById("single-view").style.display = "none"
-    // ดึงข้อมูลจากทั้ง 3 API พร้อมกัน
+    let token = localStorage.getItem('token');
     const [pendingData, allocatedData, returnedData] = await Promise.all([
-      fetch('http://localhost:5009/RequestRequisition/GetPendingRequest').then(res => res.json()),
-      fetch('http://localhost:5009/RequestRequisition/GetAllocatedRequest').then(res => res.json()),
-      fetch('http://localhost:5009/ReturnRequisition/GetPendingReturn').then(res => res.json())
+      fetch('http://localhost:5009/RequestRequisition/GetPendingRequest', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
+      }).then(res => res.json()),
+      fetch('http://localhost:5009/RequestRequisition/GetAllocatedRequest', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
+      }).then(res => res.json()),
+      fetch('http://localhost:5009/ReturnRequisition/GetPendingReturn', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
+      }).then(res => res.json())
     ]);
 
-    // แสดงผลข้อมูลแต่ละตาราง
     displayRequestTable('รายการใบคำร้องขอเบิกรอดำเนินการ', pendingData, 'pending-container');
     displayRequestTable('รายการใบคำร้องขอเบิกที่ยังไม่เสร็จสมบูรณ์', allocatedData, 'allocated-container');
     displayReturnTable('รายการใบคืนทรัพย์สินรอดำเนินการ', returnedData, 'returned-container');
@@ -232,7 +236,6 @@ async function fetchAssetData()
   }
 }
 
-// ฟังก์ชันแสดงข้อมูลในรูปแบบตาราง
 function displayRequestTable(title, data, containerId)
 {
   const container = document.getElementById(containerId);
@@ -334,10 +337,12 @@ async function confirmAction(returnId, instanceId)
 
   try
   {
+    let token = localStorage.getItem('token');
     const response = await fetch("http://localhost:5009/ReturnRequisition/ConfirmReturn", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify(data),
     });
@@ -363,8 +368,12 @@ async function refreshTableReturn()
 {
   try
   {
-    const url = `http://localhost:5009/ReturnRequisition/GetReturnList`;
-    const response = await fetch(url);
+    let token = localStorage.getItem('token');
+    const response = await fetch(`http://localhost:5009/ReturnRequisition/GetReturnList`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      }
+    });
     if (!response.ok)
     {
       throw new Error("Failed to fetch updated data");
@@ -380,8 +389,12 @@ async function refreshTableRequest()
 {
   try
   {
-    const url = `http://localhost:5009/RequestRequisition/GetRequestList`;
-    const response = await fetch(url);
+    let token = localStorage.getItem('token');
+    const response = await fetch(`http://localhost:5009/RequestRequisition/GetRequestList`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      }
+    });
     if (!response.ok)
     {
       throw new Error("Failed to fetch updated data");
@@ -400,7 +413,12 @@ async function confirmRequestAction(requestId)
 
   try
   {
-    const response = await fetch(`http://localhost:5009/RequestRequisition/GetRequestListById?requestId=${requestId}`);
+    let token = localStorage.getItem('token');
+    const response = await fetch(`http://localhost:5009/RequestRequisition/GetRequestListById?requestId=${requestId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      }
+    });
     if (!response.ok)
     {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -461,7 +479,12 @@ async function loadAssets()
 {
   try
   {
-    const response = await fetch("http://localhost:5009/Item/GetFreeInstance");
+    let token = localStorage.getItem('token');
+    const response = await fetch("http://localhost:5009/Item/GetFreeInstance", {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      }
+    });
     const assets = await response.json();
 
     const assetSelect = document.getElementById("assetSelectRequisition");
@@ -500,14 +523,15 @@ async function submitDecision()
 
   try
   {
+    let token = localStorage.getItem('token');
     const response = await fetch("http://localhost:5009/RequestRequisition/SetRequest", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify(data),
     });
-
     const result = await response.json();
 
     if (response.ok)

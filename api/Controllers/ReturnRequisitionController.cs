@@ -5,6 +5,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using api.Models;
 using api.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,6 +13,7 @@ namespace api.Controllers
 {
     [ApiController]
     [Route("[controller]/[action]")]
+    [Authorize]
     public class ReturnRequisitionController : ControllerBase
     {
         private readonly EquipmentBorrowingV2Context _context;
@@ -24,17 +26,18 @@ namespace api.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateReturn([FromBody] CreateReturnAssetRequest request)
         {
-            var userIdFromToken = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             using (var transaction = await _context.Database.BeginTransactionAsync())
             {
                 try
                 {
+                    var userId = User.FindFirst("userId")?.Value;
+
                     var instanceModel = await _context.Instances.SingleAsync(i => i.InstanceId == request.InstanceId);
                     var requisitionReturnModel = new RequisitionReturn
                     {
                         ReasonReturn = request.ReasonReturn,
                         Status = ReturnStatus.Pending.ToString(),
-                        RequestId = int.Parse(userIdFromToken)
+                        RequestId = int.Parse(userId)
                     };
 
                     await _context.RequisitionReturns.AddAsync(requisitionReturnModel);
@@ -99,12 +102,14 @@ namespace api.Controllers
             {
                 try
                 {
+                    var responsibleId = User.FindFirst("userId")?.Value;
+
                     var instanceModel = await _context.Instances.SingleAsync(i => i.InstanceId == request.InstanceId);
                     instanceModel.RequestId = null;
 
                     var requisitionReturnModel = await _context.RequisitionReturns.SingleAsync(rt => rt.ReturnId == request.ReturnId);
                     requisitionReturnModel.Status = ReturnStatus.Completed.ToString();
-                    requisitionReturnModel.ResponsibleId = request.ResponsibleId;
+                    requisitionReturnModel.ResponsibleId = int.Parse(responsibleId);
 
                     await _context.SaveChangesAsync();
                     await transaction.CommitAsync();

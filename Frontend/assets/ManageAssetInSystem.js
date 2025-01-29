@@ -12,27 +12,20 @@ function ToManageRequestReturnPage()
 }
 function ToLoginPage()
 {
-    localStorage.removeItem('token');
-    window.location.href = "/Frontend/login.html"
-}
-function getResultFromToken()
-{
-  let token = localStorage.getItem('token');
-  if (!token)
-  {
-    alert("กรุณาเข้าสู่ระบบก่อนใช้งาน");
-    return;
-  }
-  const payload = JSON.parse(atob(token.split('.')[1]));
-  console.log(payload);
-  return payload;
+  localStorage.removeItem('token');
+  window.location.href = "/Frontend/login.html"
 }
 
 document.addEventListener("DOMContentLoaded", async () =>
 {
   try
   {
-    const response = await fetch(`http://localhost:5009/Item/GetAssetId`);
+    let token = localStorage.getItem('token');
+    const response = await fetch(`http://localhost:5009/Item/GetAssetId`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      }
+    });
     if (!response.ok)
     {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -48,11 +41,14 @@ document.addEventListener("DOMContentLoaded", async () =>
 
 document.getElementById("AssetSystem").addEventListener("click", async () =>
 {
-  const url = `http://localhost:5009/Item/GetAssetId`;
-
   try
   {
-    const response = await fetch(url);
+    let token = localStorage.getItem('token');
+    const response = await fetch(`http://localhost:5009/Item/GetAssetId`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      }
+    });
     if (!response.ok)
     {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -68,11 +64,14 @@ document.getElementById("AssetSystem").addEventListener("click", async () =>
 
 document.getElementById("ManageCategory").addEventListener("click", async () =>
 {
-  const url = `http://localhost:5009/Item/GetCategory`;
-
   try
   {
-    const response = await fetch(url);
+    let token = localStorage.getItem('token');
+    const response = await fetch(`http://localhost:5009/Item/GetCategory`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      }
+    });
     if (!response.ok)
     {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -88,11 +87,14 @@ document.getElementById("ManageCategory").addEventListener("click", async () =>
 
 document.getElementById("ManageClassification").addEventListener("click", async () =>
 {
-  const url = `http://localhost:5009/Item/GetClassification`;
-
   try
   {
-    const response = await fetch(url);
+    let token = localStorage.getItem('token');
+    const response = await fetch(`http://localhost:5009/Item/GetClassification`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      }
+    });
     if (!response.ok)
     {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -108,11 +110,14 @@ document.getElementById("ManageClassification").addEventListener("click", async 
 
 document.getElementById("ManageInstance").addEventListener("click", async () =>
 {
-  const url = `http://localhost:5009/Item/GetInstance`;
-
   try
   {
-    const response = await fetch(url);
+    let token = localStorage.getItem('token');
+    const response = await fetch(`http://localhost:5009/Item/GetInstance`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      }
+    });
     if (!response.ok)
     {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -173,7 +178,6 @@ function displayAssetId(data)
 
   container.appendChild(table);
 }
-
 
 function displayCategory(data)
 {
@@ -247,14 +251,14 @@ function displayCategory(data)
 
     try
     {
+      let token = localStorage.getItem('token');
       const response = await fetch('http://localhost:5009/Item/CreateCategory', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(requestData)
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
       });
-
       const result = await response.json();
 
       if (result.statusCode === 201)
@@ -327,9 +331,12 @@ function displayClassification(data)
 
       try
       {
-        const response = await fetch(
-          `http://localhost:5009/Item/GetCategory`
-        );
+        let token = localStorage.getItem('token');
+        const response = await fetch(`http://localhost:5009/Item/GetCategory`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          }
+        });
         const data = await response.json();
 
         if (response.ok)
@@ -378,14 +385,15 @@ function displayClassification(data)
 
     try
     {
+      let token = localStorage.getItem('token');
       const response = await fetch('http://localhost:5009/Item/CreateClassification', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(requestData)
       });
-
       const result = await response.json();
 
       if (result.statusCode === 201)
@@ -458,9 +466,12 @@ function displayInstance(data)
 
       try
       {
-        const response = await fetch(
-          `http://localhost:5009/Item/GetClassification`
-        );
+        let token = localStorage.getItem('token');
+        const response = await fetch(`http://localhost:5009/Item/GetClassification`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          }
+        });
         const data = await response.json();
 
         if (response.ok)
@@ -507,14 +518,15 @@ function displayInstance(data)
 
     try
     {
+      let token = localStorage.getItem('token');
       const response = await fetch('http://localhost:5009/Item/CreateInstance', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(requestData)
       });
-
       const result = await response.json();
 
       if (result.statusCode === 201)
@@ -539,8 +551,12 @@ async function refreshTableAssetId()
 {
   try
   {
-    const url = `http://localhost:5009/Item/GetAssetId`;
-    const response = await fetch(url);
+    let token = localStorage.getItem('token');
+    const response = await fetch(`http://localhost:5009/Item/GetAssetId`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      }
+    });
     if (!response.ok)
     {
       throw new Error("Failed to fetch updated data");
@@ -557,8 +573,12 @@ async function refreshTableCategory()
 {
   try
   {
-    const url = `http://localhost:5009/Item/GetCategory`;
-    const response = await fetch(url);
+    let token = localStorage.getItem('token');
+    const response = await fetch(`http://localhost:5009/Item/GetCategory`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      }
+    });
     if (!response.ok)
     {
       throw new Error("Failed to fetch updated data");
@@ -575,8 +595,12 @@ async function refreshTableClassification()
 {
   try
   {
-    const url = `http://localhost:5009/Item/GetClassification`;
-    const response = await fetch(url);
+    let token = localStorage.getItem('token');
+    const response = await fetch(`http://localhost:5009/Item/GetClassification`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      }
+    });
     if (!response.ok)
     {
       throw new Error("Failed to fetch updated data");
@@ -593,8 +617,12 @@ async function refreshTableInstance()
 {
   try
   {
-    const url = `http://localhost:5009/Item/GetInstance`;
-    const response = await fetch(url);
+    let token = localStorage.getItem('token');
+    const response = await fetch(`http://localhost:5009/Item/GetInstance`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      }
+    });
     if (!response.ok)
     {
       throw new Error("Failed to fetch updated data");
@@ -616,7 +644,12 @@ async function editCategoryAction(categoryId)
 
   try
   {
-    const response = await fetch(`http://localhost:5009/Item/GetCategoryById?categoryId=${categoryId}`);
+    let token = localStorage.getItem('token');
+    const response = await fetch(`http://localhost:5009/Item/GetCategoryById?categoryId=${categoryId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      }
+    });
     if (!response.ok)
     {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -645,20 +678,21 @@ async function editCategoryAction(categoryId)
 
     try
     {
+      let token = localStorage.getItem('token');
       const response = await fetch("http://localhost:5009/Item/UpdateCategory", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(payload),
       });
-
       const result = await response.json();
 
       if (response.ok)
       {
         alert(result.message);
-        modal.style.display = "none"; // ปิด Modal
+        modal.style.display = "none"; 
         refreshTableCategory()
       } else
       {
@@ -687,7 +721,12 @@ async function editClassificationAction(classificationId)
 
   try
   {
-    const response = await fetch(`http://localhost:5009/Item/GetClassificationById?classificationId=${classificationId}`);
+    let token = localStorage.getItem('token');
+    const response = await fetch(`http://localhost:5009/Item/GetClassificationById?classificationId=${classificationId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      }
+    });
     if (!response.ok)
     {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -716,14 +755,15 @@ async function editClassificationAction(classificationId)
 
     try
     {
+      let token = localStorage.getItem('token');
       const response = await fetch("http://localhost:5009/Item/UpdateClassification", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(payload),
       });
-
       const result = await response.json();
 
       if (response.ok)
@@ -757,7 +797,12 @@ async function editInstanceAction(instanceId)
 
   try
   {
-    const response = await fetch(`http://localhost:5009/Item/GetInstanceById?instanceId=${instanceId}`);
+    let token = localStorage.getItem('token');
+    const response = await fetch(`http://localhost:5009/Item/GetInstanceById?instanceId=${instanceId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      }
+    });
     if (!response.ok)
     {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -783,14 +828,15 @@ async function editInstanceAction(instanceId)
 
     try
     {
+      let token = localStorage.getItem('token');
       const response = await fetch("http://localhost:5009/Item/UpdateInstance", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(payload),
       });
-
       const result = await response.json();
 
       if (response.ok)
@@ -822,7 +868,12 @@ async function editStatusAction(instanceId)
 
   try
   {
-    const response = await fetch(`http://localhost:5009/Item/GetAssetIdById?instanceId=${instanceId}`);
+    let token = localStorage.getItem('token');
+    const response = await fetch(`http://localhost:5009/Item/GetAssetIdById?instanceId=${instanceId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      }
+    });
     if (!response.ok)
     {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -914,14 +965,15 @@ async function statusClick(status, instanceId)
 
   try
   {
+    let token = localStorage.getItem('token');
     const response = await fetch("http://localhost:5009/Item/SetAssetId", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify(confirmData),
     });
-
     const result = await response.json();
 
     if (response.status == 200)

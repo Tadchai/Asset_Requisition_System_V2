@@ -13,30 +13,17 @@ function ToManageRequestReturnPage()
 function ToLoginPage()
 {
   localStorage.removeItem('token');
+  const logoutUrl = `http://localhost:8080/realms/Requisition/protocol/openid-connect/logout`;
+  window.location.href = logoutUrl;
   window.location.href = "/Frontend/login.html"
-}
-function getResultFromToken()
-{
-  let token = localStorage.getItem('token');
-  if (!token)
-  {
-    alert("กรุณาเข้าสู่ระบบก่อนใช้งาน");
-    return;
-  }
-  const payload = JSON.parse(atob(token.split('.')[1]));
-  console.log(payload);
-  return payload;
 }
 
 document.addEventListener("DOMContentLoaded", async () =>
 {
-  const userData = getResultFromToken()
-  let userId = parseInt(userData.nameid)
-
   try
   {
     let token = localStorage.getItem('token');
-    const response = await fetch(`http://localhost:5009/RequestRequisition/GetUserAsset?requesterId=${userId}`, {
+    const response = await fetch(`http://localhost:5009/RequestRequisition/GetUserAsset`, {
       headers: {
         'Authorization': `Bearer ${token}`,
       }
@@ -58,13 +45,10 @@ document.addEventListener("DOMContentLoaded", async () =>
 
 document.getElementById("nav-held-assets").addEventListener("click", async () =>
 {
-  const userData = getResultFromToken()
-  let userId = parseInt(userData.nameid)
-
   try
   {
     let token = localStorage.getItem('token');
-    const response = await fetch(`http://localhost:5009/RequestRequisition/GetUserAsset?requesterId=${userId}`, {
+    const response = await fetch(`http://localhost:5009/RequestRequisition/GetUserAsset`, {
       headers: {
         'Authorization': `Bearer ${token}`,
       }
@@ -86,13 +70,10 @@ document.getElementById("nav-held-assets").addEventListener("click", async () =>
 
 document.getElementById("nav-held-request").addEventListener("click", async () =>
 {
-  const userData = getResultFromToken()
-  let userId = parseInt(userData.nameid)
-
   try
   {
     let token = localStorage.getItem('token');
-    const response = await fetch(`http://localhost:5009/RequestRequisition/GetRequest?userId=${userId}`, {
+    const response = await fetch(`http://localhost:5009/RequestRequisition/GetRequest`, {
       headers: {
         'Authorization': `Bearer ${token}`,
       }
@@ -113,13 +94,10 @@ document.getElementById("nav-held-request").addEventListener("click", async () =
 });
 document.getElementById("nav-held-Confirm").addEventListener("click", async () =>
 {
-  const userData = getResultFromToken()
-  let userId = parseInt(userData.nameid)
-
   try
   {
     let token = localStorage.getItem('token');
-    const response = await fetch(`http://localhost:5009/RequestRequisition/GetConfirmList?requesterId=${userId}`, {
+    const response = await fetch(`http://localhost:5009/RequestRequisition/GetConfirmList`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -301,11 +279,9 @@ function displayRequest(data)
 
   async function refreshTableAssetList()
   {
-    const userData = getResultFromToken()
-    let userId = parseInt(userData.nameid)
     try
     {
-      const response = await fetch(`http://localhost:5009/RequestRequisition/GetRequest?userId=${userId}`, {
+      const response = await fetch(`http://localhost:5009/RequestRequisition/GetRequest`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         }
@@ -330,7 +306,7 @@ function displayAssets(data)
 {
   const container = document.getElementById("asset-container");
   container.innerHTML =
-    '<div class="table-header">รายการทรัพย์สินที่ถือครอง</div>'; // ล้างข้อมูลเก่าก่อน
+    '<div class="table-header">รายการทรัพย์สินที่ถือครอง</div>'; 
 
   if (data.length === 0)
   {
@@ -338,7 +314,6 @@ function displayAssets(data)
     return;
   }
 
-  // สร้างตาราง
   const table = document.createElement("table");
   table.innerHTML = `
   <thead>
@@ -365,11 +340,9 @@ function displayAssets(data)
   </tbody>
 `;
 
-  // เพิ่มตารางลงใน container
   container.appendChild(table);
 }
 
-// เปิด Modal สำหรับใบคืนทรัพย์สิน
 const openReturnAssetModalBtn = document.getElementById("openReturnAssetModalBtn");
 const returnAssetModal = document.getElementById("returnAssetModal");
 const closeReturnAssetModalBtn = document.getElementById("closeReturnAssetModalBtn");
@@ -378,14 +351,11 @@ openReturnAssetModalBtn.addEventListener("click", async () =>
 {
   returnAssetModal.style.display = "flex";
 
-  // ดึงข้อมูลจาก API
   try
   {
-    const userData = getResultFromToken()
-    let requesterId = parseInt(userData.nameid)
     let token = localStorage.getItem('token');
     const response = await fetch(
-      `http://localhost:5009/RequestRequisition/GetUserAsset?requesterId=${requesterId}`, {
+      `http://localhost:5009/RequestRequisition/GetUserAsset`, {
       headers: {
         'Authorization': `Bearer ${token}`,
       }
@@ -414,23 +384,19 @@ openReturnAssetModalBtn.addEventListener("click", async () =>
   }
 });
 
-// ปิด Modal สำหรับใบคืนทรัพย์สิน
 closeReturnAssetModalBtn.addEventListener("click", () =>
 {
   returnAssetModal.style.display = "none";
 });
 
-// ส่งข้อมูล
 submitReturnBtn.addEventListener('click', async () =>
 {
   const selectedAsset = assetSelect.value;
   const returnMessage = document.getElementById('returnMessage').value;
 
-
-  // เตรียมข้อมูลสำหรับส่งไปยัง API
   const requestData = {
-    InstanceId: parseInt(selectedAsset), // ใช้ InstanceId ที่เลือก
-    ReasonReturn: returnMessage // ข้อความที่ผู้ใช้ใส่
+    InstanceId: parseInt(selectedAsset), 
+    ReasonReturn: returnMessage 
   };
 
   try
@@ -450,7 +416,7 @@ submitReturnBtn.addEventListener('click', async () =>
     if (response.ok)
     {
       alert(result.message || 'ส่งข้อมูลสำเร็จ');
-      modal.style.display = 'none'; // ปิด Modal หลังส่งสำเร็จ
+      modal.style.display = 'none'; 
     } else
     {
       alert(result.message || 'เกิดข้อผิดพลาดในการส่งข้อมูล');
@@ -462,7 +428,6 @@ submitReturnBtn.addEventListener('click', async () =>
   }
 });
 
-// ฟังก์ชันดึงข้อมูลหมวดหมู่จาก API สำหรับใบคำขออนุมัติการเบิก
 async function loadCategoriesRequisition()
 {
   try
@@ -478,9 +443,8 @@ async function loadCategoriesRequisition()
     }
     const data = await response.json();
 
-    // เพิ่มข้อมูลหมวดหมู่ลงใน <select>
     const assetSelectRequisition = document.getElementById("assetSelectRequisition");
-    assetSelectRequisition.innerHTML = '<option value="">-- กรุณาเลือกทรัพย์สิน --</option>'; // ล้างข้อมูลเก่า
+    assetSelectRequisition.innerHTML = '<option value="">-- กรุณาเลือกทรัพย์สิน --</option>'; 
     data.forEach(item =>
     {
       const option = document.createElement("option");
@@ -494,9 +458,6 @@ async function loadCategoriesRequisition()
   }
 }
 
-
-
-// ปิด Modal เมื่อคลิกนอกพื้นที่
 window.addEventListener("click", (event) =>
 {
   if (event.target === returnAssetModal)
@@ -509,13 +470,9 @@ window.addEventListener("click", (event) =>
   }
 });
 
-
-
-
-// ฟังก์ชันสำหรับยืนยันการรับทรัพย์สิน
 async function confirmAction(requestId)
 {
-  const confirmData = { RequestId: requestId }; // เตรียมข้อมูลสำหรับส่งไปยัง API
+  const confirmData = { RequestId: requestId }; 
 
   try
   {
@@ -544,16 +501,12 @@ async function confirmAction(requestId)
   }
 }
 
-// ฟังก์ชันสำหรับรีเฟรชตารางหลังจากยืนยัน
 async function refreshTable()
 {
-  const userData = getResultFromToken()
-  let requesterId = parseInt(userData.nameid)
   try
   {
     let token = localStorage.getItem('token');
-    const url = `http://localhost:5009/RequestRequisition/GetConfirmList?requesterId=${requesterId}`;
-    const response = await fetch(url, {
+    const response = await fetch(`http://localhost:5009/RequestRequisition/GetConfirmList`, {
       headers: {
         'Authorization': `Bearer ${token}`,
       }

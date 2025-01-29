@@ -9,6 +9,8 @@ using System.Text;
 using System.Threading.Tasks;
 using api.Models;
 using api.ViewModels;
+using IdentityModel.Client;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -21,93 +23,53 @@ namespace api.Controllers
     [Route("[controller]/[action]")]
     public class AuthController : ControllerBase
     {
-        private readonly SymmetricSecurityKey _key;
         private readonly EquipmentBorrowingV2Context _context;
-        private readonly IConfiguration _config;
 
-        public AuthController(EquipmentBorrowingV2Context context, IConfiguration configuration)
+        public AuthController(EquipmentBorrowingV2Context context)
         {
             _context = context;
-            _config = configuration;
-            _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JwtSettings:SecretKey"]));
         }
 
-        static string HashPassword(string password, string salt)
+        [HttpGet]
+        public async Task<IActionResult> CheckSubject()
         {
-            using (SHA256 sha256Hash = SHA256.Create())
+            using (var transaction = await _context.Database.BeginTransactionAsync())
             {
-                string passwordWithSalt = password + salt;
-                byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(passwordWithSalt));
-
-                StringBuilder builder = new StringBuilder();
-                foreach (byte b in bytes)
+                try
                 {
-                    builder.Append(b.ToString("x2"));
+                    var subjectFromToken = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                    var checkUser = await _context.Users.SingleOrDefaultAsync(u => u.SubjectId == subjectFromToken);
+                    if (checkUser == null)
+                    {
+                        var usernameFromToken = User.FindFirst("name")?.Value;
+                        var userModal = new User
+                        {
+                            Username = usernameFromToken,
+                            SubjectId = subjectFromToken
+                        };
+
+                        await _context.Users.AddAsync(userModal);
+
+                        await _context.SaveChangesAsync();
+                        await transaction.CommitAsync();
+                        return new JsonResult(new MessageResponse { Message = "User created successfully.", StatusCode = HttpStatusCode.Created });
+                    }
+                    return new JsonResult(new MessageResponse { Message = "User already exists.", StatusCode = HttpStatusCode.OK });
                 }
-                return builder.ToString();
-            }
-        }
-
-        static bool VerifyPassword(string enteredPassword, string storedSalt, string storedHashedPassword)
-        {
-            string hashedPassword = HashPassword(enteredPassword, storedSalt);
-            return hashedPassword == storedHashedPassword;
-        }
-
-        private string GenerateJwtToken(string userId, string username, List<string> roles)
-        {
-            var tokenHandler = new JwtSecurityTokenHandler();
-
-            var claims = new List<Claim>
+                catch (Exception ex)
                 {
-                    new Claim(ClaimTypes.NameIdentifier, userId),
-                     new Claim(ClaimTypes.Name, username)
-                };
-            foreach (var role in roles)
-            {
-                claims.Add(new Claim(ClaimTypes.Role, role));
-            };
+                    await transaction.RollbackAsync();
+                    return new JsonResult(new MessageResponse { Message = $"An error occurred: {ex.Message}", StatusCode = HttpStatusCode.InternalServerError });
+                }
 
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddHours(1),
-                SigningCredentials = new SigningCredentials(_key, SecurityAlgorithms.HmacSha256Signature)
-            };
-
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            return tokenHandler.WriteToken(token);
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> Login([FromBody] LoginUserRequest request)
-        {
-            try
-            {
-                var userModel = await _context.Users.SingleOrDefaultAsync(u => u.Username == request.Username);
-                if (userModel == null)
-                    return BadRequest(new { Message = "Invalid username or password." });
-
-                var verifyResult = VerifyPassword(request.Password, userModel.Salt, userModel.Password);
-                if (!verifyResult)
-                    return BadRequest(new { Message = "Invalid username or password." });
-
-                var roleModal = await (from r in _context.Roles
-                                       join ur in _context.UserRoles on r.RoleId equals ur.RoleId
-                                       where ur.UserId == userModel.UserId
-                                       select  r.RoleName
-                                       ).ToListAsync();
-
-                var token = GenerateJwtToken(userModel.UserId.ToString(), userModel.Username, roleModal);
-
-                return new JsonResult(new MessageResponse {Token = token, Message = "Login successful.", StatusCode = HttpStatusCode.OK });
-            }
-            catch (Exception ex)
-            {
-                return new JsonResult(new MessageResponse { Message = $"An error occurred: {ex.Message}", StatusCode = HttpStatusCode.InternalServerError });
             }
         }
+
+
+
 
 
     }
+
 }

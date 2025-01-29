@@ -1,3 +1,4 @@
+</html>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -5,23 +6,37 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
-    <link rel="stylesheet" type="text/css" href="/Frontend/CSS/login.css">
 </head>
 
 <body>
-    <div id="login-container">
-        <h1>เข้าสู่ระบบ</h1>
-        <form id="login-form">
-            <label for="username">ชื่อผู้ใช้งาน:</label>
-            <input type="text" id="username" name="username" placeholder="กรุณากรอกชื่อผู้ใช้งาน" required>
+    <h1>Welcome</h1>
+    <button id="loginButton">Login</button>
+    <button id="logoutButton">Logout</button>
+    <script>
+        document.getElementById('loginButton').addEventListener('click', () =>
+        {
+            const url = new URL("http://localhost:8080/realms/Requisition/protocol/openid-connect/auth"); 
 
-            <label for="password">รหัสผ่าน:</label>
-            <input type="password" id="password" name="password" placeholder="กรุณากรอกรหัสผ่าน" required>
+            const searchParams = url.searchParams; 
+            searchParams.append("response_type", "code");
+            searchParams.append("client_id", "RequisitionClient");
+            searchParams.append("scope", "openid profile");
+            searchParams.append("redirect_uri", "http://127.0.0.1:5002/Frontend/Callback.html");
 
-            <button type="submit">เข้าสู่ระบบ</button>
-        </form>
-    </div>
+            window.location.href = url.toString();
+        });
+
+        document.getElementById('logoutButton').addEventListener('click', () =>
+        {
+            localStorage.removeItem('token');
+            const url = new URL("http://localhost:8080/realms/Requisition/protocol/openid-connect/logout"); 
+
+            const searchParams = url.searchParams; 
+            searchParams.append("redirect_uri", "http://127.0.0.1:5002/Frontend/login.html");
+
+            window.location.href = url.toString();
+        });
+    </script>
 </body>
-<script src="assets/login.js" defer></script>
 
 </html>

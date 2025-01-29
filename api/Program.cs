@@ -8,7 +8,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<UserFilter>();
+});
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -32,8 +35,6 @@ builder.Services.AddCors(options =>
         });
 });
 
-// ตั้งค่า JWT Authentication
-var key = Encoding.ASCII.GetBytes(builder.Configuration["JwtSettings:SecretKey"]);
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -44,9 +45,6 @@ builder.Services.AddAuthentication(options =>
     options.RequireHttpsMetadata = false;
     options.TokenValidationParameters = new TokenValidationParameters
     {
-        // ValidateIssuerSigningKey = true,
-        // IssuerSigningKey = new SymmetricSecurityKey(key),
-        // ValidateIssuer = false,
         ValidateAudience = false
     };
 });

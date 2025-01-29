@@ -12,7 +12,7 @@ namespace api.Controllers
 {
     [ApiController]
     [Route("[controller]/[action]")]
-    //[Authorize]
+    [Authorize]
     public class ItemController : ControllerBase
     {
         private readonly EquipmentBorrowingV2Context _context;
@@ -309,77 +309,7 @@ namespace api.Controllers
                 }
             }
         }
-
-        [HttpPost]
-        public async Task<IActionResult> DeleteCategory([FromBody] DeleteCategoryRequest request)
-        {
-            using (var transaction = await _context.Database.BeginTransactionAsync())
-            {
-                try
-                {
-                    var categoryModel = await _context.Categories.SingleAsync(c => c.CategoryId == request.CategoryId);
-                    _context.Categories.Remove(categoryModel);
-
-                    await _context.SaveChangesAsync();
-
-                    await transaction.CommitAsync();
-                    return new JsonResult(new MessageResponse { Message = "Category Updated successfully.", StatusCode = HttpStatusCode.Created });
-                }
-                catch (Exception ex)
-                {
-                    await transaction.RollbackAsync();
-                    return new JsonResult(new MessageResponse { Message = $"An error occurred: {ex.Message}", StatusCode = HttpStatusCode.InternalServerError });
-                }
-            }
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> DeleteClassification([FromBody] DeleteClassificationRequest request)
-        {
-            using (var transaction = await _context.Database.BeginTransactionAsync())
-            {
-                try
-                {
-                    var classificationModel = await _context.Classifications.SingleAsync(c => c.ClassificationId == request.ClassificationId);
-                    _context.Classifications.Remove(classificationModel);
-
-                    await _context.SaveChangesAsync();
-
-                    await transaction.CommitAsync();
-                    return new JsonResult(new MessageResponse { Message = "Category Updated successfully.", StatusCode = HttpStatusCode.Created });
-                }
-                catch (Exception ex)
-                {
-                    await transaction.RollbackAsync();
-                    return new JsonResult(new MessageResponse { Message = $"An error occurred: {ex.Message}", StatusCode = HttpStatusCode.InternalServerError });
-                }
-            }
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> DeleteInstance([FromBody] DeleteInstanceRequest request)
-        {
-            using (var transaction = await _context.Database.BeginTransactionAsync())
-            {
-                try
-                {
-                    var instanceModel = await _context.Instances.SingleAsync(c => c.InstanceId == request.InstanceId);
-                    _context.Instances.Remove(instanceModel);
-
-                    await _context.SaveChangesAsync();
-
-                    await transaction.CommitAsync();
-                    return new JsonResult(new MessageResponse { Message = "Category Updated successfully.", StatusCode = HttpStatusCode.Created });
-                }
-                catch (Exception ex)
-                {
-                    await transaction.RollbackAsync();
-                    return new JsonResult(new MessageResponse { Message = $"An error occurred: {ex.Message}", StatusCode = HttpStatusCode.InternalServerError });
-                }
-            }
-        }
         
-
         [HttpGet]
         public async Task<IActionResult> GetAssetId()
         {

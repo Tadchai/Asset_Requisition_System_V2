@@ -13,6 +13,7 @@ namespace api.Controllers
 {
     [ApiController]
     [Route("[controller]/[action]")]
+    [Authorize]
     public class RequestRequisitionController : ControllerBase
     {
         private readonly EquipmentBorrowingV2Context _context;
@@ -25,11 +26,12 @@ namespace api.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateRequest([FromBody] CreateRequisitionRequest request)
         {
-            var userIdFromToken = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             using (var transaction = await _context.Database.BeginTransactionAsync())
             {
                 try
                 {
+                    var userId = User.FindFirst("userId")?.Value;
+
                     var requisitionRequestModel = new RequisitionRequest
                     {
                         CategoryId = request.CategoryId,
@@ -37,7 +39,7 @@ namespace api.Controllers
                         DueDate = request.DueDate,
                         ReasonRequest = request.ReasonRequest,
                         Status = RequestStatus.Pending.ToString(),
-                        RequesterId = int.Parse(userIdFromToken)
+                        RequesterId = int.Parse(userId)
                     };
                     await _context.RequisitionRequests.AddAsync(requisitionRequestModel);
                     await _context.SaveChangesAsync();
@@ -54,15 +56,17 @@ namespace api.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetRequest([FromQuery] int userId)
+        public async Task<IActionResult> GetRequest()
         {
             try
             {
+                var userId = User.FindFirst("userId")?.Value;
+
                 var responses = await (from r in _context.RequisitionRequests
                                        join c in _context.Categories on r.CategoryId equals c.CategoryId
                                        join i in _context.Instances on r.InstanceId equals i.InstanceId into instanceJoin
                                        from i in instanceJoin.DefaultIfEmpty()
-                                       where r.RequesterId == userId
+                                       where r.RequesterId == int.Parse(userId)
                                        select new GetRequestResponse
                                        {
                                            CategoryName = c.Name,
@@ -93,12 +97,14 @@ namespace api.Controllers
             {
                 try
                 {
+                    var responsibleId = User.FindFirst("userId")?.Value;
+
                     var requisitionRequestModel = await _context.RequisitionRequests.SingleAsync(r => r.RequestId == request.RequestId);
                     if (request.Status == RequestStatus.Allocated)
                     {
                         requisitionRequestModel.Status = RequestStatus.Allocated.ToString();
                         requisitionRequestModel.InstanceId = request.InstanceId;
-                        requisitionRequestModel.ResponsibleId = request.ResponsibleId;
+                        requisitionRequestModel.ResponsibleId = int.Parse(responsibleId);
 
                         var instanceModel = await _context.Instances.SingleAsync(i => i.InstanceId == request.InstanceId);
                         instanceModel.RequestId = request.RequestId;
@@ -107,7 +113,7 @@ namespace api.Controllers
                     {
                         requisitionRequestModel.Status = RequestStatus.Rejected.ToString();
                         requisitionRequestModel.ReasonRejected = request.ReasonRejected;
-                        requisitionRequestModel.ResponsibleId = request.ResponsibleId;
+                        requisitionRequestModel.ResponsibleId = int.Parse(responsibleId);
                     }
 
                     await _context.SaveChangesAsync();
@@ -206,15 +212,17 @@ namespace api.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetConfirmList([FromQuery] int requesterId)
+        public async Task<IActionResult> GetConfirmList()
         {
             try
             {
+                var userId = User.FindFirst("userId")?.Value;
+
                 var itemList = await (from r in _context.RequisitionRequests
                                       join i in _context.Instances on r.InstanceId equals i.InstanceId
                                       join cs in _context.Classifications on i.ClassificationId equals cs.ClassificationId
                                       join c in _context.Categories on cs.CategoryId equals c.CategoryId
-                                      where r.RequesterId == requesterId && r.Status == RequestStatus.Allocated.ToString()
+                                      where r.RequesterId == int.Parse(userId) && r.Status == RequestStatus.Allocated.ToString()
                                       select new ConfirmListResponse
                                       {
                                           RequestId = r.RequestId,
@@ -232,17 +240,19 @@ namespace api.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetUserAsset([FromQuery] int requesterId)
+        public async Task<IActionResult> GetUserAsset()
         {
             try
             {
+                var userId = User.FindFirst("userId")?.Value;
+                
                 var itemList = await (from r in _context.RequisitionRequests
                                       join i in _context.Instances on r.InstanceId equals i.InstanceId
                                       join cs in _context.Classifications on i.ClassificationId equals cs.ClassificationId
                                       join c in _context.Categories on cs.CategoryId equals c.CategoryId
                                       join rt in _context.RequisitionReturns on r.RequestId equals rt.RequestId into ReturnJoin
                                       from rt in ReturnJoin.DefaultIfEmpty()
-                                      where r.RequesterId == requesterId && r.Status == RequestStatus.Completed.ToString() && rt.Status != ReturnStatus.Completed.ToString()
+                                      where r.RequesterId == int.Parse(userId) && r.Status == RequestStatus.Completed.ToString() && rt.Status != ReturnStatus.Completed.ToString()
                                       select new AssetListResponse
                                       {
                                           RequestId = r.RequestId,

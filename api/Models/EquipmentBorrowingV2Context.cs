@@ -26,11 +26,7 @@ public partial class EquipmentBorrowingV2Context : DbContext
 
     public virtual DbSet<RequisitionReturn> RequisitionReturns { get; set; }
 
-    public virtual DbSet<Role> Roles { get; set; }
-
     public virtual DbSet<User> Users { get; set; }
-
-    public virtual DbSet<UserRole> UserRoles { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
@@ -120,47 +116,31 @@ public partial class EquipmentBorrowingV2Context : DbContext
         {
             entity.HasKey(e => e.ReturnId).HasName("PRIMARY");
 
+            entity.HasIndex(e => e.RequestId, "FK_RequisitionReturns_RequestId");
+
+            entity.HasIndex(e => e.ResponsibleId, "FK_RequisitionReturns_ResponsibleId");
+
             entity.Property(e => e.ReasonReturn).HasMaxLength(250);
             entity.Property(e => e.Status).HasColumnType("enum('Pending','Completed')");
-        });
 
-        modelBuilder.Entity<Role>(entity =>
-        {
-            entity.HasKey(e => e.RoleId).HasName("PRIMARY");
+            entity.HasOne(d => d.Request).WithMany(p => p.RequisitionReturns)
+                .HasForeignKey(d => d.RequestId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_RequisitionReturns_RequestId");
 
-            entity.Property(e => e.RoleName).HasMaxLength(50);
+            entity.HasOne(d => d.Responsible).WithMany(p => p.RequisitionReturns)
+                .HasForeignKey(d => d.ResponsibleId)
+                .HasConstraintName("FK_RequisitionReturns_ResponsibleId");
         });
 
         modelBuilder.Entity<User>(entity =>
         {
             entity.HasKey(e => e.UserId).HasName("PRIMARY");
 
-            entity.Property(e => e.Password).HasMaxLength(250);
-            entity.Property(e => e.Salt).HasMaxLength(250);
+            entity.Property(e => e.SubjectId).HasMaxLength(50);
             entity.Property(e => e.Username)
                 .HasMaxLength(50)
                 .UseCollation("utf8mb4_bin");
-        });
-
-        modelBuilder.Entity<UserRole>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PRIMARY");
-
-            entity.HasIndex(e => e.RoleId, "FK_UserRole_RoleId");
-
-            entity.HasIndex(e => e.UserId, "FK_UserRole_UserId");
-
-            entity.Property(e => e.Id).HasColumnName("id");
-
-            entity.HasOne(d => d.Role).WithMany(p => p.UserRoles)
-                .HasForeignKey(d => d.RoleId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_UserRole_RoleId");
-
-            entity.HasOne(d => d.User).WithMany(p => p.UserRoles)
-                .HasForeignKey(d => d.UserId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_UserRole_UserId");
         });
 
         OnModelCreatingPartial(modelBuilder);
