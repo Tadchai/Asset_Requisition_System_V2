@@ -12,14 +12,15 @@
     <h1>Welcome</h1>
     <button id="loginButton">Login</button>
     <button id="logoutButton">Logout</button>
-    <script>
+    <script type="module">
+        import { clientId } from './assets/config.js'
         document.getElementById('loginButton').addEventListener('click', () =>
         {
             const url = new URL("http://localhost:8080/realms/Requisition/protocol/openid-connect/auth"); 
 
             const searchParams = url.searchParams; 
             searchParams.append("response_type", "code");
-            searchParams.append("client_id", "RequisitionClient");
+            searchParams.append("client_id", `${clientId}`);
             searchParams.append("scope", "openid profile");
             searchParams.append("redirect_uri", "http://127.0.0.1:5002/Frontend/Callback.html");
 

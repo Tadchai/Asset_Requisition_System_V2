@@ -1,29 +1,31 @@
-function ToManageUserPage()
+import { API_URL } from "/Frontend/assets/config.js";
+
+document.getElementById("ToManageUserPage").addEventListener("click", async () =>
 {
   window.location.href = "/Frontend/ManageUser.html";
-}
-function ToManageAssetInSystemPage()
+});
+document.getElementById("ToManageAssetInSystemPage").addEventListener("click", async () =>
 {
   window.location.href = "/Frontend/ManageAssetInSystem.html"
-}
-function ToManageRequestReturnPage()
+});
+document.getElementById("ToManageRequestReturnPage").addEventListener("click", async () =>
 {
   window.location.href = "/Frontend/ManageRequestReturn.html"
-}
-function ToLoginPage()
+});
+document.getElementById("ToLoginPage").addEventListener("click", async () =>
 {
   localStorage.removeItem('token');
   const logoutUrl = `http://localhost:8080/realms/Requisition/protocol/openid-connect/logout`;
   window.location.href = logoutUrl;
   window.location.href = "/Frontend/login.html"
-}
+});
 
 document.addEventListener("DOMContentLoaded", async () =>
 {
   try
   {
     let token = localStorage.getItem('token');
-    const response = await fetch(`http://localhost:5009/RequestRequisition/GetUserAsset`, {
+    const response = await fetch(`${API_URL}/RequestRequisition/GetUserAsset`, {
       headers: {
         'Authorization': `Bearer ${token}`,
       }
@@ -48,7 +50,7 @@ document.getElementById("nav-held-assets").addEventListener("click", async () =>
   try
   {
     let token = localStorage.getItem('token');
-    const response = await fetch(`http://localhost:5009/RequestRequisition/GetUserAsset`, {
+    const response = await fetch(`${API_URL}/RequestRequisition/GetUserAsset`, {
       headers: {
         'Authorization': `Bearer ${token}`,
       }
@@ -73,7 +75,7 @@ document.getElementById("nav-held-request").addEventListener("click", async () =
   try
   {
     let token = localStorage.getItem('token');
-    const response = await fetch(`http://localhost:5009/RequestRequisition/GetRequest`, {
+    const response = await fetch(`${API_URL}/RequestRequisition/GetRequest`, {
       headers: {
         'Authorization': `Bearer ${token}`,
       }
@@ -97,7 +99,7 @@ document.getElementById("nav-held-Confirm").addEventListener("click", async () =
   try
   {
     let token = localStorage.getItem('token');
-    const response = await fetch(`http://localhost:5009/RequestRequisition/GetConfirmList`, {
+    const response = await fetch(`${API_URL}/RequestRequisition/GetConfirmList`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -251,7 +253,7 @@ function displayRequest(data)
     try
     {
       let token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5009/RequestRequisition/CreateRequest', {
+      const response = await fetch(`${API_URL}/RequestRequisition/CreateRequest`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -269,7 +271,7 @@ function displayRequest(data)
         requisitionModal.style.display = 'none';
       } else
       {
-        alert(result.message);
+        alert(result.message|| "กรอกข้อมูลไม่ครบ");
       }
     } catch (error)
     {
@@ -281,7 +283,7 @@ function displayRequest(data)
   {
     try
     {
-      const response = await fetch(`http://localhost:5009/RequestRequisition/GetRequest`, {
+      const response = await fetch(`${API_URL}/RequestRequisition/GetRequest`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         }
@@ -306,7 +308,7 @@ function displayAssets(data)
 {
   const container = document.getElementById("asset-container");
   container.innerHTML =
-    '<div class="table-header">รายการทรัพย์สินที่ถือครอง</div>'; 
+    '<div class="table-header">รายการทรัพย์สินที่ถือครอง</div>';
 
   if (data.length === 0)
   {
@@ -355,7 +357,7 @@ openReturnAssetModalBtn.addEventListener("click", async () =>
   {
     let token = localStorage.getItem('token');
     const response = await fetch(
-      `http://localhost:5009/RequestRequisition/GetUserAsset`, {
+      `${API_URL}/RequestRequisition/GetUserAsset`, {
       headers: {
         'Authorization': `Bearer ${token}`,
       }
@@ -395,14 +397,14 @@ submitReturnBtn.addEventListener('click', async () =>
   const returnMessage = document.getElementById('returnMessage').value;
 
   const requestData = {
-    InstanceId: parseInt(selectedAsset), 
-    ReasonReturn: returnMessage 
+    InstanceId: parseInt(selectedAsset),
+    ReasonReturn: returnMessage
   };
 
   try
   {
     let token = localStorage.getItem('token');
-    const response = await fetch('http://localhost:5009/ReturnRequisition/CreateReturn', {
+    const response = await fetch(`${API_URL}/ReturnRequisition/CreateReturn`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -413,18 +415,17 @@ submitReturnBtn.addEventListener('click', async () =>
 
     const result = await response.json();
 
-    if (response.ok)
+    if (response.status == 200)
     {
+      returnAssetModal.style.display = 'none';
       alert(result.message || 'ส่งข้อมูลสำเร็จ');
-      modal.style.display = 'none'; 
     } else
     {
-      alert(result.message || 'เกิดข้อผิดพลาดในการส่งข้อมูล');
+      alert(result.message || 'กรอกข้อมูลไม่ครบ');
     }
   } catch (error)
   {
     console.error('Error sending data to API:', error);
-    alert('ไม่สามารถเชื่อมต่อกับ API ได้');
   }
 });
 
@@ -432,7 +433,8 @@ async function loadCategoriesRequisition()
 {
   try
   {
-    const response = await fetch('http://localhost:5009/Item/GetCategory', {
+    let token = localStorage.getItem('token');
+    const response = await fetch(`${API_URL}/Item/GetCategory`, {
       headers: {
         'Authorization': `Bearer ${token}`,
       }
@@ -444,7 +446,7 @@ async function loadCategoriesRequisition()
     const data = await response.json();
 
     const assetSelectRequisition = document.getElementById("assetSelectRequisition");
-    assetSelectRequisition.innerHTML = '<option value="">-- กรุณาเลือกทรัพย์สิน --</option>'; 
+    assetSelectRequisition.innerHTML = '<option value="">-- กรุณาเลือกทรัพย์สิน --</option>';
     data.forEach(item =>
     {
       const option = document.createElement("option");
@@ -472,11 +474,11 @@ window.addEventListener("click", (event) =>
 
 async function confirmAction(requestId)
 {
-  const confirmData = { RequestId: requestId }; 
+  const confirmData = { RequestId: requestId };
 
   try
   {
-    const response = await fetch("http://localhost:5009/RequestRequisition/ConfirmRequest", {
+    const response = await fetch(`${API_URL}/RequestRequisition/ConfirmRequest`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -506,7 +508,7 @@ async function refreshTable()
   try
   {
     let token = localStorage.getItem('token');
-    const response = await fetch(`http://localhost:5009/RequestRequisition/GetConfirmList`, {
+    const response = await fetch(`${API_URL}/RequestRequisition/GetConfirmList`, {
       headers: {
         'Authorization': `Bearer ${token}`,
       }
@@ -527,3 +529,4 @@ async function refreshTable()
   }
 }
 
+window.confirmAction = confirmAction;

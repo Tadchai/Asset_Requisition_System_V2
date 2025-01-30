@@ -252,7 +252,7 @@ namespace api.Controllers
                                       join c in _context.Categories on cs.CategoryId equals c.CategoryId
                                       join rt in _context.RequisitionReturns on r.RequestId equals rt.RequestId into ReturnJoin
                                       from rt in ReturnJoin.DefaultIfEmpty()
-                                      where r.RequesterId == int.Parse(userId) && r.Status == RequestStatus.Completed.ToString() && rt.Status != ReturnStatus.Completed.ToString()
+                                      where r.RequesterId == int.Parse(userId) && i.RequestId == r.RequestId
                                       select new AssetListResponse
                                       {
                                           RequestId = r.RequestId,

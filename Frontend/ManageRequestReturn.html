@@ -21,12 +21,12 @@
 
   <!-- Sidebar -->
   <div class="sidebar">
-    <div class="sidebar-item" onclick="ToManageAssetPage()">จัดการทรัพย์สินที่ถือครอง</div>
-    <div class="sidebar-item" onclick="ToManageUserPage()">จัดการผู้ใช้งานในระบบ</div>
-    <div class="sidebar-item" onclick="ToManageAssetInSystemPage()">จัดการทรัพย์สินในระบบ</div>
+    <div class="sidebar-item" id="ToManageAssetPage">จัดการทรัพย์สินที่ถือครอง</div>
+    <div class="sidebar-item" id="ToManageUserPage">จัดการผู้ใช้งานในระบบ</div>
+    <div class="sidebar-item" id="ToManageAssetInSystemPage">จัดการทรัพย์สินในระบบ</div>
     <div class="sidebar-item">จัดการใบขอเบิก/คืน</div>
     <div class="sidebar-item">ภาพรวมของทรัพย์สิน</div>
-    <div class="sidebar-item" onclick="ToLoginPage()">ออกจากระบบ</div>
+    <div class="sidebar-item" id="ToLoginPage">ออกจากระบบ</div>
   </div>
 
   <!-- New Main Content -->
@@ -97,7 +97,7 @@
     </div>
   </div>
 
-  <script src="assets/ManageRequestReturn.js" defer></script>
+  <script type="module" src="assets/ManageRequestReturn.js" defer></script>
 </body>
 
 </html>

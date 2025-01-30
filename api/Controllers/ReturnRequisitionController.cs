@@ -30,14 +30,19 @@ namespace api.Controllers
             {
                 try
                 {
-                    var userId = User.FindFirst("userId")?.Value;
+                    var requestId = await _context.Instances.Where(i => i.InstanceId == request.InstanceId)
+                                        .Select(i => i.RequestId)
+                                        .SingleAsync();
 
-                    var instanceModel = await _context.Instances.SingleAsync(i => i.InstanceId == request.InstanceId);
+                    var checkRequisitionReturn = await _context.RequisitionReturns.AnyAsync(rt => rt.RequestId == requestId);
+                    if(checkRequisitionReturn) 
+                        return new JsonResult(new MessageResponse { Message = "You have created ReturnAsset before", StatusCode = HttpStatusCode.BadRequest });
+
                     var requisitionReturnModel = new RequisitionReturn
                     {
                         ReasonReturn = request.ReasonReturn,
                         Status = ReturnStatus.Pending.ToString(),
-                        RequestId = int.Parse(userId)
+                        RequestId = requestId.Value
                     };
 
                     await _context.RequisitionReturns.AddAsync(requisitionReturnModel);

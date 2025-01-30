@@ -8,8 +8,8 @@
 </head>
 
 <body>
-    <script>
-        //import script
+    <script type="module">
+        import { clientId, clientSecret, API_URL} from './assets/config.js';
         (async () =>
         {
             try
@@ -18,8 +18,8 @@
                 const code = urlParams.get("code");
 
                 const params = new URLSearchParams();
-                params.append("client_id", "RequisitionClient");
-                params.append("client_secret", "Ua9B9SlffSdh44M3mTk6JkLMvEFv3cyj");
+                params.append("client_id", `${clientId}`);
+                params.append("client_secret", `${clientSecret}`);
                 params.append("grant_type", "authorization_code");
                 params.append("code", code);
                 params.append( "redirect_uri","http://127.0.0.1:5002/Frontend/Callback.html");
@@ -37,7 +37,7 @@
                 localStorage.setItem("token", accessData.access_token);
 
                 const tokenResponse = await fetch(
-                    "http://127.0.0.1:5009/Auth/CheckSubject", {
+                    `${API_URL}/Auth/CheckSubject`, {
                         headers: {
                             'Authorization': `Bearer ${accessData.access_token}`,
                         }

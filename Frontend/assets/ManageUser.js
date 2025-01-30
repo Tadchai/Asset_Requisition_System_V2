@@ -1,40 +1,29 @@
-function ToManageAssetPage()
-{
-    window.location.href = "/Frontend/ManageAsset.html"; // ใส่ URL ของหน้าที่ต้องการไป
-}
+import { API_URL } from "/Frontend/assets/config.js";
 
-function ToManageAssetInSystemPage()
+document.getElementById("ToManageAssetPage").addEventListener("click", async () =>
+{
+    window.location.href = "/Frontend/ManageAsset.html";
+});
+document.getElementById("ToManageAssetInSystemPage").addEventListener("click", async () =>
 {
     window.location.href = "/Frontend/ManageAssetInSystem.html"
-}
-function ToManageRequestReturnPage()
+});
+document.getElementById("ToManageRequestReturnPage").addEventListener("click", async () =>
 {
     window.location.href = "/Frontend/ManageRequestReturn.html"
-}
-function ToLoginPage()
+});
+document.getElementById("ToLoginPage").addEventListener("click", async () =>
 {
     localStorage.removeItem('token');
     window.location.href = "/Frontend/login.html"
-}
-function getResultFromToken()
-{
-    let token = localStorage.getItem('token');
-    if (!token)
-    {
-        alert("กรุณาเข้าสู่ระบบก่อนใช้งาน");
-        return;
-    }
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    console.log(payload);
-    return payload;
-}
+});
 
 document.addEventListener("DOMContentLoaded", async () =>
 {
     try
     {
         let token = localStorage.getItem('token');
-        const response = await fetch(`http://localhost:5009/User/GetUser`, {
+        const response = await fetch(`${API_URL}/User/GetUser`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
             }
@@ -85,7 +74,7 @@ document.getElementById("submitBtn").addEventListener("click", async () =>
     try
     {
         let token = localStorage.getItem('token');
-        const response = await fetch("http://localhost:5009/User/CreateUser", {
+        const response = await fetch(`${API_URL}/User/CreateUser`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -176,7 +165,7 @@ function displayUsers(data)
         try
         {
             let token = localStorage.getItem('token');
-            const response = await fetch("http://localhost:5009/User/UpdateUser", {
+            const response = await fetch(`${API_URL}/User/UpdateUser`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -256,10 +245,8 @@ async function openEditModal(userId)
 
     try
     {
-        const userData = getResultFromToken()
-        let userId = parseInt(userData.nameid)
         let token = localStorage.getItem('token');
-        const response = await fetch(`http://localhost:5009/User/GetUserById?userId=${userId}`, {
+        const response = await fetch(`${API_URL}/User/GetUserById?userId=${userId}`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
             }

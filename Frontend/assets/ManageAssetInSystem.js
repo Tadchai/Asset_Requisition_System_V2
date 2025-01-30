@@ -1,27 +1,29 @@
-function ToManageUserPage()
+import { API_URL } from "/Frontend/assets/config.js";
+
+document.getElementById("ToManageUserPage").addEventListener("click", async () =>
 {
   window.location.href = "/Frontend/ManageUser.html";
-}
-function ToManageAssetPage()
+});
+document.getElementById("ToManageAssetPage").addEventListener("click", async () =>
 {
   window.location.href = "/Frontend/ManageAsset.html"
-}
-function ToManageRequestReturnPage()
+});
+document.getElementById("ToManageRequestReturnPage").addEventListener("click", async () =>
 {
   window.location.href = "/Frontend/ManageRequestReturn.html"
-}
-function ToLoginPage()
+});
+document.getElementById("ToLoginPage").addEventListener("click", async () =>
 {
   localStorage.removeItem('token');
   window.location.href = "/Frontend/login.html"
-}
+});
 
 document.addEventListener("DOMContentLoaded", async () =>
 {
   try
   {
     let token = localStorage.getItem('token');
-    const response = await fetch(`http://localhost:5009/Item/GetAssetId`, {
+    const response = await fetch(`${API_URL}/Item/GetAssetId`, {
       headers: {
         'Authorization': `Bearer ${token}`,
       }
@@ -44,7 +46,7 @@ document.getElementById("AssetSystem").addEventListener("click", async () =>
   try
   {
     let token = localStorage.getItem('token');
-    const response = await fetch(`http://localhost:5009/Item/GetAssetId`, {
+    const response = await fetch(`${API_URL}/Item/GetAssetId`, {
       headers: {
         'Authorization': `Bearer ${token}`,
       }
@@ -67,7 +69,7 @@ document.getElementById("ManageCategory").addEventListener("click", async () =>
   try
   {
     let token = localStorage.getItem('token');
-    const response = await fetch(`http://localhost:5009/Item/GetCategory`, {
+    const response = await fetch(`${API_URL}/Item/GetCategory`, {
       headers: {
         'Authorization': `Bearer ${token}`,
       }
@@ -90,7 +92,7 @@ document.getElementById("ManageClassification").addEventListener("click", async 
   try
   {
     let token = localStorage.getItem('token');
-    const response = await fetch(`http://localhost:5009/Item/GetClassification`, {
+    const response = await fetch(`${API_URL}/Item/GetClassification`, {
       headers: {
         'Authorization': `Bearer ${token}`,
       }
@@ -113,7 +115,7 @@ document.getElementById("ManageInstance").addEventListener("click", async () =>
   try
   {
     let token = localStorage.getItem('token');
-    const response = await fetch(`http://localhost:5009/Item/GetInstance`, {
+    const response = await fetch(`${API_URL}/Item/GetInstance`, {
       headers: {
         'Authorization': `Bearer ${token}`,
       }
@@ -252,19 +254,21 @@ function displayCategory(data)
     try
     {
       let token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5009/Item/CreateCategory', {
+      const response = await fetch(`${API_URL}/Item/CreateCategory`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
-        }
+        },
+        body: JSON.stringify(requestData)
       });
       const result = await response.json();
 
       if (result.statusCode === 201)
       {
-        alert(result.message);
         refreshTableCategory()
+        CategoryModal.style.display = 'none';
+        alert(result.message);
       } else
       {
         alert(result.message || 'เกิดข้อผิดพลาดในการส่งข้อมูล');
@@ -332,7 +336,7 @@ function displayClassification(data)
       try
       {
         let token = localStorage.getItem('token');
-        const response = await fetch(`http://localhost:5009/Item/GetCategory`, {
+        const response = await fetch(`${API_URL}/Item/GetCategory`, {
           headers: {
             'Authorization': `Bearer ${token}`,
           }
@@ -386,7 +390,7 @@ function displayClassification(data)
     try
     {
       let token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5009/Item/CreateClassification', {
+      const response = await fetch(`${API_URL}/Item/CreateClassification`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -398,9 +402,9 @@ function displayClassification(data)
 
       if (result.statusCode === 201)
       {
-        alert(result.message);
         refreshTableClassification()
         ClassificationModal.style.display = 'none';
+        alert(result.message);
       } else
       {
         alert(result.message || 'เกิดข้อผิดพลาดในการส่งข้อมูล');
@@ -467,7 +471,7 @@ function displayInstance(data)
       try
       {
         let token = localStorage.getItem('token');
-        const response = await fetch(`http://localhost:5009/Item/GetClassification`, {
+        const response = await fetch(`${API_URL}/Item/GetClassification`, {
           headers: {
             'Authorization': `Bearer ${token}`,
           }
@@ -519,7 +523,7 @@ function displayInstance(data)
     try
     {
       let token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5009/Item/CreateInstance', {
+      const response = await fetch(`${API_URL}/Item/CreateInstance`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -531,9 +535,9 @@ function displayInstance(data)
 
       if (result.statusCode === 201)
       {
-        alert(result.message);
         refreshTableInstance()
         InstanceModal.style.display = 'none';
+        alert(result.message);
       } else
       {
         alert(result.message || 'เกิดข้อผิดพลาดในการส่งข้อมูล');
@@ -552,7 +556,7 @@ async function refreshTableAssetId()
   try
   {
     let token = localStorage.getItem('token');
-    const response = await fetch(`http://localhost:5009/Item/GetAssetId`, {
+    const response = await fetch(`${API_URL}/Item/GetAssetId`, {
       headers: {
         'Authorization': `Bearer ${token}`,
       }
@@ -574,7 +578,7 @@ async function refreshTableCategory()
   try
   {
     let token = localStorage.getItem('token');
-    const response = await fetch(`http://localhost:5009/Item/GetCategory`, {
+    const response = await fetch(`${API_URL}/Item/GetCategory`, {
       headers: {
         'Authorization': `Bearer ${token}`,
       }
@@ -596,7 +600,7 @@ async function refreshTableClassification()
   try
   {
     let token = localStorage.getItem('token');
-    const response = await fetch(`http://localhost:5009/Item/GetClassification`, {
+    const response = await fetch(`${API_URL}/Item/GetClassification`, {
       headers: {
         'Authorization': `Bearer ${token}`,
       }
@@ -618,7 +622,7 @@ async function refreshTableInstance()
   try
   {
     let token = localStorage.getItem('token');
-    const response = await fetch(`http://localhost:5009/Item/GetInstance`, {
+    const response = await fetch(`${API_URL}/Item/GetInstance`, {
       headers: {
         'Authorization': `Bearer ${token}`,
       }
@@ -645,7 +649,7 @@ async function editCategoryAction(categoryId)
   try
   {
     let token = localStorage.getItem('token');
-    const response = await fetch(`http://localhost:5009/Item/GetCategoryById?categoryId=${categoryId}`, {
+    const response = await fetch(`${API_URL}/Item/GetCategoryById?categoryId=${categoryId}`, {
       headers: {
         'Authorization': `Bearer ${token}`,
       }
@@ -679,7 +683,7 @@ async function editCategoryAction(categoryId)
     try
     {
       let token = localStorage.getItem('token');
-      const response = await fetch("http://localhost:5009/Item/UpdateCategory", {
+      const response = await fetch(`${API_URL}/Item/UpdateCategory`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -692,7 +696,7 @@ async function editCategoryAction(categoryId)
       if (response.ok)
       {
         alert(result.message);
-        modal.style.display = "none"; 
+        modal.style.display = "none";
         refreshTableCategory()
       } else
       {
@@ -722,7 +726,7 @@ async function editClassificationAction(classificationId)
   try
   {
     let token = localStorage.getItem('token');
-    const response = await fetch(`http://localhost:5009/Item/GetClassificationById?classificationId=${classificationId}`, {
+    const response = await fetch(`${API_URL}/Item/GetClassificationById?classificationId=${classificationId}`, {
       headers: {
         'Authorization': `Bearer ${token}`,
       }
@@ -756,7 +760,7 @@ async function editClassificationAction(classificationId)
     try
     {
       let token = localStorage.getItem('token');
-      const response = await fetch("http://localhost:5009/Item/UpdateClassification", {
+      const response = await fetch(`${API_URL}/Item/UpdateClassification`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -798,7 +802,7 @@ async function editInstanceAction(instanceId)
   try
   {
     let token = localStorage.getItem('token');
-    const response = await fetch(`http://localhost:5009/Item/GetInstanceById?instanceId=${instanceId}`, {
+    const response = await fetch(`${API_URL}/Item/GetInstanceById?instanceId=${instanceId}`, {
       headers: {
         'Authorization': `Bearer ${token}`,
       }
@@ -829,7 +833,7 @@ async function editInstanceAction(instanceId)
     try
     {
       let token = localStorage.getItem('token');
-      const response = await fetch("http://localhost:5009/Item/UpdateInstance", {
+      const response = await fetch(`${API_URL}/Item/UpdateInstance`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -861,6 +865,8 @@ document.getElementById("closeEditInstanceModal").addEventListener("click", () =
   InstanceEditModal.style.display = "none";
 });
 
+let usernameValue;
+
 async function editStatusAction(instanceId)
 {
   const modal = document.getElementById("AssetModal");
@@ -869,7 +875,7 @@ async function editStatusAction(instanceId)
   try
   {
     let token = localStorage.getItem('token');
-    const response = await fetch(`http://localhost:5009/Item/GetAssetIdById?instanceId=${instanceId}`, {
+    const response = await fetch(`${API_URL}/Item/GetAssetIdById?instanceId=${instanceId}`, {
       headers: {
         'Authorization': `Bearer ${token}`,
       }
@@ -966,7 +972,7 @@ async function statusClick(status, instanceId)
   try
   {
     let token = localStorage.getItem('token');
-    const response = await fetch("http://localhost:5009/Item/SetAssetId", {
+    const response = await fetch(`${API_URL}/Item/SetAssetId`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -991,3 +997,8 @@ async function statusClick(status, instanceId)
     alert("ไม่สามารถเชื่อมต่อกับ API ได้");
   }
 }
+
+window.editStatusAction = editStatusAction;
+window.editCategoryAction = editCategoryAction;
+window.editClassificationAction = editClassificationAction;
+window.editInstanceAction = editInstanceAction

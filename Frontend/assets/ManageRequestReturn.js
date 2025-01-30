@@ -1,20 +1,22 @@
-function ToManageUserPage()
+import { API_URL } from "/Frontend/assets/config.js";
+
+document.getElementById("ToManageUserPage").addEventListener("click", async () =>
 {
   window.location.href = "/Frontend/ManageUser.html";
-}
-function ToManageAssetInSystemPage()
+});
+document.getElementById("ToManageAssetInSystemPage").addEventListener("click", async () =>
 {
   window.location.href = "/Frontend/ManageAssetInSystem.html"
-}
-function ToManageAssetPage()
+});
+document.getElementById("ToManageAssetPage").addEventListener("click", async () =>
 {
   window.location.href = "/Frontend/ManageAsset.html"
-}
-function ToLoginPage()
+});
+document.getElementById("ToLoginPage").addEventListener("click", async () =>
 {
-    localStorage.removeItem('token');
-    window.location.href = "/Frontend/login.html"
-}
+  localStorage.removeItem('token');
+  window.location.href = "/Frontend/login.html"
+});
 
 document.addEventListener("DOMContentLoaded", async () =>
 {
@@ -45,7 +47,7 @@ document.getElementById("RequestList").addEventListener("click", async () =>
   try
   {
     let token = localStorage.getItem('token');
-    const response = await fetch(`http://localhost:5009/RequestRequisition/GetRequestList`, {
+    const response = await fetch(`${API_URL}/RequestRequisition/GetRequestList`, {
       headers: {
         'Authorization': `Bearer ${token}`,
       }
@@ -68,7 +70,7 @@ document.getElementById("ReturnList").addEventListener("click", async () =>
   try
   {
     let token = localStorage.getItem('token');
-    const response = await fetch(`http://localhost:5009/ReturnRequisition/GetReturnList`, {
+    const response = await fetch(`${API_URL}/ReturnRequisition/GetReturnList`, {
       headers: {
         'Authorization': `Bearer ${token}`,
       }
@@ -207,17 +209,17 @@ async function fetchAssetData()
     document.getElementById("single-view").style.display = "none"
     let token = localStorage.getItem('token');
     const [pendingData, allocatedData, returnedData] = await Promise.all([
-      fetch('http://localhost:5009/RequestRequisition/GetPendingRequest', {
+      fetch(`${API_URL}/RequestRequisition/GetPendingRequest`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         }
       }).then(res => res.json()),
-      fetch('http://localhost:5009/RequestRequisition/GetAllocatedRequest', {
+      fetch(`${API_URL}/RequestRequisition/GetAllocatedRequest`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         }
       }).then(res => res.json()),
-      fetch('http://localhost:5009/ReturnRequisition/GetPendingReturn', {
+      fetch(`${API_URL}/ReturnRequisition/GetPendingReturn`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         }
@@ -326,11 +328,8 @@ async function confirmAction(returnId, instanceId)
   {
     return;
   }
-  const userData = getResultFromToken()
-  let userId = parseInt(userData.nameid)
 
   const data = {
-    ResponsibleId: userId,
     ReturnId: returnId,
     InstanceId: instanceId
   };
@@ -338,7 +337,7 @@ async function confirmAction(returnId, instanceId)
   try
   {
     let token = localStorage.getItem('token');
-    const response = await fetch("http://localhost:5009/ReturnRequisition/ConfirmReturn", {
+    const response = await fetch(`${API_URL}/ReturnRequisition/ConfirmReturn`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -369,7 +368,7 @@ async function refreshTableReturn()
   try
   {
     let token = localStorage.getItem('token');
-    const response = await fetch(`http://localhost:5009/ReturnRequisition/GetReturnList`, {
+    const response = await fetch(`${API_URL}/ReturnRequisition/GetReturnList`, {
       headers: {
         'Authorization': `Bearer ${token}`,
       }
@@ -390,7 +389,7 @@ async function refreshTableRequest()
   try
   {
     let token = localStorage.getItem('token');
-    const response = await fetch(`http://localhost:5009/RequestRequisition/GetRequestList`, {
+    const response = await fetch(`${API_URL}/RequestRequisition/GetRequestList`, {
       headers: {
         'Authorization': `Bearer ${token}`,
       }
@@ -414,7 +413,7 @@ async function confirmRequestAction(requestId)
   try
   {
     let token = localStorage.getItem('token');
-    const response = await fetch(`http://localhost:5009/RequestRequisition/GetRequestListById?requestId=${requestId}`, {
+    const response = await fetch(`${API_URL}/RequestRequisition/GetRequestListById?requestId=${requestId}`, {
       headers: {
         'Authorization': `Bearer ${token}`,
       }
@@ -480,7 +479,7 @@ async function loadAssets()
   try
   {
     let token = localStorage.getItem('token');
-    const response = await fetch("http://localhost:5009/Item/GetFreeInstance", {
+    const response = await fetch(`${API_URL}/Item/GetFreeInstance`, {
       headers: {
         'Authorization': `Bearer ${token}`,
       }
@@ -510,21 +509,18 @@ async function submitDecision()
   const decision = document.getElementById("decisionSelect").value;
   const selectedAsset = document.getElementById("assetSelectRequisition").value;
   const rejectReason = document.getElementById("rejectReasonInput").value;
-  const userData = getResultFromToken()
-  let userId = parseInt(userData.nameid)
 
   const data = {
     RequestId: requestId,
     Status: parseInt(decision),
     InstanceId: decision === "1" ? selectedAsset : null,
-    ReasonRejected: decision === "2" ? rejectReason : null,
-    ResponsibleId: userId
+    ReasonRejected: decision === "2" ? rejectReason : null
   };
 
   try
   {
     let token = localStorage.getItem('token');
-    const response = await fetch("http://localhost:5009/RequestRequisition/SetRequest", {
+    const response = await fetch(`${API_URL}/RequestRequisition/SetRequest`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -549,3 +545,8 @@ async function submitDecision()
     alert("ไม่สามารถเชื่อมต่อกับ API ได้");
   }
 }
+
+window.confirmRequestAction = confirmRequestAction;
+window.handleDecisionChange = handleDecisionChange;submitDecision
+window.submitDecision = submitDecision;
+window.confirmAction = confirmAction;
