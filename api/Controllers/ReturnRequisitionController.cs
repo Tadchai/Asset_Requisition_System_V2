@@ -41,7 +41,7 @@ namespace api.Controllers
                     var requisitionReturnModel = new RequisitionReturn
                     {
                         ReasonReturn = request.ReasonReturn,
-                        Status = ReturnStatus.Pending.ToString(),
+                        Status = (int)ReturnStatus.Pending,
                         RequestId = requestId.Value
                     };
 
@@ -89,7 +89,7 @@ namespace api.Controllers
                                                  InstanceId = z.InstanceId,
                                                  ReturnId = rt.ReturnId
                                              })
-                                             .OrderBy(rt => rt.Status != ReturnStatus.Pending.ToString())
+                                             .OrderBy(rt => rt.Status != (int)ReturnStatus.Pending)
                                              .ToListAsync();
 
                 return new JsonResult(ReturnAssetList);
@@ -113,7 +113,7 @@ namespace api.Controllers
                     instanceModel.RequestId = null;
 
                     var requisitionReturnModel = await _context.RequisitionReturns.SingleAsync(rt => rt.ReturnId == request.ReturnId);
-                    requisitionReturnModel.Status = ReturnStatus.Completed.ToString();
+                    requisitionReturnModel.Status = (int)ReturnStatus.Completed;
                     requisitionReturnModel.ResponsibleId = int.Parse(responsibleId);
 
                     await _context.SaveChangesAsync();
@@ -147,7 +147,7 @@ namespace api.Controllers
                                                          } on rq.InstanceId equals z.InstanceId into zJoin
                                                from z in zJoin.DefaultIfEmpty()
                                                join u in _context.Users on rq.RequesterId equals u.UserId
-                                               where rt.Status == ReturnStatus.Pending.ToString()
+                                               where rt.Status == (int)ReturnStatus.Pending
                                                select new GetReturnAssetListResponse
                                                {
                                                    Username = u.Username,

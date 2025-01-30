@@ -1,4 +1,4 @@
-import { API_URL } from "/Frontend/assets/config.js";
+import { API_URL, RequestStatus } from "/Frontend/assets/config.js";
 
 document.getElementById("ToManageUserPage").addEventListener("click", async () =>
 {
@@ -204,7 +204,7 @@ function displayRequest(data)
             <td>${item.requirement}</td>
             <td>${item.dueDate}</td>
             <td>${item.reasonRequest}</td>
-            <td>${item.status}</td>
+            <td>${RequestStatus[item.status] || '-'}</td>
             <td>${item.assetId || '-'}</td>
             <td>${item.reasonRejected || '-'}</td>
           </tr>
@@ -213,7 +213,6 @@ function displayRequest(data)
       .join("")}
       </tbody>
     `;
-
   // เพิ่มตารางลงใน container
   container.appendChild(table);
 

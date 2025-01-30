@@ -1,4 +1,4 @@
-import { API_URL } from "/Frontend/assets/config.js";
+import { API_URL , AssetIdStatus } from "/Frontend/assets/config.js";
 
 document.getElementById("ToManageUserPage").addEventListener("click", async () =>
 {
@@ -169,7 +169,7 @@ function displayAssetId(data)
             <td>${item.classificationName}</td>
             <td>${item.assetId}</td>
             <td>${item.username || '-'}</td>
-            <td>${item.status}</td>
+            <td>${AssetIdStatus[item.status] || '-'}</td>
             <td><button class="btn-confirm" onclick="editStatusAction(${item.instanceId})">แก้ไข</button></td>
           </tr>
         `

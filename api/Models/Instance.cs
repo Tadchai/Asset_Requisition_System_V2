@@ -9,7 +9,7 @@ public partial class Instance
 
     public string AssetId { get; set; } = null!;
 
-    public string Status { get; set; } = null!;
+    public int Status { get; set; }
 
     public int ClassificationId { get; set; }
 

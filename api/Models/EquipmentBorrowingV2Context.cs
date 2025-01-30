@@ -68,7 +68,6 @@ public partial class EquipmentBorrowingV2Context : DbContext
             entity.HasIndex(e => e.ClassificationId, "FK_Instances_ClassificationId");
 
             entity.Property(e => e.AssetId).HasMaxLength(50);
-            entity.Property(e => e.Status).HasColumnType("enum('Available','EndOfLife','Missing')");
 
             entity.HasOne(d => d.Classification).WithMany(p => p.Instances)
                 .HasForeignKey(d => d.ClassificationId)
@@ -91,7 +90,6 @@ public partial class EquipmentBorrowingV2Context : DbContext
             entity.Property(e => e.ReasonRejected).HasMaxLength(250);
             entity.Property(e => e.ReasonRequest).HasMaxLength(250);
             entity.Property(e => e.Requirement).HasMaxLength(250);
-            entity.Property(e => e.Status).HasColumnType("enum('Pending','Allocated','Rejected','Completed')");
 
             entity.HasOne(d => d.Category).WithMany(p => p.RequisitionRequests)
                 .HasForeignKey(d => d.CategoryId)
@@ -121,7 +119,6 @@ public partial class EquipmentBorrowingV2Context : DbContext
             entity.HasIndex(e => e.ResponsibleId, "FK_RequisitionReturns_ResponsibleId");
 
             entity.Property(e => e.ReasonReturn).HasMaxLength(250);
-            entity.Property(e => e.Status).HasColumnType("enum('Pending','Completed')");
 
             entity.HasOne(d => d.Request).WithMany(p => p.RequisitionReturns)
                 .HasForeignKey(d => d.RequestId)

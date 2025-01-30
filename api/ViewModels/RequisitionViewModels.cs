@@ -31,7 +31,7 @@ namespace api.ViewModels
         public string Requirement { get; set; }
         public DateOnly DueDate { get; set; }
         public string ReasonRequest { get; set; }
-        public string Status { get; set; }
+        public int Status { get; set; }
         public string? AssetId { get; set; }
         public string? ReasonRejected { get; set; }
     }
@@ -51,7 +51,7 @@ namespace api.ViewModels
         public string Requirement { get; set; }
         public DateOnly DueDate { get; set; }
         public string ReasonRequest { get; set; }
-        public string Status { get; set; }
+        public int Status { get; set; }
         public int RequestId { get; set; }
     }
 
@@ -90,7 +90,7 @@ namespace api.ViewModels
         public string ClassificationName{ get; set; }
         public string AssetId { get; set; }
         public string ReasonReturn { get; set; }
-        public string Status { get; set; }
+        public int Status { get; set; }
         public int InstanceId { get; set;}
         public int ReturnId { get; set; }
     }

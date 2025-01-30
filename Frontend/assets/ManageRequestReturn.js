@@ -1,4 +1,4 @@
-import { API_URL } from "/Frontend/assets/config.js";
+import { API_URL, RequestStatus, ReturnStatus } from "/Frontend/assets/config.js";
 
 document.getElementById("ToManageUserPage").addEventListener("click", async () =>
 {
@@ -128,9 +128,9 @@ function displayRequestList(data)
               <td>${item.requirement}</td>
               <td>${item.dueDate}</td>
               <td>${item.reasonRequest}</td>
-              <td>${item.status}</td>
+              <td>${RequestStatus[item.status]}</td>
               <td>
-                ${item.status === "Pending"
+                ${RequestStatus[item.status] === RequestStatus[0]
             ? `<button class="btn-confirm" onclick="confirmRequestAction(${item.requestId})">แก้ไข</button>`
             : ""
           }
@@ -184,9 +184,9 @@ function displayReturnList(data)
               <td>${item.classificationName}</td>
               <td>${item.assetId}</td>
               <td>${item.reasonReturn}</td>
-              <td>${item.status}</td>
+              <td>${ReturnStatus[item.status]}</td>
               <td>
-                ${item.status === "Pending"
+                ${ReturnStatus[item.status] === ReturnStatus[0]
             ? `<button class="btn-confirm" onclick="confirmAction('${item.returnId}', '${item.instanceId}')">ยืนยัน</button>`
             : ""
           }

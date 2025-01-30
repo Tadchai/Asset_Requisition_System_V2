@@ -15,7 +15,7 @@ public partial class RequisitionRequest
 
     public string ReasonRequest { get; set; } = null!;
 
-    public string Status { get; set; } = null!;
+    public int Status { get; set; }
 
     public int? InstanceId { get; set; }
 

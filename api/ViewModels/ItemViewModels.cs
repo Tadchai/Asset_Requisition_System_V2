@@ -97,7 +97,7 @@ namespace api.ViewModels
         public string AssetId { get; set; }
         public string Username { get; set; }
         public int InstanceId { get; set; }
-        public string Status { get; set; }
+        public int Status { get; set; }
     }
 
     public class SetAssetIdRequest

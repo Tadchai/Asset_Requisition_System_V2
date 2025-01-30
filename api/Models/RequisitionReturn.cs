@@ -9,7 +9,7 @@ public partial class RequisitionReturn
 
     public string ReasonReturn { get; set; } = null!;
 
-    public string Status { get; set; } = null!;
+    public int Status { get; set; }
 
     public int RequestId { get; set; }
 

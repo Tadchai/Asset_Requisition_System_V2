@@ -222,7 +222,7 @@ namespace api.Controllers
                     var instanceModel = new Instance
                     {
                         AssetId = request.AssetId,
-                        Status = InstanceStatus.Available.ToString(),
+                        Status = (int)InstanceStatus.Available,
                         ClassificationId = request.ClassificationId
                     };
                     await _context.Instances.AddAsync(instanceModel);
@@ -335,7 +335,7 @@ namespace api.Controllers
                                              Status = i.Status,
                                              InstanceId = i.InstanceId
                                          })
-                                         .OrderBy(i => i.Status != InstanceStatus.Available.ToString())
+                                         .OrderBy(i => i.Status != (int)InstanceStatus.Available)
                                          .ToListAsync();
 
                 return new JsonResult(AssetIdList);
@@ -395,17 +395,17 @@ namespace api.Controllers
                     {
                         if (instanceModel.RequestId != null)
                             return new JsonResult(new MessageResponse { Message = "Unreturned items cannot be set.", StatusCode = HttpStatusCode.BadRequest });
-                        instanceModel.Status = InstanceStatus.EndOfLife.ToString();
+                        instanceModel.Status = (int)InstanceStatus.EndOfLife;
                     }
                     else if (request.Status == InstanceStatus.Missing)
                     {
-                        instanceModel.Status = InstanceStatus.Missing.ToString();
+                        instanceModel.Status = (int)InstanceStatus.Missing;
                     }
                     else
                     {
                         var checkRequestCompleted = await (from i in _context.Instances
                                                             join r in _context.RequisitionRequests on i.RequestId equals r.RequestId
-                                                            where r.Status == RequestStatus.Allocated.ToString() && i.InstanceId == request.InstanceId
+                                                            where r.Status == (int)RequestStatus.Allocated && i.InstanceId == request.InstanceId
                                                             select i)
                                                             .AnyAsync();
                         if (checkRequestCompleted)
@@ -434,7 +434,7 @@ namespace api.Controllers
                 var instanceList = await (from i in _context.Instances
                                           join cs in _context.Classifications on i.ClassificationId equals cs.ClassificationId
                                           join c in _context.Categories on cs.CategoryId equals c.CategoryId
-                                          where i.RequestId == null && i.Status == InstanceStatus.Available.ToString()
+                                          where i.RequestId == null && i.Status == (int)InstanceStatus.Available
                                           select new InstanceResponse
                                           {
                                               InstanceId = i.InstanceId,

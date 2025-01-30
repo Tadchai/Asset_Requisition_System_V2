@@ -38,7 +38,7 @@ namespace api.Controllers
                         Requirement = request.Requirement,
                         DueDate = request.DueDate,
                         ReasonRequest = request.ReasonRequest,
-                        Status = RequestStatus.Pending.ToString(),
+                        Status = (int)RequestStatus.Pending,
                         RequesterId = int.Parse(userId)
                     };
                     await _context.RequisitionRequests.AddAsync(requisitionRequestModel);
@@ -77,9 +77,9 @@ namespace api.Controllers
                                            AssetId = i.AssetId,
                                            ReasonRejected = r.ReasonRejected,
                                        })
-                                       .OrderBy(r => r.Status != RequestStatus.Pending.ToString())
-                                       .ThenBy(r => r.Status != RequestStatus.Allocated.ToString())
-                                       .ThenBy(r => r.Status != RequestStatus.Rejected.ToString())
+                                       .OrderBy(r => r.Status != (int)RequestStatus.Pending)
+                                       .ThenBy(r => r.Status != (int)RequestStatus.Allocated)
+                                       .ThenBy(r => r.Status != (int)RequestStatus.Rejected)
                                        .ToListAsync();
 
                 return new JsonResult(responses);
@@ -102,7 +102,7 @@ namespace api.Controllers
                     var requisitionRequestModel = await _context.RequisitionRequests.SingleAsync(r => r.RequestId == request.RequestId);
                     if (request.Status == RequestStatus.Allocated)
                     {
-                        requisitionRequestModel.Status = RequestStatus.Allocated.ToString();
+                        requisitionRequestModel.Status = (int)RequestStatus.Allocated;
                         requisitionRequestModel.InstanceId = request.InstanceId;
                         requisitionRequestModel.ResponsibleId = int.Parse(responsibleId);
 
@@ -111,7 +111,7 @@ namespace api.Controllers
                     }
                     else
                     {
-                        requisitionRequestModel.Status = RequestStatus.Rejected.ToString();
+                        requisitionRequestModel.Status = (int)RequestStatus.Rejected;
                         requisitionRequestModel.ReasonRejected = request.ReasonRejected;
                         requisitionRequestModel.ResponsibleId = int.Parse(responsibleId);
                     }
@@ -147,7 +147,7 @@ namespace api.Controllers
                                              Status = r.Status,
                                              RequestId = r.RequestId
                                          })
-                                        .OrderBy(it => it.Status != RequestStatus.Pending.ToString())
+                                        .OrderBy(it => it.Status != (int)RequestStatus.Pending)
                                         .ThenBy(it => it.DueDate)
                                         .ToListAsync();
 
@@ -196,7 +196,7 @@ namespace api.Controllers
                 try
                 {
                     var requisitionRequestModel = await _context.RequisitionRequests.SingleAsync(r => r.RequestId == request.RequestId);
-                    requisitionRequestModel.Status = RequestStatus.Completed.ToString();
+                    requisitionRequestModel.Status = (int)RequestStatus.Completed;
 
                     await _context.SaveChangesAsync();
 
@@ -222,7 +222,7 @@ namespace api.Controllers
                                       join i in _context.Instances on r.InstanceId equals i.InstanceId
                                       join cs in _context.Classifications on i.ClassificationId equals cs.ClassificationId
                                       join c in _context.Categories on cs.CategoryId equals c.CategoryId
-                                      where r.RequesterId == int.Parse(userId) && r.Status == RequestStatus.Allocated.ToString()
+                                      where r.RequesterId == int.Parse(userId) && r.Status == (int)RequestStatus.Allocated
                                       select new ConfirmListResponse
                                       {
                                           RequestId = r.RequestId,
@@ -252,7 +252,7 @@ namespace api.Controllers
                                       join c in _context.Categories on cs.CategoryId equals c.CategoryId
                                       join rt in _context.RequisitionReturns on r.RequestId equals rt.RequestId into ReturnJoin
                                       from rt in ReturnJoin.DefaultIfEmpty()
-                                      where r.RequesterId == int.Parse(userId) && i.RequestId == r.RequestId && r.Status == RequestStatus.Completed.ToString()
+                                      where r.RequesterId == int.Parse(userId) && i.RequestId == r.RequestId && r.Status == (int)RequestStatus.Completed
                                       select new AssetListResponse
                                       {
                                           RequestId = r.RequestId,
@@ -278,7 +278,7 @@ namespace api.Controllers
                 var requestList = await (from r in _context.RequisitionRequests
                                          join u in _context.Users on r.RequesterId equals u.UserId
                                          join c in _context.Categories on r.CategoryId equals c.CategoryId
-                                         where r.Status == RequestStatus.Pending.ToString()
+                                         where r.Status == (int)RequestStatus.Pending
                                          select new GetRequestListResponse
                                          {
                                              Username = u.Username,
@@ -308,7 +308,7 @@ namespace api.Controllers
                 var requestList = await (from r in _context.RequisitionRequests
                                          join u in _context.Users on r.RequesterId equals u.UserId
                                          join c in _context.Categories on r.CategoryId equals c.CategoryId
-                                         where r.Status == RequestStatus.Allocated.ToString()
+                                         where r.Status == (int)RequestStatus.Allocated
                                          select new GetRequestListResponse
                                          {
                                              Username = u.Username,
