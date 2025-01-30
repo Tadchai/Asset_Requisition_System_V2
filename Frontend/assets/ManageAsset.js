@@ -264,11 +264,11 @@ function displayRequest(data)
 
       const result = await response.json();
 
-      if (response.status == 201)
+      if (result.statusCode == 201)
       {
-        alert(result.message);
         refreshTableAssetList()
         requisitionModal.style.display = 'none';
+        alert(result.message);
       } else
       {
         alert(result.message|| "กรอกข้อมูลไม่ครบ");
@@ -283,6 +283,7 @@ function displayRequest(data)
   {
     try
     {
+      let token = localStorage.getItem('token');
       const response = await fetch(`${API_URL}/RequestRequisition/GetRequest`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -478,10 +479,12 @@ async function confirmAction(requestId)
 
   try
   {
+    let token = localStorage.getItem('token');
     const response = await fetch(`${API_URL}/RequestRequisition/ConfirmRequest`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        'Authorization': `Bearer ${token}`,
       },
       body: JSON.stringify(confirmData),
     });

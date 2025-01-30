@@ -309,7 +309,7 @@ namespace api.Controllers
                 }
             }
         }
-        
+
         [HttpGet]
         public async Task<IActionResult> GetAssetId()
         {
@@ -403,6 +403,14 @@ namespace api.Controllers
                     }
                     else
                     {
+                        var checkRequestCompleted = await (from i in _context.Instances
+                                                            join r in _context.RequisitionRequests on i.RequestId equals r.RequestId
+                                                            where r.Status == RequestStatus.Allocated.ToString() && i.InstanceId == request.InstanceId
+                                                            select i)
+                                                            .AnyAsync();
+                        if (checkRequestCompleted)
+                            return new JsonResult(new MessageResponse { Message = "Request not Completed, Cannot recall Asset", StatusCode = HttpStatusCode.BadRequest });
+
                         instanceModel.RequestId = null;
                     }
 
