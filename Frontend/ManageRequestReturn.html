@@ -22,7 +22,6 @@
   <!-- Sidebar -->
   <div class="sidebar">
     <div class="sidebar-item" id="ToManageAssetPage">จัดการทรัพย์สินที่ถือครอง</div>
-    <div class="sidebar-item" id="ToManageUserPage">จัดการผู้ใช้งานในระบบ</div>
     <div class="sidebar-item" id="ToManageAssetInSystemPage">จัดการทรัพย์สินในระบบ</div>
     <div class="sidebar-item">จัดการใบขอเบิก/คืน</div>
     <div class="sidebar-item">ภาพรวมของทรัพย์สิน</div>
@@ -54,6 +53,12 @@
     <div id="asset-container" class="asset-container-2">
       <!-- ข้อมูลทรัพย์สินทั้งหมดจะถูกแสดงที่นี่ -->
     </div>
+  </div>
+
+  <div class="pagination-footer" id="footer">
+    <button id="prevBtn" onclick="changePage(-1)" disabled>⬅️ย้อนกลับ</button>
+    <span id="RowCountDisplay"></span>
+    <button id="nextBtn" onclick="changePage(1)">ถัดไป➡️</button>
   </div>
 
   <div id="RequestModal" class="modal">

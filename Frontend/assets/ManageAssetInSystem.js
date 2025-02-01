@@ -1,9 +1,5 @@
-import { API_URL , AssetIdStatus } from "/Frontend/assets/config.js";
+import { API_URL, AssetIdStatus } from "/Frontend/assets/config.js";
 
-document.getElementById("ToManageUserPage").addEventListener("click", async () =>
-{
-  window.location.href = "/Frontend/ManageUser.html";
-});
 document.getElementById("ToManageAssetPage").addEventListener("click", async () =>
 {
   window.location.href = "/Frontend/ManageAsset.html"
@@ -20,129 +16,193 @@ document.getElementById("ToLoginPage").addEventListener("click", async () =>
 
 document.addEventListener("DOMContentLoaded", async () =>
 {
-  try
-  {
-    let token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/Item/GetAssetId`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      }
-    });
-    if (!response.ok)
-    {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
-    displayAssetId(data);
-  } catch (error)
-  {
-    console.error("Error fetching asset list:", error);
-    alert("ไม่สามารถโหลดข้อมูลได้");
-  }
+  fetchGetAssetId()
 });
 
 document.getElementById("AssetSystem").addEventListener("click", async () =>
 {
-  try
-  {
-    let token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/Item/GetAssetId`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      }
-    });
-    if (!response.ok)
-    {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
-    displayAssetId(data);
-  } catch (error)
-  {
-    console.error("Error fetching asset list:", error);
-    alert("ไม่สามารถโหลดข้อมูลได้");
-  }
+  fetchGetAssetId()
 });
 
 document.getElementById("ManageCategory").addEventListener("click", async () =>
 {
-  try
-  {
-    let token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/Item/GetCategory`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      }
-    });
-    if (!response.ok)
-    {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
-    displayCategory(data);
-  } catch (error)
-  {
-    console.error("Error fetching asset list:", error);
-    alert("ไม่สามารถโหลดข้อมูลได้");
-  }
+  fetchGetCategory()
 });
 
 document.getElementById("ManageClassification").addEventListener("click", async () =>
 {
-  try
-  {
-    let token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/Item/GetClassification`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      }
-    });
-    if (!response.ok)
-    {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
-    displayClassification(data);
-  } catch (error)
-  {
-    console.error("Error fetching asset list:", error);
-    alert("ไม่สามารถโหลดข้อมูลได้");
-  }
+  fetchGetClassification()
 });
 
 document.getElementById("ManageInstance").addEventListener("click", async () =>
 {
+  fetchGetInstance()
+});
+
+let currentPage = 1;
+let pageSize = 10;
+let RowCount = 0;
+
+function changePage(offset, fetchFunction)
+{
+  currentPage += offset;
+  fetchFunction();
+}
+function changePageSize(newSize, fetchFunction)
+{
+  pageSize = newSize;
+  currentPage = 1;
+  fetchFunction();
+}
+function updatePaginationControls(fetchFunction)
+{
+  const totalPages = Math.ceil(RowCount / pageSize);
+  document.getElementById("prevBtn").disabled = currentPage === 1;
+  document.getElementById("nextBtn").disabled = currentPage >= totalPages;
+
+  document.getElementById("prevBtn").onclick = () => changePage(-1, fetchFunction);
+  document.getElementById("nextBtn").onclick = () => changePage(1, fetchFunction);
+
+  document.getElementById("pageSizeSelect").value = pageSize;
+}
+function updateTotalItemsDisplay()
+{
+  document.getElementById("RowCountDisplay").innerText = `มีข้อมูลทั้งหมด ${RowCount} รายการ`;
+}
+
+
+async function fetchGetAssetId()
+{
   try
   {
-    let token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/Item/GetInstance`, {
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${API_URL}/Item/GetAssetId`, {
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${token}`,
-      }
+        "Content-Type": "application/json",
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        Page: currentPage,
+        PageSize: pageSize
+      }),
     });
-    if (!response.ok)
-    {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
-    displayInstance(data);
+
+    const result = await response.json();
+    RowCount = result.rowCount;
+    displayAssetId(result.data);
+    updatePaginationControls(fetchGetAssetId);
+    updateTotalItemsDisplay();
+
   } catch (error)
   {
-    console.error("Error fetching asset list:", error);
-    alert("ไม่สามารถโหลดข้อมูลได้");
+    console.error("Error:", error);
   }
-});
+}
+
+async function fetchGetCategory()
+{
+  try
+  {
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${API_URL}/Item/GetCategory`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        Page: currentPage,
+        PageSize: pageSize
+      }),
+    });
+
+    const result = await response.json();
+    RowCount = result.rowCount;
+    displayCategory(result.data);
+    updatePaginationControls(fetchGetCategory);
+    updateTotalItemsDisplay()
+
+  } catch (error)
+  {
+    console.error("Error:", error);
+  }
+}
+
+async function fetchGetClassification()
+{
+  try
+  {
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${API_URL}/Item/GetClassification`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        Page: currentPage,
+        PageSize: pageSize
+      }),
+    });
+
+    const result = await response.json();
+    RowCount = result.rowCount;
+    displayClassification(result.data);
+    updatePaginationControls(fetchGetClassification);
+    updateTotalItemsDisplay()
+
+  } catch (error)
+  {
+    console.error("Error:", error);
+  }
+}
+
+async function fetchGetInstance()
+{
+  try
+  {
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${API_URL}/Item/GetInstance`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        Page: currentPage,
+        PageSize: pageSize
+      }),
+    });
+
+    const result = await response.json();
+    RowCount = result.rowCount;
+    displayInstance(result.data);
+    updatePaginationControls(fetchGetInstance);
+    updateTotalItemsDisplay()
+
+  } catch (error)
+  {
+    console.error("Error:", error);
+  }
+}
 
 
 function displayAssetId(data)
 {
   const container = document.getElementById("asset-container");
   container.innerHTML =
-    '<div class="table-header">ทรัพย์สินทั้งหมดในระบบ</div>';
+    `<label for="pageSizeSelect">จำนวนต่อหน้า:</label>
+  <select id="pageSizeSelect" onchange="changePageSize(Number(this.value), fetchGetAssetId)">
+    <option value="3">3</option>
+    <option value="7">7</option>
+    <option value="10" selected>10</option>
+  </select>
+    <div class="table-header">ทรัพย์สินทั้งหมดในระบบ</div>`;
 
   if (data.length === 0)
   {
-    container.innerHTML += "<p>ไม่มีข้อมูลทรัพย์สิน</p>";
+    container.innerHTML += `<p style="text-align: center;">ไม่มีข้อมูลทรัพย์สิน</p>`;
     return;
   }
 
@@ -185,13 +245,19 @@ function displayCategory(data)
 {
   const container = document.getElementById("asset-container");
   container.innerHTML =
-    `<div style="display: flex; align-items: center;">
+    `<label for="pageSizeSelect">จำนวนต่อหน้า:</label>
+  <select id="pageSizeSelect" onchange="changePageSize(Number(this.value), fetchGetCategory)">
+    <option value="3">3</option>
+    <option value="7">7</option>
+    <option value="10" selected>10</option>
+  </select>
+    <div style="display: flex; align-items: center;">
      <div style="flex-grow: 1; text-align: center;" class="table-header">หมวดหมู่ของทรัพย์สินทั้งหมดในระบบ</div>
      <div><button id="openCategoryModalBtn">สร้างหมวดหมู่ของทรัพย์สิน</button></div></div>`;
 
   if (data.length === 0)
   {
-    container.innerHTML += "<p>ไม่มีข้อมูลหมวดหมู่ของทรัพย์สิน</p>";
+    container.innerHTML += `<p style="text-align: center;">ไม่มีข้อมูลหมวดหมู่ของทรัพย์สิน</p>`;
     return;
   }
 
@@ -223,23 +289,14 @@ function displayCategory(data)
 
   container.appendChild(table);
 
-  const openCategoryModalBtn = document.getElementById("openCategoryModalBtn");
-  if (openCategoryModalBtn)
+  document.getElementById("openCategoryModalBtn").addEventListener("click", async () =>
   {
-    openCategoryModalBtn.addEventListener("click", async () =>
-    {
-      CategoryModal.style.display = "flex";
-    });
-  }
-
-  const closeModalBtn = document.getElementById("closeModalBtn");
-  if (closeModalBtn)
+    CategoryModal.style.display = "flex";
+  });
+  document.getElementById("closeModalBtn").addEventListener("click", () =>
   {
-    closeModalBtn.addEventListener("click", () =>
-    {
-      CategoryModal.style.display = "none";
-    });
-  }
+    CategoryModal.style.display = "none";
+  });
 
   submitCategory.addEventListener('click', async () =>
   {
@@ -266,8 +323,8 @@ function displayCategory(data)
 
       if (result.statusCode === 201)
       {
-        refreshTableCategory()
         CategoryModal.style.display = 'none';
+        fetchGetCategory()
         alert(result.message);
       } else
       {
@@ -281,18 +338,23 @@ function displayCategory(data)
   });
 }
 
-
 function displayClassification(data)
 {
   const container = document.getElementById("asset-container");
   container.innerHTML =
-    `<div style="display: flex; align-items: center;">
+    `<label for="pageSizeSelect">จำนวนต่อหน้า:</label>
+  <select id="pageSizeSelect" onchange="changePageSize(Number(this.value), fetchGetClassification)">
+    <option value="3">3</option>
+    <option value="7">7</option>
+    <option value="10" selected>10</option>
+  </select>
+    <div style="display: flex; align-items: center;">
      <div style="flex-grow: 1; text-align: center;" class="table-header">การจำแนกประเภทของทรัพย์สินทั้งหมดในระบบ</div>
      <div><button id="openClassificationModalBtn">สร้างการจำแนกประเภทของทรัพย์สิน</button></div></div>`;
 
   if (data.length === 0)
   {
-    container.innerHTML += "<p>ไม่มีข้อมูลการจำแนกประเภทของทรัพย์สิน</p>";
+    container.innerHTML += `<p style="text-align: center;">ไม่มีข้อมูลการจำแนกประเภทของทรัพย์สิน</p>`;
     return;
   }
 
@@ -326,54 +388,46 @@ function displayClassification(data)
 
   container.appendChild(table);
 
-  const openClassificationModalBtn = document.getElementById("openClassificationModalBtn");
-  if (openClassificationModalBtn)
+  document.getElementById("openClassificationModalBtn").addEventListener("click", async () =>
   {
-    openClassificationModalBtn.addEventListener("click", async () =>
+    ClassificationModal.style.display = "flex";
+
+    try
     {
-      ClassificationModal.style.display = "flex";
-
-      try
-      {
-        let token = localStorage.getItem('token');
-        const response = await fetch(`${API_URL}/Item/GetCategory`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          }
-        });
-        const data = await response.json();
-
-        if (response.ok)
-        {
-          const SelectCategory = document.getElementById("SelectCategory");
-          SelectCategory.innerHTML = '<option value="">-- กรุณาเลือกทรัพย์สิน --</option>';
-          data.forEach((item) =>
-          {
-            const option = document.createElement("option");
-            option.value = item.categoryId;
-            option.textContent = `${item.categoryName}`;
-            SelectCategory.appendChild(option);
-          });
-        } else
-        {
-          alert(data.Message || "เกิดข้อผิดพลาดในการดึงข้อมูล");
+      let token = localStorage.getItem('token');
+      const response = await fetch(`${API_URL}/Item/GetCategory`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
         }
-      } catch (error)
-      {
-        console.error("Error fetching asset list:", error);
-        alert("ไม่สามารถเชื่อมต่อกับ API ได้");
-      }
-    });
-  }
+      });
+      const data = await response.json();
 
-  const closeClassificationModal = document.getElementById("closeClassificationModal");
-  if (closeClassificationModal)
-  {
-    closeClassificationModal.addEventListener("click", () =>
+      if (response.ok)
+      {
+        const SelectCategory = document.getElementById("SelectCategory");
+        SelectCategory.innerHTML = '<option value="">-- กรุณาเลือกทรัพย์สิน --</option>';
+        data.forEach((item) =>
+        {
+          const option = document.createElement("option");
+          option.value = item.categoryId;
+          option.textContent = `${item.categoryName}`;
+          SelectCategory.appendChild(option);
+        });
+      } else
+      {
+        alert(data.Message || "เกิดข้อผิดพลาดในการดึงข้อมูล");
+      }
+    } catch (error)
     {
-      ClassificationModal.style.display = "none";
-    });
-  }
+      console.error("Error fetching asset list:", error);
+      alert("ไม่สามารถเชื่อมต่อกับ API ได้");
+    }
+  });
+
+  document.getElementById("closeClassificationModal").addEventListener("click", () =>
+  {
+    ClassificationModal.style.display = "none";
+  });
 
   submitClassification.addEventListener('click', async () =>
   {
@@ -402,8 +456,8 @@ function displayClassification(data)
 
       if (result.statusCode === 201)
       {
-        refreshTableClassification()
         ClassificationModal.style.display = 'none';
+        fetchGetClassification()
         alert(result.message);
       } else
       {
@@ -421,13 +475,19 @@ function displayInstance(data)
 {
   const container = document.getElementById("asset-container");
   container.innerHTML =
-    `<div style="display: flex; align-items: center;">
+    `<label for="pageSizeSelect">จำนวนต่อหน้า:</label>
+  <select id="pageSizeSelect" onchange="changePageSize(Number(this.value), fetchGetInstance)">
+    <option value="3">3</option>
+    <option value="7">7</option>
+    <option value="10" selected>10</option>
+  </select>
+    <div style="display: flex; align-items: center;">
      <div style="flex-grow: 1; text-align: center;" class="table-header">รหัสทรัพย์สินทั้งหมดในระบบ</div>
      <div><button id="openInstanceModalBtn">สร้างรหัสทรัพย์สิน</button></div></div>`;
 
   if (data.length === 0)
   {
-    container.innerHTML += "<p>ไม่มีข้อมูลรหัสทรัพย์สิน</p>";
+    container.innerHTML += `<p style="text-align: center;">ไม่มีข้อมูลรหัสทรัพย์สิน</p>`;
     return;
   }
 
@@ -461,54 +521,46 @@ function displayInstance(data)
 
   container.appendChild(table);
 
-  const openInstanceModalBtn = document.getElementById("openInstanceModalBtn");
-  if (openInstanceModalBtn)
+  document.getElementById("openInstanceModalBtn").addEventListener("click", async () =>
   {
-    openInstanceModalBtn.addEventListener("click", async () =>
+    InstanceModal.style.display = "flex";
+
+    try
     {
-      InstanceModal.style.display = "flex";
-
-      try
-      {
-        let token = localStorage.getItem('token');
-        const response = await fetch(`${API_URL}/Item/GetClassification`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          }
-        });
-        const data = await response.json();
-
-        if (response.ok)
-        {
-          const SelectClassification = document.getElementById("SelectClassification");
-          SelectClassification.innerHTML = '<option value="">-- กรุณาเลือกการจำแนกประเภทของทรัพย์สิน --</option>';
-          data.forEach((item) =>
-          {
-            const option = document.createElement("option");
-            option.value = item.classificationId;
-            option.textContent = `${item.classificationName}`;
-            SelectClassification.appendChild(option);
-          });
-        } else
-        {
-          alert(data.Message || "เกิดข้อผิดพลาดในการดึงข้อมูล");
+      let token = localStorage.getItem('token');
+      const response = await fetch(`${API_URL}/Item/GetClassification`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
         }
-      } catch (error)
-      {
-        console.error("Error fetching asset list:", error);
-        alert("ไม่สามารถเชื่อมต่อกับ API ได้");
-      }
-    });
-  }
+      });
+      const data = await response.json();
 
-  const closeInstanceModal = document.getElementById("closeInstanceModal");
-  if (closeInstanceModal)
-  {
-    closeInstanceModal.addEventListener("click", () =>
+      if (response.ok)
+      {
+        const SelectClassification = document.getElementById("SelectClassification");
+        SelectClassification.innerHTML = '<option value="">-- กรุณาเลือกการจำแนกประเภทของทรัพย์สิน --</option>';
+        data.forEach((item) =>
+        {
+          const option = document.createElement("option");
+          option.value = item.classificationId;
+          option.textContent = `${item.classificationName}`;
+          SelectClassification.appendChild(option);
+        });
+      } else
+      {
+        alert(data.Message || "เกิดข้อผิดพลาดในการดึงข้อมูล");
+      }
+    } catch (error)
     {
-      InstanceModal.style.display = "none";
-    });
-  }
+      console.error("Error fetching asset list:", error);
+      alert("ไม่สามารถเชื่อมต่อกับ API ได้");
+    }
+  });
+
+  document.getElementById("closeInstanceModal").addEventListener("click", () =>
+  {
+    InstanceModal.style.display = "none";
+  });
 
   submitInstance.addEventListener('click', async () =>
   {
@@ -535,8 +587,8 @@ function displayInstance(data)
 
       if (result.statusCode === 201)
       {
-        refreshTableInstance()
         InstanceModal.style.display = 'none';
+        fetchGetInstance()
         alert(result.message);
       } else
       {
@@ -551,100 +603,10 @@ function displayInstance(data)
 }
 
 
-async function refreshTableAssetId()
-{
-  try
-  {
-    let token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/Item/GetAssetId`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      }
-    });
-    if (!response.ok)
-    {
-      throw new Error("Failed to fetch updated data");
-    }
-    const data = await response.json();
-    displayAssetId(data);
-  } catch (error)
-  {
-    console.error("Error refreshing table:", error);
-  }
-}
-
-async function refreshTableCategory()
-{
-  try
-  {
-    let token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/Item/GetCategory`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      }
-    });
-    if (!response.ok)
-    {
-      throw new Error("Failed to fetch updated data");
-    }
-    const data = await response.json();
-    displayCategory(data);
-  } catch (error)
-  {
-    console.error("Error refreshing table:", error);
-  }
-}
-
-async function refreshTableClassification()
-{
-  try
-  {
-    let token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/Item/GetClassification`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      }
-    });
-    if (!response.ok)
-    {
-      throw new Error("Failed to fetch updated data");
-    }
-    const data = await response.json();
-    displayClassification(data);
-  } catch (error)
-  {
-    console.error("Error refreshing table:", error);
-  }
-}
-
-async function refreshTableInstance()
-{
-  try
-  {
-    let token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/Item/GetInstance`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      }
-    });
-    if (!response.ok)
-    {
-      throw new Error("Failed to fetch updated data");
-    }
-    const data = await response.json();
-    displayInstance(data);
-  } catch (error)
-  {
-    console.error("Error refreshing table:", error);
-  }
-}
-
-
 async function editCategoryAction(categoryId)
 {
   const modal = document.getElementById("CategoryEditModal");
   modal.style.display = "flex";
-
 
   try
   {
@@ -659,7 +621,6 @@ async function editCategoryAction(categoryId)
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const categoryData = await response.json();
-
 
     document.getElementById("CategoryEditName").value = categoryData.categoryName;
     document.getElementById("CategoryEditDescription").value = categoryData.description;
@@ -695,9 +656,9 @@ async function editCategoryAction(categoryId)
 
       if (response.ok)
       {
-        alert(result.message);
         modal.style.display = "none";
-        refreshTableCategory()
+        fetchGetCategory()
+        alert(result.message);
       } else
       {
         alert(result.message || "Failed to update category.");
@@ -709,19 +670,11 @@ async function editCategoryAction(categoryId)
     }
   };
 }
-document.getElementById("closeEditModalBtn").addEventListener("click", () =>
-{
-  document.getElementById("CategoryEditName").value = "";
-  document.getElementById("CategoryEditDescription").value = "";
-  CategoryEditModal.style.display = "none";
-});
-
 
 async function editClassificationAction(classificationId)
 {
   const modal = document.getElementById("ClassificationEditModal");
   modal.style.display = "flex";
-
 
   try
   {
@@ -731,10 +684,6 @@ async function editClassificationAction(classificationId)
         'Authorization': `Bearer ${token}`,
       }
     });
-    if (!response.ok)
-    {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
     const ClassificationData = await response.json();
 
     document.getElementById("ClassificationEditName").value = ClassificationData.classificationName;
@@ -743,7 +692,6 @@ async function editClassificationAction(classificationId)
   } catch (error)
   {
     console.error("Error fetching Classification data:", error);
-    alert("ไม่สามารถโหลดข้อมูลหมวดหมู่ได้");
   }
 
   document.getElementById("submitEditClassification").onclick = async () =>
@@ -774,7 +722,7 @@ async function editClassificationAction(classificationId)
       {
         alert(result.message);
         modal.style.display = "none";
-        refreshTableClassification()
+        fetchGetClassification()
       } else
       {
         alert(result.message || "Failed to update Classification.");
@@ -786,18 +734,11 @@ async function editClassificationAction(classificationId)
     }
   };
 }
-document.getElementById("closeEditClassificationModal").addEventListener("click", () =>
-{
-  document.getElementById("ClassificationEditName").value = "";
-  document.getElementById("ClassificationEditDescription").value = "";
-  ClassificationEditModal.style.display = "none";
-});
 
 async function editInstanceAction(instanceId)
 {
   const modal = document.getElementById("InstanceEditModal");
   modal.style.display = "flex";
-
 
   try
   {
@@ -807,18 +748,12 @@ async function editInstanceAction(instanceId)
         'Authorization': `Bearer ${token}`,
       }
     });
-    if (!response.ok)
-    {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
     const InstanceData = await response.json();
 
     document.getElementById("InstanceEditName").value = InstanceData.assetId;
-
   } catch (error)
   {
     console.error("Error fetching Instance data:", error);
-    alert("ไม่สามารถโหลดข้อมูลหมวดหมู่ได้");
   }
 
   document.getElementById("submitEditInstance").onclick = async () =>
@@ -845,9 +780,9 @@ async function editInstanceAction(instanceId)
 
       if (response.ok)
       {
-        alert(result.message);
         modal.style.display = "none";
-        refreshTableInstance()
+        fetchGetInstance()
+        alert(result.message);
       } else
       {
         alert(result.message || "Failed to update Instance.");
@@ -859,14 +794,27 @@ async function editInstanceAction(instanceId)
     }
   };
 }
+
+document.getElementById("closeEditModalBtn").addEventListener("click", () =>
+{
+  document.getElementById("CategoryEditName").value = "";
+  document.getElementById("CategoryEditDescription").value = "";
+  CategoryEditModal.style.display = "none";
+});
+document.getElementById("closeEditClassificationModal").addEventListener("click", () =>
+{
+  document.getElementById("ClassificationEditName").value = "";
+  document.getElementById("ClassificationEditDescription").value = "";
+  ClassificationEditModal.style.display = "none";
+});
 document.getElementById("closeEditInstanceModal").addEventListener("click", () =>
 {
   document.getElementById("InstanceEditName").value = "";
   InstanceEditModal.style.display = "none";
 });
 
-let usernameValue;
 
+let usernameValue;
 async function editStatusAction(instanceId)
 {
   const modal = document.getElementById("AssetModal");
@@ -880,10 +828,6 @@ async function editStatusAction(instanceId)
         'Authorization': `Bearer ${token}`,
       }
     });
-    if (!response.ok)
-    {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
     const data = await response.json();
 
     document.getElementById("categoryName").textContent = data.categoryName || "-";
@@ -892,7 +836,7 @@ async function editStatusAction(instanceId)
     document.getElementById("classificationDescription").textContent = data.classificationDescription || "-";
     document.getElementById("assetId").textContent = data.assetId || "-";
     document.getElementById("username").textContent = data.username || "-";
-    document.getElementById("status").textContent = data.status || "-";
+    document.getElementById("status").textContent = AssetIdStatus[data.status] || "-";
 
     document.getElementById("btnLost").setAttribute("data-instance-id", instanceId);
     document.getElementById("btnEnd").setAttribute("data-instance-id", instanceId);
@@ -961,7 +905,6 @@ document.getElementById("btnRestore").addEventListener("click", function ()
   statusClick(status, instanceId);
 });
 
-
 async function statusClick(status, instanceId)
 {
   const confirmData = {
@@ -985,7 +928,7 @@ async function statusClick(status, instanceId)
     if (response.status == 200)
     {
       alert(result.message);
-      refreshTableAssetId();
+      fetchGetAssetId()
       AssetModal.style.display = "none";
     } else
     {
@@ -998,7 +941,14 @@ async function statusClick(status, instanceId)
   }
 }
 
+
 window.editStatusAction = editStatusAction;
 window.editCategoryAction = editCategoryAction;
 window.editClassificationAction = editClassificationAction;
-window.editInstanceAction = editInstanceAction
+window.editInstanceAction = editInstanceAction;
+window.changePage = changePage;
+window.changePageSize = changePageSize;
+window.fetchGetInstance = fetchGetInstance;
+window.fetchGetClassification = fetchGetClassification;
+window.fetchGetCategory = fetchGetCategory;
+window.fetchGetAssetId = fetchGetAssetId;

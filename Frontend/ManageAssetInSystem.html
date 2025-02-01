@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Asset Management</title>
-  <link rel="stylesheet" type="text/css" href="/Frontend/CSS/ManageUser.css" />
+  <link rel="stylesheet" type="text/css" href="/Frontend/CSS/ManageAssetInSystem.css" />
   <style>
     .button-container {
       display: flex;
@@ -31,7 +31,6 @@
   <!-- Sidebar -->
   <div class="sidebar">
     <div class="sidebar-item" id="ToManageAssetPage">จัดการทรัพย์สินที่ถือครอง</div>
-    <div class="sidebar-item" id="ToManageUserPage">จัดการผู้ใช้งานในระบบ</div>
     <div class="sidebar-item">จัดการทรัพย์สินในระบบ</div>
     <div class="sidebar-item" id="ToManageRequestReturnPage">จัดการใบขอเบิก/คืน</div>
     <div class="sidebar-item">ภาพรวมของทรัพย์สิน</div>
@@ -45,15 +44,24 @@
     </div>
   </div>
 
+  <div class="pagination-footer">
+    <button id="prevBtn" onclick="changePage(-1)" disabled>⬅️ย้อนกลับ</button>
+    <span id="RowCountDisplay"></span>
+    <button id="nextBtn" onclick="changePage(1)">ถัดไป➡️</button>
+  </div>
+
   <!-- Modal Asset-->
   <div id="AssetModal" class="modal">
     <div class="modal-content">
       <span id="closeAssetModalBtn" class="close-btn">&times;</span>
       <h2>รายละเอียดของทรัพย์สิน</h2>
       <p style="text-align: left;"><strong>หมวดหมู่ของทรัพย์สิน:</strong> <br><span id="categoryName"></span></p>
-      <p style="text-align: left;"><strong>คำอธิบายของหมวดหมู่ของทรัพย์สิน:</strong> <br><span id="categoryDescription"></span></p>
-      <p style="text-align: left;"><strong>การจำแนกประเภทของทรัพย์สิน:</strong> <br><span id="classificationName"></span></p>
-      <p style="text-align: left;"><strong>คำอธิบายการจำแนกประเภทของทรัพย์สิน:</strong> <br><span id="classificationDescription"></span></p>
+      <p style="text-align: left;"><strong>คำอธิบายของหมวดหมู่ของทรัพย์สิน:</strong> <br><span
+          id="categoryDescription"></span></p>
+      <p style="text-align: left;"><strong>การจำแนกประเภทของทรัพย์สิน:</strong> <br><span
+          id="classificationName"></span></p>
+      <p style="text-align: left;"><strong>คำอธิบายการจำแนกประเภทของทรัพย์สิน:</strong> <br><span
+          id="classificationDescription"></span></p>
       <p style="text-align: left;"><strong>รหัสทรัพย์สิน:</strong> <br><span id="assetId"></span></p>
       <p style="text-align: left;"><strong>ชื่อผู้ถือครอง:</strong> <br><span id="username"></span></p>
       <p style="text-align: left;"><strong>สถานะของทรัพย์สิน:</strong> <br><span id="status"></span></p><br>

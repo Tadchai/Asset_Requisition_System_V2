@@ -27,16 +27,47 @@ namespace api.Controllers
         {
             try
             {
-                var categoryModel = await _context.Categories
-                                    .Select(c => new CategoryResponse
-                                    {
-                                        CategoryId = c.CategoryId,
-                                        CategoryName = c.Name,
-                                        Description = c.Description
-                                    })
-                                    .ToListAsync();
+                var categoryModel = await (from c in _context.Categories
+                                           select new CategoryResponse
+                                           {
+                                               CategoryId = c.CategoryId,
+                                               CategoryName = c.Name,
+                                               Description = c.Description
+                                           })
+                                            .ToListAsync();
 
                 return new JsonResult(categoryModel);
+            }
+            catch (Exception ex)
+            {
+                return new JsonResult(new MessageResponse { Message = $"An error occurred: {ex.Message}", StatusCode = HttpStatusCode.InternalServerError });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GetCategory(PaginatedRequest request)
+        {
+            try
+            {
+                var query = from c in _context.Categories
+                            select new CategoryResponse
+                            {
+                                CategoryId = c.CategoryId,
+                                CategoryName = c.Name,
+                                Description = c.Description
+                            };
+
+                int skipPage = (request.Page - 1) * request.PageSize;
+                int RowCount = await query.CountAsync();
+                var result = await query.Skip(skipPage).Take(request.PageSize).ToListAsync();
+
+                return new JsonResult(new
+                {
+                    currentPage = request.Page,
+                    request.PageSize,
+                    RowCount,
+                    data = result
+                });
             }
             catch (Exception ex)
             {
@@ -88,6 +119,39 @@ namespace api.Controllers
             }
         }
 
+        [HttpPost]
+        public async Task<IActionResult> GetClassification(PaginatedRequest request)
+        {
+            try
+            {
+                var query = from cs in _context.Classifications
+                            join c in _context.Categories on cs.CategoryId equals c.CategoryId
+                            select new ClassificationResponse
+                            {
+                                ClassificationId = cs.ClassificationId,
+                                CategoryName = c.Name,
+                                ClassificationName = cs.Name,
+                                Description = cs.Description
+                            };
+
+                int skipPage = (request.Page - 1) * request.PageSize;
+                int RowCount = await query.CountAsync();
+                var result = await query.Skip(skipPage).Take(request.PageSize).ToListAsync();
+
+                return new JsonResult(new
+                {
+                    currentPage = request.Page,
+                    request.PageSize,
+                    RowCount,
+                    data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                return new JsonResult(new MessageResponse { Message = $"An error occurred: {ex.Message}", StatusCode = HttpStatusCode.InternalServerError });
+            }
+        }
+
         [HttpGet]
         public async Task<IActionResult> GetClassificationById([FromQuery] int classificationId)
         {
@@ -111,23 +175,33 @@ namespace api.Controllers
             }
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetInstance()
+        [HttpPost]
+        public async Task<IActionResult> GetInstance(PaginatedRequest request)
         {
             try
             {
-                var instanceList = await (from i in _context.Instances
-                                          join cs in _context.Classifications on i.ClassificationId equals cs.ClassificationId
-                                          join c in _context.Categories on cs.CategoryId equals c.CategoryId
-                                          select new InstanceResponse
-                                          {
-                                              InstanceId = i.InstanceId,
-                                              CategoryName = c.Name,
-                                              ClassificationName = cs.Name,
-                                              AssetId = i.AssetId
-                                          }).ToListAsync();
+                var query = from i in _context.Instances
+                            join cs in _context.Classifications on i.ClassificationId equals cs.ClassificationId
+                            join c in _context.Categories on cs.CategoryId equals c.CategoryId
+                            select new InstanceResponse
+                            {
+                                InstanceId = i.InstanceId,
+                                CategoryName = c.Name,
+                                ClassificationName = cs.Name,
+                                AssetId = i.AssetId
+                            };
 
-                return new JsonResult(instanceList);
+                int skipPage = (request.Page - 1) * request.PageSize;
+                int RowCount = await query.CountAsync();
+                var result = await query.Skip(skipPage).Take(request.PageSize).ToListAsync();
+
+                return new JsonResult(new
+                {
+                    currentPage = request.Page,
+                    request.PageSize,
+                    RowCount,
+                    data = result
+                });
             }
             catch (Exception ex)
             {
@@ -310,35 +384,46 @@ namespace api.Controllers
             }
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAssetId()
+        [HttpPost]
+        public async Task<IActionResult> GetAssetId(PaginatedRequest request)
         {
             try
             {
-                var AssetIdList = await (from c in _context.Categories
-                                         join cs in _context.Classifications on c.CategoryId equals cs.CategoryId
-                                         join i in _context.Instances on cs.ClassificationId equals i.ClassificationId
-                                         join x in from r in _context.RequisitionRequests
-                                                   join u in _context.Users on r.RequesterId equals u.UserId
-                                                   select new
-                                                   {
-                                                       r.RequestId,
-                                                       u.Username
-                                                   } on i.RequestId equals x.RequestId into xJoin
-                                         from x in xJoin.DefaultIfEmpty()
-                                         select new GetAssetIdResponse
-                                         {
-                                             CategoryName = c.Name,
-                                             ClassificationName = cs.Name,
-                                             AssetId = i.AssetId,
-                                             Username = x.Username,
-                                             Status = i.Status,
-                                             InstanceId = i.InstanceId
-                                         })
-                                         .OrderBy(i => i.Status != (int)InstanceStatus.Available)
-                                         .ToListAsync();
+                var query = from c in _context.Categories
+                            join cs in _context.Classifications on c.CategoryId equals cs.CategoryId
+                            join i in _context.Instances on cs.ClassificationId equals i.ClassificationId
+                            join x in from r in _context.RequisitionRequests
+                                      join u in _context.Users on r.RequesterId equals u.UserId
+                                      select new
+                                      {
+                                          r.RequestId,
+                                          u.Username
+                                      } on i.RequestId equals x.RequestId into xJoin
+                            from x in xJoin.DefaultIfEmpty()
+                            select new GetAssetIdResponse
+                            {
+                                CategoryName = c.Name,
+                                ClassificationName = cs.Name,
+                                AssetId = i.AssetId,
+                                Username = x.Username,
+                                Status = i.Status,
+                                InstanceId = i.InstanceId
+                            };
 
-                return new JsonResult(AssetIdList);
+
+                int skipPage = (request.Page - 1) * request.PageSize;
+                int RowCount = await query.CountAsync();
+                var result = await query.Skip(skipPage).Take(request.PageSize)
+                                        .OrderBy(i => i.Status != (int)InstanceStatus.Available)
+                                        .ToListAsync();
+
+                return new JsonResult(new
+                {
+                    currentPage = request.Page,
+                    request.PageSize,
+                    RowCount,
+                    data = result
+                });
             }
             catch (Exception ex)
             {
@@ -404,9 +489,9 @@ namespace api.Controllers
                     else
                     {
                         var checkRequestCompleted = await (from i in _context.Instances
-                                                            join r in _context.RequisitionRequests on i.RequestId equals r.RequestId
-                                                            where r.Status == (int)RequestStatus.Allocated && i.InstanceId == request.InstanceId
-                                                            select i)
+                                                           join r in _context.RequisitionRequests on i.RequestId equals r.RequestId
+                                                           where r.Status == (int)RequestStatus.Allocated && i.InstanceId == request.InstanceId
+                                                           select i)
                                                             .AnyAsync();
                         if (checkRequestCompleted)
                             return new JsonResult(new MessageResponse { Message = "Request not Completed, Cannot recall Asset", StatusCode = HttpStatusCode.BadRequest });

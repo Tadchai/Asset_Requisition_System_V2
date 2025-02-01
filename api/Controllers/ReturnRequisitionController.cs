@@ -35,7 +35,7 @@ namespace api.Controllers
                                         .SingleAsync();
 
                     var checkRequisitionReturn = await _context.RequisitionReturns.AnyAsync(rt => rt.RequestId == requestId);
-                    if(checkRequisitionReturn) 
+                    if (checkRequisitionReturn)
                         return new JsonResult(new MessageResponse { Message = "You have created ReturnAsset before", StatusCode = HttpStatusCode.BadRequest });
 
                     var requisitionReturnModel = new RequisitionReturn
@@ -59,40 +59,50 @@ namespace api.Controllers
             }
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetReturnList()
+        [HttpPost]
+        public async Task<IActionResult> GetReturnList(PaginatedRequest request)
         {
             try
             {
-                var ReturnAssetList = await (from rt in _context.RequisitionReturns
-                                             join rq in _context.RequisitionRequests on rt.RequestId equals rq.RequestId
-                                             join z in from i in _context.Instances
-                                                       join cs in _context.Classifications on i.ClassificationId equals cs.ClassificationId
-                                                       join c in _context.Categories on cs.CategoryId equals c.CategoryId
-                                                       select new
-                                                       {
-                                                           i.InstanceId,
-                                                           CategoryName = c.Name,
-                                                           ClassificationName = cs.Name,
-                                                           i.AssetId
-                                                       } on rq.InstanceId equals z.InstanceId into zJoin
-                                             from z in zJoin.DefaultIfEmpty()
-                                             join u in _context.Users on rq.RequesterId equals u.UserId
-                                             select new GetReturnAssetListResponse
-                                             {
-                                                 Username = u.Username,
-                                                 CategoryName = z.CategoryName,
-                                                 ClassificationName = z.ClassificationName,
-                                                 AssetId = z.AssetId,
-                                                 ReasonReturn = rt.ReasonReturn,
-                                                 Status = rt.Status,
-                                                 InstanceId = z.InstanceId,
-                                                 ReturnId = rt.ReturnId
-                                             })
-                                             .OrderBy(rt => rt.Status != (int)ReturnStatus.Pending)
-                                             .ToListAsync();
+                var query = from rt in _context.RequisitionReturns
+                            join rq in _context.RequisitionRequests on rt.RequestId equals rq.RequestId
+                            join z in from i in _context.Instances
+                                      join cs in _context.Classifications on i.ClassificationId equals cs.ClassificationId
+                                      join c in _context.Categories on cs.CategoryId equals c.CategoryId
+                                      select new
+                                      {
+                                          i.InstanceId,
+                                          CategoryName = c.Name,
+                                          ClassificationName = cs.Name,
+                                          i.AssetId
+                                      } on rq.InstanceId equals z.InstanceId into zJoin
+                            from z in zJoin.DefaultIfEmpty()
+                            join u in _context.Users on rq.RequesterId equals u.UserId
+                            select new GetReturnAssetListResponse
+                            {
+                                Username = u.Username,
+                                CategoryName = z.CategoryName,
+                                ClassificationName = z.ClassificationName,
+                                AssetId = z.AssetId,
+                                ReasonReturn = rt.ReasonReturn,
+                                Status = rt.Status,
+                                InstanceId = z.InstanceId,
+                                ReturnId = rt.ReturnId
+                            };
 
-                return new JsonResult(ReturnAssetList);
+                int skipPage = (request.Page - 1) * request.PageSize;
+                int RowCount = await query.CountAsync();
+                var result = await query.Skip(skipPage).Take(request.PageSize)
+                                .OrderBy(rt => rt.Status != (int)ReturnStatus.Pending)
+                                .ToListAsync();
+
+                return new JsonResult(new
+                {
+                    currentPage = request.Page,
+                    request.PageSize,
+                    RowCount,
+                    data = result
+                });
             }
             catch (Exception ex)
             {

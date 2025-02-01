@@ -22,4 +22,10 @@ namespace api.ViewModels
         public string Message { get; set; }
         public HttpStatusCode StatusCode{ get; set; }
     }
+
+    public class PaginatedRequest
+    {
+        public int PageSize { get; set; }
+        public int Page { get; set; }
+    }
 }

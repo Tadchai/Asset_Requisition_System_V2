@@ -55,34 +55,44 @@ namespace api.Controllers
             }
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetRequest()
+        [HttpPost]
+        public async Task<IActionResult> GetRequest(PaginatedRequest request)
         {
             try
             {
                 var userId = User.FindFirst("userId")?.Value;
 
-                var responses = await (from r in _context.RequisitionRequests
-                                       join c in _context.Categories on r.CategoryId equals c.CategoryId
-                                       join i in _context.Instances on r.InstanceId equals i.InstanceId into instanceJoin
-                                       from i in instanceJoin.DefaultIfEmpty()
-                                       where r.RequesterId == int.Parse(userId)
-                                       select new GetRequestResponse
-                                       {
-                                           CategoryName = c.Name,
-                                           Requirement = r.Requirement,
-                                           DueDate = r.DueDate,
-                                           ReasonRequest = r.ReasonRequest,
-                                           Status = r.Status,
-                                           AssetId = i.AssetId,
-                                           ReasonRejected = r.ReasonRejected,
-                                       })
-                                       .OrderBy(r => r.Status != (int)RequestStatus.Pending)
-                                       .ThenBy(r => r.Status != (int)RequestStatus.Allocated)
-                                       .ThenBy(r => r.Status != (int)RequestStatus.Rejected)
-                                       .ToListAsync();
+                var query = from r in _context.RequisitionRequests
+                            join c in _context.Categories on r.CategoryId equals c.CategoryId
+                            join i in _context.Instances on r.InstanceId equals i.InstanceId into instanceJoin
+                            from i in instanceJoin.DefaultIfEmpty()
+                            where r.RequesterId == int.Parse(userId)
+                            select new GetRequestResponse
+                            {
+                                CategoryName = c.Name,
+                                Requirement = r.Requirement,
+                                DueDate = r.DueDate,
+                                ReasonRequest = r.ReasonRequest,
+                                Status = r.Status,
+                                AssetId = i.AssetId,
+                                ReasonRejected = r.ReasonRejected,
+                            };
 
-                return new JsonResult(responses);
+                int skipPage = (request.Page - 1) * request.PageSize;
+                int RowCount = await query.CountAsync();
+                var result = await query.Skip(skipPage).Take(request.PageSize)
+                            .OrderBy(r => r.Status != (int)RequestStatus.Pending)
+                            .ThenBy(r => r.Status != (int)RequestStatus.Allocated)
+                            .ThenBy(r => r.Status != (int)RequestStatus.Rejected)
+                            .ToListAsync();
+
+                return new JsonResult(new
+                {
+                    currentPage = request.Page,
+                    request.PageSize,
+                    RowCount,
+                    data = result
+                });
             }
             catch (Exception ex)
             {
@@ -129,29 +139,39 @@ namespace api.Controllers
             }
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetRequestList()
+        [HttpPost]
+        public async Task<IActionResult> GetRequestList(PaginatedRequest request)
         {
             try
             {
-                var requestList = await (from r in _context.RequisitionRequests
-                                         join u in _context.Users on r.RequesterId equals u.UserId
-                                         join c in _context.Categories on r.CategoryId equals c.CategoryId
-                                         select new GetRequestListResponse
-                                         {
-                                             Username = u.Username,
-                                             CategoryName = c.Name,
-                                             Requirement = r.Requirement,
-                                             DueDate = r.DueDate,
-                                             ReasonRequest = r.ReasonRequest,
-                                             Status = r.Status,
-                                             RequestId = r.RequestId
-                                         })
-                                        .OrderBy(it => it.Status != (int)RequestStatus.Pending)
-                                        .ThenBy(it => it.DueDate)
-                                        .ToListAsync();
+                var query = from r in _context.RequisitionRequests
+                            join u in _context.Users on r.RequesterId equals u.UserId
+                            join c in _context.Categories on r.CategoryId equals c.CategoryId
+                            select new GetRequestListResponse
+                            {
+                                Username = u.Username,
+                                CategoryName = c.Name,
+                                Requirement = r.Requirement,
+                                DueDate = r.DueDate,
+                                ReasonRequest = r.ReasonRequest,
+                                Status = r.Status,
+                                RequestId = r.RequestId
+                            };
 
-                return new JsonResult(requestList);
+                int skipPage = (request.Page - 1) * request.PageSize;
+                int RowCount = await query.CountAsync();
+                var result = await query.Skip(skipPage).Take(request.PageSize)
+                                .OrderBy(it => it.Status != (int)RequestStatus.Pending)
+                                .ThenBy(it => it.DueDate)
+                                .ToListAsync();
+
+                return new JsonResult(new
+                {
+                    currentPage = request.Page,
+                    request.PageSize,
+                    RowCount,
+                    data = result
+                });
             }
             catch (Exception ex)
             {
@@ -211,27 +231,37 @@ namespace api.Controllers
             }
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetConfirmList()
+        [HttpPost]
+        public async Task<IActionResult> GetConfirmList(PaginatedRequest request)
         {
             try
             {
                 var userId = User.FindFirst("userId")?.Value;
 
-                var itemList = await (from r in _context.RequisitionRequests
-                                      join i in _context.Instances on r.InstanceId equals i.InstanceId
-                                      join cs in _context.Classifications on i.ClassificationId equals cs.ClassificationId
-                                      join c in _context.Categories on cs.CategoryId equals c.CategoryId
-                                      where r.RequesterId == int.Parse(userId) && r.Status == (int)RequestStatus.Allocated
-                                      select new ConfirmListResponse
-                                      {
-                                          RequestId = r.RequestId,
-                                          CategoryName = c.Name,
-                                          ClassificationName = cs.Name,
-                                          AssetId = i.AssetId
-                                      }).ToListAsync();
+                var query = from r in _context.RequisitionRequests
+                            join i in _context.Instances on r.InstanceId equals i.InstanceId
+                            join cs in _context.Classifications on i.ClassificationId equals cs.ClassificationId
+                            join c in _context.Categories on cs.CategoryId equals c.CategoryId
+                            where r.RequesterId == int.Parse(userId) && r.Status == (int)RequestStatus.Allocated
+                            select new ConfirmListResponse
+                            {
+                                RequestId = r.RequestId,
+                                CategoryName = c.Name,
+                                ClassificationName = cs.Name,
+                                AssetId = i.AssetId
+                            };
 
-                return new JsonResult(itemList);
+                int skipPage = (request.Page - 1) * request.PageSize;
+                int RowCount = await query.CountAsync();
+                var result = await query.Skip(skipPage).Take(request.PageSize).ToListAsync();
+
+                return new JsonResult(new
+                {
+                    currentPage = request.Page,
+                    request.PageSize,
+                    RowCount,
+                    data = result
+                });
             }
             catch (Exception ex)
             {
@@ -245,7 +275,7 @@ namespace api.Controllers
             try
             {
                 var userId = User.FindFirst("userId")?.Value;
-                
+
                 var itemList = await (from r in _context.RequisitionRequests
                                       join i in _context.Instances on r.InstanceId equals i.InstanceId
                                       join cs in _context.Classifications on i.ClassificationId equals cs.ClassificationId
@@ -263,6 +293,47 @@ namespace api.Controllers
                                       }).ToListAsync();
 
                 return new JsonResult(itemList);
+            }
+            catch (Exception ex)
+            {
+                return new JsonResult(new MessageResponse { Message = $"An error occurred: {ex.Message}", StatusCode = HttpStatusCode.InternalServerError });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GetUserAsset(PaginatedRequest request)
+        {
+            try
+            {
+                var userId = User.FindFirst("userId")?.Value;
+
+                var query = from r in _context.RequisitionRequests
+                            join i in _context.Instances on r.InstanceId equals i.InstanceId
+                            join cs in _context.Classifications on i.ClassificationId equals cs.ClassificationId
+                            join c in _context.Categories on cs.CategoryId equals c.CategoryId
+                            join rt in _context.RequisitionReturns on r.RequestId equals rt.RequestId into ReturnJoin
+                            from rt in ReturnJoin.DefaultIfEmpty()
+                            where r.RequesterId == int.Parse(userId) && i.RequestId == r.RequestId && r.Status == (int)RequestStatus.Completed
+                            select new AssetListResponse
+                            {
+                                RequestId = r.RequestId,
+                                CategoryName = c.Name,
+                                ClassificationName = cs.Name,
+                                AssetId = i.AssetId,
+                                InstanceId = i.InstanceId
+                            };
+
+                int skipPage = (request.Page - 1) * request.PageSize;
+                int RowCount = await query.CountAsync();
+                var result = await query.Skip(skipPage).Take(request.PageSize).ToListAsync();
+
+                return new JsonResult(new
+                {
+                    currentPage = request.Page,
+                    request.PageSize,
+                    RowCount,
+                    data = result
+                });
             }
             catch (Exception ex)
             {
