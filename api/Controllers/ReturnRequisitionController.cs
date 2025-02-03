@@ -138,38 +138,49 @@ namespace api.Controllers
             }
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetPendingReturn()
+        [HttpPost]
+        public async Task<IActionResult> GetPendingReturn(PaginatedRequest request)
         {
             try
             {
-                var pendingReturnList = await (from rt in _context.RequisitionReturns
-                                               join rq in _context.RequisitionRequests on rt.RequestId equals rq.RequestId
-                                               join z in from i in _context.Instances
-                                                         join cs in _context.Classifications on i.ClassificationId equals cs.ClassificationId
-                                                         join c in _context.Categories on cs.CategoryId equals c.CategoryId
-                                                         select new
-                                                         {
-                                                             i.InstanceId,
-                                                             CategoryName = c.Name,
-                                                             ClassificationName = cs.Name,
-                                                             i.AssetId
-                                                         } on rq.InstanceId equals z.InstanceId into zJoin
-                                               from z in zJoin.DefaultIfEmpty()
-                                               join u in _context.Users on rq.RequesterId equals u.UserId
-                                               where rt.Status == (int)ReturnStatus.Pending
-                                               select new GetReturnAssetListResponse
-                                               {
-                                                   Username = u.Username,
-                                                   CategoryName = z.CategoryName,
-                                                   ClassificationName = z.ClassificationName,
-                                                   AssetId = z.AssetId,
-                                                   ReasonReturn = rt.ReasonReturn,
-                                                   InstanceId = z.InstanceId,
-                                                   ReturnId = rt.ReturnId
-                                               }).ToListAsync();
+                var query = from rt in _context.RequisitionReturns
+                            join rq in _context.RequisitionRequests on rt.RequestId equals rq.RequestId
+                            join z in from i in _context.Instances
+                                      join cs in _context.Classifications on i.ClassificationId equals cs.ClassificationId
+                                      join c in _context.Categories on cs.CategoryId equals c.CategoryId
+                                      select new
+                                      {
+                                          i.InstanceId,
+                                          CategoryName = c.Name,
+                                          ClassificationName = cs.Name,
+                                          i.AssetId
+                                      } on rq.InstanceId equals z.InstanceId into zJoin
+                            from z in zJoin.DefaultIfEmpty()
+                            join u in _context.Users on rq.RequesterId equals u.UserId
+                            where rt.Status == (int)ReturnStatus.Pending
+                            select new GetReturnAssetListResponse
+                            {
+                                Username = u.Username,
+                                CategoryName = z.CategoryName,
+                                ClassificationName = z.ClassificationName,
+                                AssetId = z.AssetId,
+                                ReasonReturn = rt.ReasonReturn,
+                                InstanceId = z.InstanceId,
+                                ReturnId = rt.ReturnId
+                            };
 
-                return new JsonResult(pendingReturnList);
+                int skipPage = (request.Page - 1) * request.PageSize;
+                int RowCount = await query.CountAsync();
+                var result = await query.Skip(skipPage).Take(request.PageSize)
+                                         .ToListAsync();
+
+                return new JsonResult(new
+                {
+                    currentPage = request.Page,
+                    request.PageSize,
+                    RowCount,
+                    data = result
+                });
             }
             catch (Exception ex)
             {

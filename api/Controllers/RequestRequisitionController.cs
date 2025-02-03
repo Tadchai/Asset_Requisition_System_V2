@@ -341,29 +341,39 @@ namespace api.Controllers
             }
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetPendingRequest()
+        [HttpPost]
+        public async Task<IActionResult> GetPendingRequest(PaginatedRequest request)
         {
             try
             {
-                var requestList = await (from r in _context.RequisitionRequests
-                                         join u in _context.Users on r.RequesterId equals u.UserId
-                                         join c in _context.Categories on r.CategoryId equals c.CategoryId
-                                         where r.Status == (int)RequestStatus.Pending
-                                         select new GetRequestListResponse
-                                         {
-                                             Username = u.Username,
-                                             CategoryName = c.Name,
-                                             Requirement = r.Requirement,
-                                             DueDate = r.DueDate,
-                                             ReasonRequest = r.ReasonRequest,
-                                             Status = r.Status,
-                                             RequestId = r.RequestId
-                                         })
-                                         .OrderBy(r => r.DueDate)
+                var query = from r in _context.RequisitionRequests
+                            join u in _context.Users on r.RequesterId equals u.UserId
+                            join c in _context.Categories on r.CategoryId equals c.CategoryId
+                            where r.Status == (int)RequestStatus.Pending
+                            select new GetRequestListResponse
+                            {
+                                Username = u.Username,
+                                CategoryName = c.Name,
+                                Requirement = r.Requirement,
+                                DueDate = r.DueDate,
+                                ReasonRequest = r.ReasonRequest,
+                                Status = r.Status,
+                                RequestId = r.RequestId
+                            };
+
+                int skipPage = (request.Page - 1) * request.PageSize;
+                int RowCount = await query.CountAsync();
+                var result = await query.Skip(skipPage).Take(request.PageSize)
+                                .OrderBy(r => r.DueDate)
                                          .ToListAsync();
 
-                return new JsonResult(requestList);
+                return new JsonResult(new
+                {
+                    currentPage = request.Page,
+                    request.PageSize,
+                    RowCount,
+                    data = result
+                });
             }
             catch (Exception ex)
             {
@@ -371,27 +381,38 @@ namespace api.Controllers
             }
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAllocatedRequest()
+        [HttpPost]
+        public async Task<IActionResult> GetAllocatedRequest(PaginatedRequest request)
         {
             try
             {
-                var requestList = await (from r in _context.RequisitionRequests
-                                         join u in _context.Users on r.RequesterId equals u.UserId
-                                         join c in _context.Categories on r.CategoryId equals c.CategoryId
-                                         where r.Status == (int)RequestStatus.Allocated
-                                         select new GetRequestListResponse
-                                         {
-                                             Username = u.Username,
-                                             CategoryName = c.Name,
-                                             Requirement = r.Requirement,
-                                             DueDate = r.DueDate,
-                                             ReasonRequest = r.ReasonRequest,
-                                             Status = r.Status,
-                                             RequestId = r.RequestId
-                                         }).ToListAsync();
+                var query = from r in _context.RequisitionRequests
+                            join u in _context.Users on r.RequesterId equals u.UserId
+                            join c in _context.Categories on r.CategoryId equals c.CategoryId
+                            where r.Status == (int)RequestStatus.Allocated
+                            select new GetRequestListResponse
+                            {
+                                Username = u.Username,
+                                CategoryName = c.Name,
+                                Requirement = r.Requirement,
+                                DueDate = r.DueDate,
+                                ReasonRequest = r.ReasonRequest,
+                                Status = r.Status,
+                                RequestId = r.RequestId
+                            };
 
-                return new JsonResult(requestList);
+                int skipPage = (request.Page - 1) * request.PageSize;
+                int RowCount = await query.CountAsync();
+                var result = await query.Skip(skipPage).Take(request.PageSize)
+                                         .ToListAsync();
+
+                return new JsonResult(new
+                {
+                    currentPage = request.Page,
+                    request.PageSize,
+                    RowCount,
+                    data = result
+                });
             }
             catch (Exception ex)
             {

@@ -16,11 +16,15 @@ document.getElementById("ToLoginPage").addEventListener("click", async () =>
 
 document.addEventListener("DOMContentLoaded", async () =>
 {
-  fetchAssetData();
+  fetchGetPendingRequest();
+  fetchGetAllocatedRequest();
+  fetchGetPendingReturn()
 });
 document.getElementById("RequestReturnList").addEventListener("click", async () =>
 {
-  fetchAssetData();
+  fetchGetPendingRequest();
+  fetchGetAllocatedRequest();
+  fetchGetPendingReturn()
 });
 
 document.getElementById("RequestList").addEventListener("click", async () =>
@@ -32,6 +36,10 @@ document.getElementById("ReturnList").addEventListener("click", async () =>
 {
   fetchGetReturnList()
 });
+
+function padNumber(id, length) {
+  return id.toString().padStart(length, '0');
+}
 
 let currentPage = 1;
 let pageSize = 10;
@@ -64,41 +72,155 @@ function updateTotalItemsDisplay()
   document.getElementById("RowCountDisplay").innerText = `มีข้อมูลทั้งหมด ${RowCount} รายการ`;
 }
 
-async function fetchAssetData()
+
+let PRcurrentPageLoad = 1, PRpageSizeLoad = 3, PRRowCount = 0;
+let ARcurrentPageLoad = 1, ARpageSizeLoad = 3, ARRowCount = 0;
+let PRTcurrentPageLoad = 1, PRTpageSizeLoad = 9, PRTRowCount = 0;
+
+function PRloadMore(fetchFunction)
+{
+  PRpageSizeLoad += 5;
+  fetchFunction();
+}
+function ARloadMore(fetchFunction)
+{
+  ARpageSizeLoad += 5;
+  fetchFunction();
+}
+function PRTloadMore(fetchFunction)
+{
+  PRTpageSizeLoad += 9;
+  fetchFunction();
+}
+function PRupdateLoadMoreButton(fetchFunction)
+{
+  const totalPages = Math.ceil(PRRowCount / PRpageSizeLoad);
+  const loadMoreBtn = document.getElementById("PRloadMoreBtn");
+  loadMoreBtn.onclick = () => PRloadMore(fetchFunction);
+
+  if (PRcurrentPageLoad >= totalPages)
+  {
+    loadMoreBtn.style.display = "none";
+  } else
+  {
+    loadMoreBtn.style.display = "block";
+  }
+}
+function ARupdateLoadMoreButton(fetchFunction)
+{
+  const totalPages = Math.ceil(ARRowCount / ARpageSizeLoad);
+  const loadMoreBtn = document.getElementById("ARloadMoreBtn");
+  loadMoreBtn.onclick = () => ARloadMore(fetchFunction);
+
+  if (ARcurrentPageLoad >= totalPages)
+  {
+    loadMoreBtn.style.display = "none";
+  } else
+  {
+    loadMoreBtn.style.display = "block";
+  }
+}
+function PRTupdateLoadMoreButton(fetchFunction)
+{
+  const totalPages = Math.ceil(PRTRowCount / PRTpageSizeLoad);
+  const loadMoreBtn = document.getElementById("PRTloadMoreBtn");
+  loadMoreBtn.onclick = () => PRTloadMore(fetchFunction);
+
+  if (PRTcurrentPageLoad >= totalPages)
+  {
+    loadMoreBtn.style.display = "none";
+  } else
+  {
+    loadMoreBtn.style.display = "block";
+  }
+}
+
+
+async function fetchGetPendingRequest()
 {
   try
   {
     document.getElementById("footer").style.display = "none"
     document.getElementById("multi-view").style.display = "grid"
     document.getElementById("single-view").style.display = "none"
-    let token = localStorage.getItem('token');
-    const [pendingData, allocatedData, returnedData] = await Promise.all([
-      fetch(`${API_URL}/RequestRequisition/GetPendingRequest`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        }
-      }).then(res => res.json()),
-      fetch(`${API_URL}/RequestRequisition/GetAllocatedRequest`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        }
-      }).then(res => res.json()),
-      fetch(`${API_URL}/ReturnRequisition/GetPendingReturn`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        }
-      }).then(res => res.json())
-    ]);
 
-    displayRequestTable('รายการใบคำร้องขอเบิกรอดำเนินการ', pendingData, 'pending-container');
-    displayRequestTable('รายการใบคำร้องขอเบิกที่ยังไม่เสร็จสมบูรณ์', allocatedData, 'allocated-container');
-    displayReturnTable('รายการใบคืนทรัพย์สินรอดำเนินการ', returnedData, 'returned-container');
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${API_URL}/RequestRequisition/GetPendingRequest`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        Page: PRcurrentPageLoad,
+        PageSize: PRpageSizeLoad
+      }),
+    });
+
+    const result = await response.json();
+    PRRowCount = result.rowCount;
+    displayPendingRequest(result.data);
+    PRupdateLoadMoreButton(fetchGetPendingRequest)
+
   } catch (error)
   {
-    console.error('Error fetching asset data:', error);
-    document.getElementById("pending-container").innerHTML = "<p>เกิดข้อผิดพลาดในการดึงข้อมูล</p>";
-    document.getElementById("allocated-container").innerHTML = "<p>เกิดข้อผิดพลาดในการดึงข้อมูล</p>";
-    document.getElementById("returned-container").innerHTML = "<p>เกิดข้อผิดพลาดในการดึงข้อมูล</p>";
+    console.error("Error:", error);
+  }
+}
+
+async function fetchGetAllocatedRequest()
+{
+  try
+  {
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${API_URL}/RequestRequisition/GetAllocatedRequest`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        Page: ARcurrentPageLoad,
+        PageSize: ARpageSizeLoad
+      }),
+    });
+
+    const result = await response.json();
+    ARRowCount = result.rowCount;
+    displayAllocatedRequest(result.data);
+    ARupdateLoadMoreButton(fetchGetAllocatedRequest)
+
+  } catch (error)
+  {
+    console.error("Error:", error);
+  }
+}
+
+async function fetchGetPendingReturn()
+{
+  try
+  {
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${API_URL}/ReturnRequisition/GetPendingReturn`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        Page: PRTcurrentPageLoad,
+        PageSize: PRTpageSizeLoad
+      }),
+    });
+
+    const result = await response.json();
+    PRTRowCount = result.rowCount;
+    displayPendingReturn(result.data);
+    PRTupdateLoadMoreButton(fetchGetPendingReturn)
+
+  } catch (error)
+  {
+    console.error("Error:", error);
   }
 }
 
@@ -163,14 +285,12 @@ async function fetchGetReturnList()
 }
 
 
-function displayRequestTable(title, data, containerId)
-{
-  const container = document.getElementById(containerId);
-  container.innerHTML = `<div class="table-header">${title}</div>`;
+function displayPendingRequest(data) {
+  const container = document.getElementById('pending-container');
+  container.innerHTML = `<div class="table-header">รายการใบขอเบิกรอดำเนินการ</div>`;
 
-  if (data.length === 0)
-  {
-    container.innerHTML += `<p style="text-align: center;">ไม่มีใบคำร้องขอเบิก</p>`;
+  if (data.length === 0) {
+    container.innerHTML += `<p style="text-align: center;">ไม่มีใบขอเบิกที่รอดำเนินการ</p>`;
     return;
   }
 
@@ -178,34 +298,100 @@ function displayRequestTable(title, data, containerId)
   table.innerHTML = `
         <thead>
           <tr>
-            <th>ลำดับที่</th>
+            <th>ใบขอเบิกลำดับที่</th>
             <th>ชื่อผู้ขอเบิก</th>
             <th>หมวดหมู่ของทรัพย์สิน</th>
             <th>วันที่ต้องการใช้งาน</th>
+            <th>เหลืออีก(วัน)</th> 
           </tr>
         </thead>
         <tbody>
           ${data
-      .map(
-        (item, index) => `
-            <tr>
-              <td>${index + 1}</td>
-              <td>${item.username}</td>
-              <td>${item.categoryName}</td>
-              <td>${item.dueDate}</td>
-            </tr>
-          `
-      )
+      .map((item) => {
+        const today = new Date(); 
+        const dueDate = new Date(item.dueDate); 
+        const timeDiff = dueDate - today; 
+        const daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24)); 
+        
+        return `
+          <tr>
+            <td>${padNumber(item.requestId,5)}</td>
+            <td>${item.username}</td>
+            <td>${item.categoryName}</td>
+            <td>${item.dueDate}</td>
+            <td>${daysLeft > 0 ? daysLeft : "ครบกำหนดแล้ว"}</td>
+          </tr>
+        `;
+      })
       .join("")}
         </tbody>
       `;
 
+  const assetsContainer = document.createElement("div");
+  assetsContainer.id = "assetsContainer";
+  assetsContainer.style.textAlign = "center";
+  assetsContainer.innerHTML = `<button id="PRloadMoreBtn">Load More</button>`;
+
   container.appendChild(table);
+  container.appendChild(assetsContainer); 
 }
-function displayReturnTable(title, data, containerId)
+
+function displayAllocatedRequest(data)
 {
-  const container = document.getElementById(containerId);
-  container.innerHTML = `<div class="table-header">${title}</div>`;
+  const container = document.getElementById("allocated-container");
+  container.innerHTML = `<div class="table-header">รายการใบขอเบิกที่ยังไม่สมบูรณ์</div>`;
+
+  if (data.length === 0)
+  {
+    container.innerHTML += `<p style="text-align: center;">ไม่มีใบขอเบิกที่ยังไม่สมบูรณ์</p>`;
+    return;
+  }
+
+  const table = document.createElement("table");
+  table.innerHTML = `
+        <thead>
+          <tr>
+            <th>ใบขอเบิกลำดับที่</th>
+            <th>ชื่อผู้ขอเบิก</th>
+            <th>หมวดหมู่ของทรัพย์สิน</th>
+            <th>วันที่ต้องการใช้งาน</th>
+            <th>เหลืออีก(วัน)</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${data
+      .map((item) =>{ 
+        const today = new Date(); 
+        const dueDate = new Date(item.dueDate); 
+        const timeDiff = dueDate - today; 
+        const daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24)); 
+        return`
+        <tr>
+              <td>${padNumber(item.requestId,5)}</td>
+              <td>${item.username}</td>
+              <td>${item.categoryName}</td>
+              <td>${item.dueDate}</td>
+              <td>${daysLeft > 0 ? daysLeft : "ครบกำหนดแล้ว"}</td>
+            </tr>
+          `
+          })
+      .join("")}
+        </tbody>
+      `;
+
+      const assetsContainer = document.createElement("div");
+      assetsContainer.id = "assetsContainer";
+      assetsContainer.style.textAlign = "center";
+      assetsContainer.innerHTML = `<button id="ARloadMoreBtn">Load More</button>`;
+    
+      container.appendChild(table);
+      container.appendChild(assetsContainer);
+}
+
+function displayPendingReturn(data)
+{
+  const container = document.getElementById("returned-container");
+  container.innerHTML = `<div class="table-header">รายการใบคืนทรัพย์สินรอดำเนินการ</div>`;
 
   if (data.length === 0)
   {
@@ -215,33 +401,39 @@ function displayReturnTable(title, data, containerId)
 
   const table = document.createElement("table");
   table.innerHTML = `
-        <thead>
-          <tr>
-            <th>ลำดับที่</th>
-            <th>ชื่อผู้คืน</th>
-            <th>หมวดหมู่ของทรัพย์สิน</th>
-            <th>การจำแนกประเภทของทรัพย์สิน</th>
-            <th>รหัสทรัพย์สิน</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${data
+            <thead>
+              <tr>
+                <th>ใบขอคืนลำดับที่</th>
+                <th>ชื่อผู้คืน</th>
+                <th>หมวดหมู่ของทรัพย์สิน</th>
+                <th>การจำแนกประเภทของทรัพย์สิน</th>
+                <th>รหัสทรัพย์สิน</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${data
       .map(
-        (item, index) => `
-            <tr>
-              <td>${index + 1}</td>
-              <td>${item.username}</td>
-              <td>${item.categoryName}</td>
-              <td>${item.classificationName}</td>
-              <td>${item.assetId}</td>
-            </tr>
-          `
+        (item) => `
+                <tr>
+                  <td>${padNumber(item.returnId,5)}</td>
+                  <td>${item.username}</td>
+                  <td>${item.categoryName}</td>
+                  <td>${item.classificationName}</td>
+                  <td>${item.assetId}</td>
+                </tr>
+              `
       )
       .join("")}
-        </tbody>
-      `;
+            </tbody>
+          `;
 
-  container.appendChild(table);
+          const assetsContainer = document.createElement("div");
+          assetsContainer.id = "assetsContainer";
+          assetsContainer.style.textAlign = "center";
+          assetsContainer.innerHTML = `<button id="PRTloadMoreBtn">Load More</button>`;
+        
+          container.appendChild(table);
+          container.appendChild(assetsContainer);
 }
 
 function displayRequestList(data)
@@ -256,11 +448,11 @@ function displayRequestList(data)
     <option value="7">7</option>
     <option value="10" selected>10</option>
   </select>
-    <div class="table-header">รายการใบคำร้องขอเบิกทั้งหมดในระบบ</div>`;
+    <div class="table-header">รายการใบขอเบิกทั้งหมดในระบบ</div>`;
 
   if (data.length === 0)
   {
-    container.innerHTML += `<p style="text-align: center;">ไม่มีใบคำร้องขอเบิก</p>`;
+    container.innerHTML += `<p style="text-align: center;">ไม่มีใบขอเบิก</p>`;
     return;
   }
 
@@ -268,7 +460,7 @@ function displayRequestList(data)
   table.innerHTML = `
         <thead>
           <tr>
-            <th>ลำดับที่</th>
+            <th>ใบขอเบิกลำดับที่</th>
             <th>ชื่อผู้ขอเบิก</th>
             <th>หมวดหมู่ของทรัพย์สิน</th>
             <th>คุณสมบัติที่ต้องการ</th>
@@ -281,9 +473,9 @@ function displayRequestList(data)
         <tbody>
           ${data
       .map(
-        (item, index) => `
+        (item) => `
             <tr>
-              <td>${index + 1}</td>
+              <td>${padNumber(item.requestId,5)}</td>
               <td>${item.username}</td>
               <td>${item.categoryName}</td>
               <td>${item.requirement}</td>
@@ -330,7 +522,7 @@ function displayReturnList(data)
   table.innerHTML = `
         <thead>
           <tr>
-            <th>ลำดับที่</th>
+            <th>ใบขอคืนลำดับที่</th>
             <th>ชื่อผู้คืน</th>
             <th>หมวดหมู่ของทรัพย์สิน</th>
             <th>การจำแนกประเภทของทรัพย์สิน</th>
@@ -343,9 +535,9 @@ function displayReturnList(data)
         <tbody>
           ${data
       .map(
-        (item, index) => `
+        (item) => `
             <tr>
-              <td>${index + 1}</td>
+              <td>${padNumber(item.returnId,5)}</td>
               <td>${item.username}</td>
               <td>${item.categoryName}</td>
               <td>${item.classificationName}</td>
