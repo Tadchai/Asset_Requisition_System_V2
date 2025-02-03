@@ -67,8 +67,10 @@ namespace api.Controllers
                             join i in _context.Instances on r.InstanceId equals i.InstanceId into instanceJoin
                             from i in instanceJoin.DefaultIfEmpty()
                             where r.RequesterId == int.Parse(userId)
+                            orderby r.Status != (int)RequestStatus.Pending, r.RequestId
                             select new GetRequestResponse
                             {
+                                RequestId = r.RequestId,
                                 CategoryName = c.Name,
                                 Requirement = r.Requirement,
                                 DueDate = r.DueDate,
@@ -80,11 +82,7 @@ namespace api.Controllers
 
                 int skipPage = (request.Page - 1) * request.PageSize;
                 int RowCount = await query.CountAsync();
-                var result = await query.Skip(skipPage).Take(request.PageSize)
-                            .OrderBy(r => r.Status != (int)RequestStatus.Pending)
-                            .ThenBy(r => r.Status != (int)RequestStatus.Allocated)
-                            .ThenBy(r => r.Status != (int)RequestStatus.Rejected)
-                            .ToListAsync();
+                var result = await query.Skip(skipPage).Take(request.PageSize).ToListAsync();
 
                 return new JsonResult(new
                 {
@@ -147,6 +145,7 @@ namespace api.Controllers
                 var query = from r in _context.RequisitionRequests
                             join u in _context.Users on r.RequesterId equals u.UserId
                             join c in _context.Categories on r.CategoryId equals c.CategoryId
+                            orderby r.Status != (int)RequestStatus.Pending ,r.DueDate
                             select new GetRequestListResponse
                             {
                                 Username = u.Username,
@@ -160,10 +159,7 @@ namespace api.Controllers
 
                 int skipPage = (request.Page - 1) * request.PageSize;
                 int RowCount = await query.CountAsync();
-                var result = await query.Skip(skipPage).Take(request.PageSize)
-                                .OrderBy(it => it.Status != (int)RequestStatus.Pending)
-                                .ThenBy(it => it.DueDate)
-                                .ToListAsync();
+                var result = await query.Skip(skipPage).Take(request.PageSize).ToListAsync();
 
                 return new JsonResult(new
                 {
@@ -350,6 +346,7 @@ namespace api.Controllers
                             join u in _context.Users on r.RequesterId equals u.UserId
                             join c in _context.Categories on r.CategoryId equals c.CategoryId
                             where r.Status == (int)RequestStatus.Pending
+                            orderby r.DueDate
                             select new GetRequestListResponse
                             {
                                 Username = u.Username,
@@ -363,9 +360,7 @@ namespace api.Controllers
 
                 int skipPage = (request.Page - 1) * request.PageSize;
                 int RowCount = await query.CountAsync();
-                var result = await query.Skip(skipPage).Take(request.PageSize)
-                                .OrderBy(r => r.DueDate)
-                                         .ToListAsync();
+                var result = await query.Skip(skipPage).Take(request.PageSize).ToListAsync();
 
                 return new JsonResult(new
                 {

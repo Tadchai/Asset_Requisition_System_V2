@@ -35,6 +35,10 @@ document.getElementById("Confirm").addEventListener("click", async () =>
   fetchGetConfirmList()
 });
 
+function padNumber(id, length) {
+  return id.toString().padStart(length, '0');
+}
+
 let currentPage = 1;
 let pageSize = 10;
 let RowCount = 0;
@@ -229,7 +233,7 @@ function displayRequest(data)
   table.innerHTML = `
       <thead>
         <tr>
-          <th>ลำดับที่</th>
+          <th>ใบขอเบิกลำดับที่</th>
           <th>หมวดหมู่ของทรัพย์สิน</th>
           <th>คุณสมบัติที่ต้องการ</th>
           <th>วันที่ต้องการใช้งาน </th>
@@ -242,9 +246,9 @@ function displayRequest(data)
       <tbody>
         ${data
       .map(
-        (item, index) => `
+        (item) => `
           <tr>
-            <td>${index + 1}</td>
+            <td>${padNumber(item.requestId,5)}</td>
             <td>${item.categoryName}</td>
             <td>${item.requirement}</td>
             <td>${item.dueDate}</td>

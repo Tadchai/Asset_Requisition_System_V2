@@ -12,32 +12,8 @@
     <h1>Welcome</h1>
     <button id="loginButton">Login</button>
     <button id="logoutButton">Logout</button>
-    <script type="module">
-        import { clientId } from './assets/config.js'
-        document.getElementById('loginButton').addEventListener('click', () =>
-        {
-            const url = new URL("http://localhost:8080/realms/Requisition/protocol/openid-connect/auth"); 
 
-            const searchParams = url.searchParams; 
-            searchParams.append("response_type", "code");
-            searchParams.append("client_id", `${clientId}`);
-            searchParams.append("scope", "openid profile");
-            searchParams.append("redirect_uri", "http://127.0.0.1:5002/Frontend/Callback.html");
-
-            window.location.href = url.toString();
-        });
-
-        document.getElementById('logoutButton').addEventListener('click', () =>
-        {
-            localStorage.removeItem('token');
-            const url = new URL("http://localhost:8080/realms/Requisition/protocol/openid-connect/logout"); 
-
-            const searchParams = url.searchParams; 
-            searchParams.append("redirect_uri", "http://127.0.0.1:5002/Frontend/login.html");
-
-            window.location.href = url.toString();
-        });
-    </script>
+    <script type="module" src="assets/login.js" defer></script>
 </body>
 
 </html>

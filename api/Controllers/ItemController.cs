@@ -400,6 +400,7 @@ namespace api.Controllers
                                           u.Username
                                       } on i.RequestId equals x.RequestId into xJoin
                             from x in xJoin.DefaultIfEmpty()
+                            orderby i.Status != (int)InstanceStatus.Available
                             select new GetAssetIdResponse
                             {
                                 CategoryName = c.Name,
@@ -413,9 +414,7 @@ namespace api.Controllers
 
                 int skipPage = (request.Page - 1) * request.PageSize;
                 int RowCount = await query.CountAsync();
-                var result = await query.Skip(skipPage).Take(request.PageSize)
-                                        .OrderBy(i => i.Status != (int)InstanceStatus.Available)
-                                        .ToListAsync();
+                var result = await query.Skip(skipPage).Take(request.PageSize).ToListAsync();
 
                 return new JsonResult(new
                 {

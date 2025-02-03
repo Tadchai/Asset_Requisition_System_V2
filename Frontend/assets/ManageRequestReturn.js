@@ -319,7 +319,7 @@ function displayPendingRequest(data) {
             <td>${item.username}</td>
             <td>${item.categoryName}</td>
             <td>${item.dueDate}</td>
-            <td>${daysLeft > 0 ? daysLeft : "ครบกำหนดแล้ว"}</td>
+            <td>${daysLeft > 0 ? daysLeft : "ครบกำหนด"}</td>
           </tr>
         `;
       })
@@ -371,7 +371,7 @@ function displayAllocatedRequest(data)
               <td>${item.username}</td>
               <td>${item.categoryName}</td>
               <td>${item.dueDate}</td>
-              <td>${daysLeft > 0 ? daysLeft : "ครบกำหนดแล้ว"}</td>
+              <td>${daysLeft > 0 ? daysLeft : "ครบกำหนด"}</td>
             </tr>
           `
           })
@@ -579,7 +579,7 @@ async function confirmRequestAction(requestId)
     document.getElementById("Requirement").textContent = data.requirement || "-";
     document.getElementById("DueDate").textContent = data.dueDate || "-";
     document.getElementById("ReasonRequest").textContent = data.reasonRequest || "-";
-    document.getElementById("Status").textContent = data.status || "-";
+    document.getElementById("Status").textContent = RequestStatus[data.status]|| "-";
 
     document.getElementById("submitDecisionBtn").setAttribute("data-request-id", requestId);
 

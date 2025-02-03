@@ -27,6 +27,7 @@ namespace api.ViewModels
 
     public class GetRequestResponse
     {
+        public int RequestId { get; set; }
         public string CategoryName { get; set; }
         public string Requirement { get; set; }
         public DateOnly DueDate { get; set; }

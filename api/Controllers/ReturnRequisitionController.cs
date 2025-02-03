@@ -78,6 +78,7 @@ namespace api.Controllers
                                       } on rq.InstanceId equals z.InstanceId into zJoin
                             from z in zJoin.DefaultIfEmpty()
                             join u in _context.Users on rq.RequesterId equals u.UserId
+                            orderby rt.Status != (int)ReturnStatus.Pending
                             select new GetReturnAssetListResponse
                             {
                                 Username = u.Username,
@@ -92,9 +93,7 @@ namespace api.Controllers
 
                 int skipPage = (request.Page - 1) * request.PageSize;
                 int RowCount = await query.CountAsync();
-                var result = await query.Skip(skipPage).Take(request.PageSize)
-                                .OrderBy(rt => rt.Status != (int)ReturnStatus.Pending)
-                                .ToListAsync();
+                var result = await query.Skip(skipPage).Take(request.PageSize).ToListAsync();
 
                 return new JsonResult(new
                 {
