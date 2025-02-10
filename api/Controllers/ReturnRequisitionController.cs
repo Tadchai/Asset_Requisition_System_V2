@@ -60,12 +60,14 @@ namespace api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> GetReturnList(PaginatedRequest request)
+        public async Task<IActionResult> GetReturnList([FromBody]ReturnListRequest request)
         {
             try
             {
                 var query = from rt in _context.RequisitionReturns
                             join rq in _context.RequisitionRequests on rt.RequestId equals rq.RequestId
+                            join ur in _context.Users on rt.ResponsibleId equals ur.UserId into userJoin
+                            from ur in userJoin.DefaultIfEmpty()
                             join z in from i in _context.Instances
                                       join cs in _context.Classifications on i.ClassificationId equals cs.ClassificationId
                                       join c in _context.Categories on cs.CategoryId equals c.CategoryId
@@ -78,29 +80,79 @@ namespace api.Controllers
                                       } on rq.InstanceId equals z.InstanceId into zJoin
                             from z in zJoin.DefaultIfEmpty()
                             join u in _context.Users on rq.RequesterId equals u.UserId
-                            orderby rt.Status != (int)ReturnStatus.Pending
+                            orderby rt.ReturnId
                             select new GetReturnAssetListResponse
                             {
-                                Username = u.Username,
+                                FirstName = u.FirstName,
+                                LastName = u.LastName,
                                 CategoryName = z.CategoryName,
                                 ClassificationName = z.ClassificationName,
                                 AssetId = z.AssetId,
                                 ReasonReturn = rt.ReasonReturn,
                                 Status = rt.Status,
                                 InstanceId = z.InstanceId,
-                                ReturnId = rt.ReturnId
+                                ReturnId = rt.ReturnId,
+                                FirstNameResponsible = ur.FirstName,
+                                LastNameResponsible = ur.LastName,
                             };
+                
+                if (!string.IsNullOrWhiteSpace(request.FirstName))
+                    query = query.Where(r => r.FirstName.ToLower().Contains(request.FirstName.ToLower()));
 
-                int skipPage = (request.Page - 1) * request.PageSize;
-                int RowCount = await query.CountAsync();
-                var result = await query.Skip(skipPage).Take(request.PageSize).ToListAsync();
+                if (!string.IsNullOrWhiteSpace(request.LastName))
+                    query = query.Where(r => r.LastName.ToLower().Contains(request.LastName.ToLower()));
 
-                return new JsonResult(new
+                if (!string.IsNullOrWhiteSpace(request.CategoryName))
+                    query = query.Where(r => r.CategoryName.ToLower().Contains(request.CategoryName.ToLower()));
+
+                if (request.Status.HasValue)
+                    query = query.Where(r => r.Status == request.Status.Value);
+
+                if (!string.IsNullOrWhiteSpace(request.FirstNameResponsible))
+                    query = query.Where(r => r.FirstNameResponsible.ToLower().Contains(request.FirstNameResponsible.ToLower()));
+
+                if (!string.IsNullOrWhiteSpace(request.LastNameResponsible))
+                    query = query.Where(r => r.LastNameResponsible.ToLower().Contains(request.LastNameResponsible.ToLower()));
+
+                int itemTotal = await query.CountAsync();
+                int countBefore = 0, countAfter = 0;
+                var queryWithFilter = query;
+                if (request.NextCursor.HasValue)
                 {
-                    currentPage = request.Page,
-                    request.PageSize,
-                    RowCount,
-                    data = result
+                    query = query.Where(r => r.ReturnId > request.NextCursor);
+                }
+                else if (request.PreviousCursor.HasValue)
+                {
+                    query = query.Where(r => r.ReturnId < request.PreviousCursor)
+                                    .OrderByDescending(r => r.ReturnId);
+                }
+
+                List<GetReturnAssetListResponse> result;
+                if (request.PreviousCursor.HasValue)
+                {
+                    var queryWithTake = query.Take(request.PageSize);
+                    result = await queryWithTake.ToListAsync();
+                    result.Reverse();
+                }
+                else
+                {
+                    result = await query.Take(request.PageSize).ToListAsync();
+                }
+                var firstId = result.First().ReturnId;
+                var lastId = result.Last().ReturnId;
+                countBefore = await queryWithFilter.Where(r => r.ReturnId < firstId).CountAsync();
+                countAfter = await queryWithFilter.Where(r => r.ReturnId > lastId).CountAsync();
+                int rowCount = result.Count;
+
+                return new JsonResult(new PaginatedResponse<List<GetReturnAssetListResponse>>
+                {
+                    ItemTotal = itemTotal,
+                    TotalRow = rowCount,
+                    PreviousCursor = firstId,
+                    NextCursor = lastId,
+                    TotalBefore = countBefore,
+                    TotalAfter = countAfter,
+                    Data = result,
                 });
             }
             catch (Exception ex)
@@ -138,7 +190,7 @@ namespace api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> GetPendingReturn(PaginatedRequest request)
+        public async Task<IActionResult> GetPendingReturn([FromBody]PendingReturnRequest request)
         {
             try
             {
@@ -157,9 +209,11 @@ namespace api.Controllers
                             from z in zJoin.DefaultIfEmpty()
                             join u in _context.Users on rq.RequesterId equals u.UserId
                             where rt.Status == (int)ReturnStatus.Pending
+                            orderby rt.ReturnId
                             select new GetReturnAssetListResponse
                             {
-                                Username = u.Username,
+                                FirstName = u.FirstName,
+                                LastName = u.LastName,
                                 CategoryName = z.CategoryName,
                                 ClassificationName = z.ClassificationName,
                                 AssetId = z.AssetId,
@@ -168,17 +222,22 @@ namespace api.Controllers
                                 ReturnId = rt.ReturnId
                             };
 
-                int skipPage = (request.Page - 1) * request.PageSize;
-                int RowCount = await query.CountAsync();
-                var result = await query.Skip(skipPage).Take(request.PageSize)
-                                         .ToListAsync();
-
-                return new JsonResult(new
+                if (request.NextCursor.HasValue)
                 {
-                    currentPage = request.Page,
-                    request.PageSize,
-                    RowCount,
-                    data = result
+                    query = query.Where(r => r.ReturnId > request.NextCursor);
+                }
+               
+                var result = await query.Take(request.PageSize).ToListAsync();
+                var lastResult = result.LastOrDefault();
+                var NextCursor = lastResult?.ReturnId;
+
+                bool hasNextPage = await query.Skip(request.PageSize).AnyAsync();
+
+                return new JsonResult(new PaginatedResponse<List<GetReturnAssetListResponse>>
+                {
+                    HasNextPage = hasNextPage,
+                    NextCursor = NextCursor,
+                    Data = result
                 });
             }
             catch (Exception ex)

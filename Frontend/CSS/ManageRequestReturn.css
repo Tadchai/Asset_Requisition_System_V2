@@ -84,14 +84,6 @@
         /* กรณีมีข้อมูลเกินหน้าจอ */
       }
 
-      .asset-container {
-        margin-top: 20px;
-        padding: 20px;
-        border: 1px solid #ddd;
-        background-color: #fff;
-        border-radius: 10px;
-      }
-
       /* Table Styles */
       table {
         width: 100%;
@@ -122,7 +114,6 @@
       .table-header {
         font-size: 20px;
         font-weight: bold;
-        margin-bottom: 10px;
         text-align: center;
       }
 
@@ -199,7 +190,7 @@
         border: 1px solid #ddd;
         padding: 10px;
         border-radius: 8px;
-        background-color: #f9f9f9;
+        background-color: #fff;
         overflow: auto;
         /* เปิดการเลื่อนดู */
       }
@@ -224,15 +215,15 @@
       }
 
       #pending-container {
-        height: 340px;
+        height: 310px;
       }
 
       #allocated-container {
-        height: 340px;
+        height: 310px;
       }
 
       #returned-container {
-        height: 700px;
+        height: 680px;
       }
 
       #single-view {
@@ -244,7 +235,7 @@
         justify-content: center;
         /* ให้อยู่ตรงกลาง */
         align-items: center;
-        gap: 150px;
+        gap: 100px;
         width: 100%;
         padding: 10px 20px;
         background: white;
@@ -271,7 +262,7 @@
 
       #PRloadMoreBtn,
       #ARloadMoreBtn,
-      #PRTloadMoreBtn {
+      #PTRloadMoreBtn {
         display: none;
         /* ซ่อนปุ่มตอนแรก */
         padding: 10px 15px;
@@ -293,8 +284,50 @@
         background-color: #0056b3;
       }
 
-      #PRTloadMoreBtn:hover {
+      #PTRloadMoreBtn:hover {
         background-color: #0056b3;
       }
 
+      .table-header {
+        display: flex;
+        align-items: center;
+        position: relative;
+        justify-content: center; /* จัดให้หัวข้ออยู่ตรงกลาง */
+        padding: 10px;
+      }
       
+      .table-header h2 {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        margin: 0;
+        font-size: 18px;
+      }
+      
+      .table-header button {
+        margin-left: auto; /* ทำให้ปุ่มไปอยู่ขวาสุด */
+      }
+      
+      .table-controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+      
+      .page-size {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .detail-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 5px 0;
+      }
+      
+      .detail-label {
+        font-weight: bold;
+        color: #333;
+      }

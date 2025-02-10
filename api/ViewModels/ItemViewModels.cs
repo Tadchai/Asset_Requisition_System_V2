@@ -57,14 +57,14 @@ namespace api.ViewModels
     {
         public int CategoryId { get; set; }
         public string Name { get; set; }
-        public string Description { get; set;}
+        public string Description { get; set; }
     }
 
     public class UpdateClassificationRequest
     {
         public int ClassificationId { get; set; }
         public string Name { get; set; }
-        public string Description { get; set;}
+        public string Description { get; set; }
     }
 
     public class UpdateInstanceRequest
@@ -95,7 +95,8 @@ namespace api.ViewModels
         public string ClassificationName { get; set; }
         public string ClassificationDescription { get; set; }
         public string AssetId { get; set; }
-        public string Username { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
         public int InstanceId { get; set; }
         public int Status { get; set; }
     }
@@ -104,6 +105,45 @@ namespace api.ViewModels
     {
         public int InstanceId { get; set; }
         public InstanceStatus Status { get; set; }
+    }
+
+    public class CountInstanceResponse
+    {
+        public string CategoryName { get; set; }
+        public int TotalInstances { get; set; }
+        public int TotalUsed { get; set; }
+    }
+
+    public class GetAssetIdRequest
+    {
+        public int PageSize { get; set; }
+        public int? PreviousCursor { get; set; }
+        public int? NextCursor { get; set; }
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
+        public string? CategoryName { get; set; }
+        public int? Status { get; set; }
+    }
+
+    public class GetCategoryRequest
+    {
+        public int PageSize { get; set; }
+        public int? PreviousCursor { get; set; }
+        public int? NextCursor { get; set; }
+    }
+
+    public class GetClassificationRequest
+    {
+        public int PageSize { get; set; }
+        public int? PreviousCursor { get; set; }
+        public int? NextCursor { get; set; }
+    }
+
+    public class GetInstancRequest
+    {
+        public int PageSize { get; set; }
+        public int? PreviousCursor { get; set; }
+        public int? NextCursor { get; set; }
     }
 
 }

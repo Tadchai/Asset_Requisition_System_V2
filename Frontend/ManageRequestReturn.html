@@ -24,7 +24,7 @@
     <div class="sidebar-item" id="ToManageAssetPage">จัดการทรัพย์สินที่ถือครอง</div>
     <div class="sidebar-item" id="ToManageAssetInSystemPage">จัดการทรัพย์สินในระบบ</div>
     <div class="sidebar-item">จัดการใบขอเบิก/คืน</div>
-    <div class="sidebar-item">ภาพรวมของทรัพย์สิน</div>
+    <div class="sidebar-item" id="ToOverviewAssetPage">ภาพรวมของทรัพย์สิน</div>
     <div class="sidebar-item" id="ToLoginPage">ออกจากระบบ</div>
   </div>
 
@@ -32,8 +32,17 @@
   <div class="main-content" id="multi-view">
     <!-- คอลัมน์ซ้าย -->
     <div id="left-column">
+      <div class="table-header">
+      <h2>รายการใบขอเบิกรอดำเนินการ</h2>
+      <button onclick="refreshTable(fetchGetPendingRequest)">Refresh</button>
+      </div>
+      
       <div id="pending-container" class="asset-container">
         <!-- Pending จะถูกแสดงที่นี่ -->
+      </div>
+      <div class="table-header">
+        <h2>รายการใบขอเบิกที่ยังไม่เสร็จสมบูรณ์</h2>
+        <button onclick="refreshTable(fetchGetAllocatedRequest)">Refresh</button>
       </div>
       <div id="allocated-container" class="asset-container">
         <!-- Allocated จะถูกแสดงที่นี่ -->
@@ -42,6 +51,10 @@
 
     <!-- คอลัมน์ขวา -->
     <div id="right-column">
+      <div class="table-header">
+        <h2>รายการใบคืนรอดำเนินการ</h2>
+        <button onclick="refreshTable(fetchGetPendingReturn)">Refresh</button>
+      </div>
       <div id="returned-container" class="asset-container">
         <!-- Returned จะถูกแสดงที่นี่ -->
       </div>
@@ -55,52 +68,75 @@
     </div>
   </div>
 
+  <!-- Footer -->
   <div class="pagination-footer" id="footer">
-    <button id="prevBtn" onclick="changePage(-1)" disabled>⬅️ย้อนกลับ</button>
-    <span id="RowCountDisplay"></span>
-    <button id="nextBtn" onclick="changePage(1)">ถัดไป➡️</button>
-  </div>
+    <span>ข้อมูลก่อนหน้า: <span id="TotalBefore">0</span> รายการ</span>
+    <button id="prevBtn" onclick="previousPage()">⬅️ย้อนกลับ</button>
 
-  <div id="RequestModal" class="modal">
-    <div class="modal-content">
-      <span id="closeRequestModalBtn" class="close-btn">&times;</span>
-      <h2>รายระเอียดคำร้องการขอเบิก</h2>
-      <p style="text-align: left;"><strong>ชื่อผู้ขอเบิก:</strong> <br><span id="Username"></span></p>
-      <p style="text-align: left;"><strong>หมวดหมู่ของทรัพย์สิน:</strong> <br><span id="CategoryName"></span></p>
-      <p style="text-align: left;"><strong>คุณสมบัติที่ต้องการ:</strong> <br><span id="Requirement"></span></p>
-      <p style="text-align: left;"><strong>วันที่ต้องการใช้งาน:</strong> <br><span id="DueDate"></span></p>
-      <p style="text-align: left;"><strong>เหตุผลในการขอเบิก:</strong> <br><span id="ReasonRequest"></span></p>
-      <p style="text-align: left;"><strong>สถานะคำร้อง:</strong> <br><span id="Status"></span></p>
+    <span>ข้อมูลที่แสดง: <span id="TotalRow">0</span> รายการ</span>
 
-      <div class="form-group">
-        <label for="decisionSelect">ตั้งสถานะคำร้อง</label>
-        <select id="decisionSelect" onchange="handleDecisionChange()">
-          <option value="">-- กรุณาเลือกสถานะ --</option>
-          <option value="1">ยอมรับ</option>
-          <option value="2">ปฏิเสธ</option>
-        </select>
+    <button id="nextBtn" onclick="nextPage()">ถัดไป➡️</button>
+    <span>ข้อมูลหลังจากนี้: <span id="TotalAfter">0</span> รายการ</span>
+</div>
+
+
+<div id="RequestModal" class="modal">
+  <div class="modal-content">
+    <span id="closeRequestModalBtn" class="close-btn">&times;</span>
+    <h2>รายละเอียดคำร้องการขอเบิก</h2><hr><br>
+
+    <div class="request-details">
+      <div class="detail-row">
+        <span class="detail-label">ชื่อผู้ขอเบิก:</span>
+        <span id="Username"></span>
       </div>
-
-      <div class="form-group">
-        <div id="acceptOptions" style="display: none; margin-top: 10px;">
-          <label for="assetSelectRequisition">เลือกทรัพย์สิน</label>
-          <select id="assetSelectRequisition">
-            <option value="">-- กรุณาเลือกทรัพย์สิน --</option>
-          </select>
-        </div>
+      <div class="detail-row">
+        <span class="detail-label">หมวดหมู่ของทรัพย์สิน:</span>
+        <span id="CategoryName"></span>
       </div>
-
-      <div class="form-group">
-        <div id="rejectReason" style="display: none; margin-top: 10px;">
-          <label for="rejectReasonInput">เหตุผลการปฏิเสธ</label>
-          <textarea id="rejectReasonInput" placeholder="กรุณาใส่เหตุผล"></textarea>
-        </div>
+      <div class="detail-row">
+        <span class="detail-label">คุณสมบัติที่ต้องการ:</span>
+        <span id="Requirement"></span>
       </div>
-      <br>
+      <div class="detail-row">
+        <span class="detail-label">วันที่ต้องการใช้งาน:</span>
+        <span id="DueDate"></span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">เหตุผลในการขอเบิก:</span>
+        <span id="ReasonRequest"></span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">สถานะคำร้อง:</span>
+        <span id="Status"></span>
+      </div>
+    </div><br><hr><br>
 
-      <button id="submitDecisionBtn" onclick="submitDecision()">ยืนยัน</button>
+    <div class="form-group">
+      <label for="decisionSelect">จัดการคำร้อง</label>
+      <select id="decisionSelect" onchange="handleDecisionChange()">
+        <option value="">-- กรุณาเลือกสถานะ --</option>
+        <option value="1">ยอมรับ</option>
+        <option value="2">ปฏิเสธ</option>
+      </select>
     </div>
+
+    <div class="form-group" id="acceptOptions" style="display: none;">
+      <label for="assetSelectRequisition">เลือกทรัพย์สิน</label>
+      <select id="assetSelectRequisition">
+        <option value="">-- กรุณาเลือกทรัพย์สิน --</option>
+      </select>
+    </div>
+
+    <div class="form-group" id="rejectReason" style="display: none;">
+      <label for="rejectReasonInput">เหตุผลการปฏิเสธ</label>
+      <textarea id="rejectReasonInput" placeholder="กรุณาใส่เหตุผล"></textarea>
+    </div>
+
+    <button id="submitDecisionBtn" onclick="submitDecision()">ยืนยัน</button>
   </div>
+</div>
+
 
   <script type="module" src="assets/ManageRequestReturn.js" defer></script>
 </body>

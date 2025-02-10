@@ -21,6 +21,7 @@ namespace api.Controllers
 {
     [ApiController]
     [Route("[controller]/[action]")]
+    [Authorize]
     public class AuthController : ControllerBase
     {
         private readonly EquipmentBorrowingV2Context _context;
@@ -31,31 +32,44 @@ namespace api.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> CheckSubject()
+        public async Task<IActionResult> UpsertUser()
         {
             using (var transaction = await _context.Database.BeginTransactionAsync())
             {
                 try
                 {
                     var subjectFromToken = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-                    var checkUser = await _context.Users.SingleOrDefaultAsync(u => u.SubjectId == subjectFromToken);
-                    if (checkUser == null)
+                    var firstNameFromToken = User.FindFirst(ClaimTypes.GivenName)?.Value;
+                    var lastNameFromToken = User.FindFirst(ClaimTypes.Surname)?.Value;
+                    var roleFromToken = User.FindFirst("realm_access")?.Value;
+                    
+                    var userModal = await _context.Users.SingleOrDefaultAsync(u => u.SubjectId == subjectFromToken);
+                    if (userModal == null)
                     {
-                        var usernameFromToken = User.FindFirst("name")?.Value;
-                        var userModal = new User
+                        var newUserModal = new User
                         {
-                            Username = usernameFromToken,
-                            SubjectId = subjectFromToken
+                            FirstName = firstNameFromToken,
+                            LastName = lastNameFromToken,
+                            SubjectId = subjectFromToken,
+                            Role = roleFromToken.Contains("procurement") ? true : false
                         };
 
-                        await _context.Users.AddAsync(userModal);
+                        await _context.Users.AddAsync(newUserModal);
 
                         await _context.SaveChangesAsync();
                         await transaction.CommitAsync();
                         return new JsonResult(new MessageResponse { Message = "User created successfully.", StatusCode = HttpStatusCode.Created });
                     }
-                    return new JsonResult(new MessageResponse { Message = "User already exists.", StatusCode = HttpStatusCode.OK });
+                    else
+                    {
+                        userModal.FirstName = firstNameFromToken;
+                        userModal.LastName = lastNameFromToken;
+                        userModal.Role = roleFromToken.Contains("procurement") ? true : false;
+
+                        await _context.SaveChangesAsync();
+                        await transaction.CommitAsync();
+                        return new JsonResult(new MessageResponse { Message = "User update successfully.", StatusCode = HttpStatusCode.OK });
+                    }
                 }
                 catch (Exception ex)
                 {

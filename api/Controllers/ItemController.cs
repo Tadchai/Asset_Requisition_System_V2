@@ -45,11 +45,12 @@ namespace api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> GetCategory(PaginatedRequest request)
+        public async Task<IActionResult> GetCategory([FromBody]GetCategoryRequest request)
         {
             try
             {
                 var query = from c in _context.Categories
+                            orderby c.CategoryId
                             select new CategoryResponse
                             {
                                 CategoryId = c.CategoryId,
@@ -57,16 +58,45 @@ namespace api.Controllers
                                 Description = c.Description
                             };
 
-                int skipPage = (request.Page - 1) * request.PageSize;
-                int RowCount = await query.CountAsync();
-                var result = await query.Skip(skipPage).Take(request.PageSize).ToListAsync();
-
-                return new JsonResult(new
+                int itemTotal = await query.CountAsync();
+                int countBefore = 0, countAfter = 0;
+                var queryWithFilter = query;
+                if (request.NextCursor.HasValue)
                 {
-                    currentPage = request.Page,
-                    request.PageSize,
-                    RowCount,
-                    data = result
+                    query = query.Where(r => r.CategoryId > request.NextCursor);
+                }
+                else if (request.PreviousCursor.HasValue)
+                {
+                    query = query.Where(r => r.CategoryId < request.PreviousCursor)
+                                    .OrderByDescending(r => r.CategoryId);
+                }
+
+                List<CategoryResponse> result;
+                if (request.PreviousCursor.HasValue)
+                {
+                    var queryWithTake = query.Take(request.PageSize);
+                    result = await queryWithTake.ToListAsync();
+                    result.Reverse();
+                }
+                else
+                {
+                    result = await query.Take(request.PageSize).ToListAsync();
+                }
+                var firstId = result.First().CategoryId;
+                var lastId = result.Last().CategoryId;
+                countBefore = await queryWithFilter.Where(r => r.CategoryId < firstId).CountAsync();
+                countAfter = await queryWithFilter.Where(r => r.CategoryId > lastId).CountAsync();
+                int rowCount = result.Count;
+
+                return new JsonResult(new PaginatedResponse<List<CategoryResponse>>
+                {
+                    ItemTotal = itemTotal,
+                    TotalRow = rowCount,
+                    PreviousCursor = firstId,
+                    NextCursor = lastId,
+                    TotalBefore = countBefore,
+                    TotalAfter = countAfter,
+                    Data = result,
                 });
             }
             catch (Exception ex)
@@ -120,12 +150,13 @@ namespace api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> GetClassification(PaginatedRequest request)
+        public async Task<IActionResult> GetClassification([FromBody]GetClassificationRequest request)
         {
             try
             {
                 var query = from cs in _context.Classifications
                             join c in _context.Categories on cs.CategoryId equals c.CategoryId
+                            orderby cs.ClassificationId
                             select new ClassificationResponse
                             {
                                 ClassificationId = cs.ClassificationId,
@@ -134,16 +165,45 @@ namespace api.Controllers
                                 Description = cs.Description
                             };
 
-                int skipPage = (request.Page - 1) * request.PageSize;
-                int RowCount = await query.CountAsync();
-                var result = await query.Skip(skipPage).Take(request.PageSize).ToListAsync();
-
-                return new JsonResult(new
+                int itemTotal = await query.CountAsync();
+                int countBefore = 0, countAfter = 0;
+                var queryWithFilter = query;
+                if (request.NextCursor.HasValue)
                 {
-                    currentPage = request.Page,
-                    request.PageSize,
-                    RowCount,
-                    data = result
+                    query = query.Where(r => r.ClassificationId > request.NextCursor);
+                }
+                else if (request.PreviousCursor.HasValue)
+                {
+                    query = query.Where(r => r.ClassificationId < request.PreviousCursor)
+                                    .OrderByDescending(r => r.ClassificationId);
+                }
+
+                List<ClassificationResponse> result;
+                if (request.PreviousCursor.HasValue)
+                {
+                    var queryWithTake = query.Take(request.PageSize);
+                    result = await queryWithTake.ToListAsync();
+                    result.Reverse();
+                }
+                else
+                {
+                    result = await query.Take(request.PageSize).ToListAsync();
+                }
+                var firstId = result.First().ClassificationId;
+                var lastId = result.Last().ClassificationId;
+                countBefore = await queryWithFilter.Where(r => r.ClassificationId < firstId).CountAsync();
+                countAfter = await queryWithFilter.Where(r => r.ClassificationId > lastId).CountAsync();
+                int rowCount = result.Count;
+
+                return new JsonResult(new PaginatedResponse<List<ClassificationResponse>>
+                {
+                    ItemTotal = itemTotal,
+                    TotalRow = rowCount,
+                    PreviousCursor = firstId,
+                    NextCursor = lastId,
+                    TotalBefore = countBefore,
+                    TotalAfter = countAfter,
+                    Data = result,
                 });
             }
             catch (Exception ex)
@@ -176,13 +236,14 @@ namespace api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> GetInstance(PaginatedRequest request)
+        public async Task<IActionResult> GetInstance([FromBody]GetInstancRequest request)
         {
             try
             {
                 var query = from i in _context.Instances
                             join cs in _context.Classifications on i.ClassificationId equals cs.ClassificationId
                             join c in _context.Categories on cs.CategoryId equals c.CategoryId
+                            orderby i.InstanceId
                             select new InstanceResponse
                             {
                                 InstanceId = i.InstanceId,
@@ -191,16 +252,45 @@ namespace api.Controllers
                                 AssetId = i.AssetId
                             };
 
-                int skipPage = (request.Page - 1) * request.PageSize;
-                int RowCount = await query.CountAsync();
-                var result = await query.Skip(skipPage).Take(request.PageSize).ToListAsync();
-
-                return new JsonResult(new
+                int itemTotal = await query.CountAsync();
+                int countBefore = 0, countAfter = 0;
+                var queryWithFilter = query;
+                if (request.NextCursor.HasValue)
                 {
-                    currentPage = request.Page,
-                    request.PageSize,
-                    RowCount,
-                    data = result
+                    query = query.Where(r => r.InstanceId > request.NextCursor);
+                }
+                else if (request.PreviousCursor.HasValue)
+                {
+                    query = query.Where(r => r.InstanceId < request.PreviousCursor)
+                                    .OrderByDescending(r => r.InstanceId);
+                }
+
+                List<InstanceResponse> result;
+                if (request.PreviousCursor.HasValue)
+                {
+                    var queryWithTake = query.Take(request.PageSize);
+                    result = await queryWithTake.ToListAsync();
+                    result.Reverse();
+                }
+                else
+                {
+                    result = await query.Take(request.PageSize).ToListAsync();
+                }
+                var firstId = result.First().InstanceId;
+                var lastId = result.Last().InstanceId;
+                countBefore = await queryWithFilter.Where(r => r.InstanceId < firstId).CountAsync();
+                countAfter = await queryWithFilter.Where(r => r.InstanceId > lastId).CountAsync();
+                int rowCount = result.Count;
+
+                return new JsonResult(new PaginatedResponse<List<InstanceResponse>>
+                {
+                    ItemTotal = itemTotal,
+                    TotalRow = rowCount,
+                    PreviousCursor = firstId,
+                    NextCursor = lastId,
+                    TotalBefore = countBefore,
+                    TotalAfter = countAfter,
+                    Data = result,
                 });
             }
             catch (Exception ex)
@@ -385,7 +475,7 @@ namespace api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> GetAssetId(PaginatedRequest request)
+        public async Task<IActionResult> GetAssetId([FromBody]GetAssetIdRequest request)
         {
             try
             {
@@ -397,31 +487,73 @@ namespace api.Controllers
                                       select new
                                       {
                                           r.RequestId,
-                                          u.Username
+                                          u.FirstName,
+                                          u.LastName,
                                       } on i.RequestId equals x.RequestId into xJoin
                             from x in xJoin.DefaultIfEmpty()
-                            orderby i.Status != (int)InstanceStatus.Available
+                            orderby i.InstanceId
                             select new GetAssetIdResponse
                             {
                                 CategoryName = c.Name,
                                 ClassificationName = cs.Name,
                                 AssetId = i.AssetId,
-                                Username = x.Username,
+                                FirstName = x.FirstName,
+                                LastName = x.LastName,
                                 Status = i.Status,
                                 InstanceId = i.InstanceId
                             };
 
+                if (!string.IsNullOrWhiteSpace(request.FirstName))
+                    query = query.Where(r => r.FirstName.ToLower().Contains(request.FirstName.ToLower()));
 
-                int skipPage = (request.Page - 1) * request.PageSize;
-                int RowCount = await query.CountAsync();
-                var result = await query.Skip(skipPage).Take(request.PageSize).ToListAsync();
+                if (!string.IsNullOrWhiteSpace(request.LastName))
+                    query = query.Where(r => r.LastName.ToLower().Contains(request.LastName.ToLower()));
 
-                return new JsonResult(new
+                if (!string.IsNullOrWhiteSpace(request.CategoryName))
+                    query = query.Where(r => r.CategoryName.ToLower().Contains(request.CategoryName.ToLower()));
+
+                if (request.Status.HasValue)
+                    query = query.Where(r => r.Status == request.Status.Value);
+
+                int itemTotal = await query.CountAsync();
+                int countBefore = 0, countAfter = 0;
+                var queryWithFilter = query;
+                if (request.NextCursor.HasValue)
                 {
-                    currentPage = request.Page,
-                    request.PageSize,
-                    RowCount,
-                    data = result
+                    query = query.Where(r => r.InstanceId > request.NextCursor);
+                }
+                else if (request.PreviousCursor.HasValue)
+                {
+                    query = query.Where(r => r.InstanceId < request.PreviousCursor)
+                                    .OrderByDescending(r => r.InstanceId);
+                }
+
+                List<GetAssetIdResponse> result;
+                if (request.PreviousCursor.HasValue)
+                {
+                    var queryWithTake = query.Take(request.PageSize);
+                    result = await queryWithTake.ToListAsync();
+                    result.Reverse();
+                }
+                else
+                {
+                    result = await query.Take(request.PageSize).ToListAsync();
+                }
+                var firstId = result.First().InstanceId;
+                var lastId = result.Last().InstanceId;
+                countBefore = await queryWithFilter.Where(r => r.InstanceId < firstId).CountAsync();
+                countAfter = await queryWithFilter.Where(r => r.InstanceId > lastId).CountAsync();
+                int rowCount = result.Count;
+
+                return new JsonResult(new PaginatedResponse<List<GetAssetIdResponse>>
+                {
+                    ItemTotal = itemTotal,
+                    TotalRow = rowCount,
+                    PreviousCursor = firstId,
+                    NextCursor = lastId,
+                    TotalBefore = countBefore,
+                    TotalAfter = countAfter,
+                    Data = result,
                 });
             }
             catch (Exception ex)
@@ -443,7 +575,8 @@ namespace api.Controllers
                                                    select new
                                                    {
                                                        r.RequestId,
-                                                       u.Username
+                                                       u.FirstName,
+                                                       u.LastName
                                                    } on i.RequestId equals x.RequestId into xJoin
                                          from x in xJoin.DefaultIfEmpty()
                                          where i.InstanceId == instanceId
@@ -454,7 +587,8 @@ namespace api.Controllers
                                              ClassificationName = cs.Name,
                                              ClassificationDescription = cs.Description,
                                              AssetId = i.AssetId,
-                                             Username = x.Username,
+                                             FirstName = x.FirstName,
+                                             LastName = x.LastName,
                                              Status = i.Status,
                                              InstanceId = i.InstanceId
                                          }).SingleAsync();
@@ -528,6 +662,31 @@ namespace api.Controllers
                                           }).ToListAsync();
 
                 return new JsonResult(instanceList);
+            }
+            catch (Exception ex)
+            {
+                return new JsonResult(new MessageResponse { Message = $"An error occurred: {ex.Message}", StatusCode = HttpStatusCode.InternalServerError });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetCountInstance()
+        {
+            try
+            {
+                var response = await (from i in _context.Instances
+                                          join cs in _context.Classifications on i.ClassificationId equals cs.ClassificationId
+                                          join c in _context.Categories on cs.CategoryId equals c.CategoryId
+                                          where i.Status == (int)InstanceStatus.Available
+                                          group i by new { c.Name } into grouped
+                                          select new CountInstanceResponse
+                                          {
+                                              CategoryName = grouped.Key.Name,
+                                              TotalInstances = grouped.Count(),
+                                              TotalUsed = grouped.Count(i => i.RequestId != null)
+                                          }).ToListAsync();
+
+                return new JsonResult(response);
             }
             catch (Exception ex)
             {

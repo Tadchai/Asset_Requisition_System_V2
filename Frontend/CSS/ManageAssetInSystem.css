@@ -190,7 +190,7 @@
       display: flex;
       justify-content: center; /* ให้อยู่ตรงกลาง */
       align-items: center;
-      gap: 150px;
+      gap: 100px;
       width: 100%;
       padding: 10px 20px;
       background: white;
@@ -212,4 +212,37 @@
   .pagination-footer button:disabled {
       opacity: 0.5;
       cursor: not-allowed;
+  }
+
+  .table-header {
+    display: flex;
+    align-items: center;
+    position: relative;
+    justify-content: center; /* จัดให้หัวข้ออยู่ตรงกลาง */
+    padding: 10px;
+  }
+  
+  .table-header h2 {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    margin: 0;
+    font-size: 18px;
+  }
+  
+  .table-header button {
+    margin-left: auto; /* ทำให้ปุ่มไปอยู่ขวาสุด */
+  }
+  
+  .table-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  .page-size {
+    display: flex;
+    align-items: center;
+    gap: 5px;
   }

@@ -8,23 +8,22 @@ document.getElementById("ToManageAssetPage").addEventListener("click", async () 
 {
   window.location.href = "/Frontend/ManageAsset.html"
 });
+document.getElementById("ToOverviewAssetPage").addEventListener("click", async () =>
+{
+  window.location.href = "/Frontend/OverviewAsset.html"
+});
 document.getElementById("ToLoginPage").addEventListener("click", async () =>
 {
   localStorage.removeItem('token');
   window.location.href = "/Frontend/login.html"
 });
 
-document.addEventListener("DOMContentLoaded", async () =>
-{
-  fetchGetPendingRequest();
-  fetchGetAllocatedRequest();
-  fetchGetPendingReturn()
-});
+
 document.getElementById("RequestReturnList").addEventListener("click", async () =>
 {
-  fetchGetPendingRequest();
-  fetchGetAllocatedRequest();
-  fetchGetPendingReturn()
+  refreshTable(fetchGetPendingRequest);
+  refreshTable(fetchGetAllocatedRequest);
+  refreshTable(fetchGetPendingReturn);
 });
 
 document.getElementById("RequestList").addEventListener("click", async () =>
@@ -37,112 +36,142 @@ document.getElementById("ReturnList").addEventListener("click", async () =>
   fetchGetReturnList()
 });
 
-function padNumber(id, length) {
+function padNumber(id, length)
+{
   return id.toString().padStart(length, '0');
 }
 
-let currentPage = 1;
 let pageSize = 10;
-let RowCount = 0;
+let PreviousCursor = null;
+let NextCursor = null;
+let TotalRow = 0;
 
-function changePage(offset, fetchFunction)
+function search(fetchFunction)
 {
-  currentPage += offset;
-  fetchFunction();
+  fetchFunction(null, null);
+}
+
+function nextPage(fetchFunction)
+{
+  fetchFunction(null, NextCursor);
+}
+
+function previousPage(fetchFunction)
+{
+  fetchFunction(PreviousCursor, null);
+}
+function updatePaginationControls(fetchFunction)
+{
+  document.getElementById("prevBtn").onclick = () => previousPage(fetchFunction);
+  document.getElementById("nextBtn").onclick = () => nextPage(fetchFunction);
+
+  document.getElementById("pageSizeSelect").value = pageSize;
 }
 function changePageSize(newSize, fetchFunction)
 {
   pageSize = newSize;
-  currentPage = 1;
   fetchFunction();
 }
-function updatePaginationControls(fetchFunction)
+function updatePage(result)
 {
-  const totalPages = Math.ceil(RowCount / pageSize);
-  document.getElementById("prevBtn").disabled = currentPage === 1;
-  document.getElementById("nextBtn").disabled = currentPage >= totalPages;
-
-  document.getElementById("prevBtn").onclick = () => changePage(-1, fetchFunction);
-  document.getElementById("nextBtn").onclick = () => changePage(1, fetchFunction);
-
-  document.getElementById("pageSizeSelect").value = pageSize;
+  document.getElementById("TotalRow").innerText = result.totalRow ?? 0
+  document.getElementById("TotalBefore").innerText = result.totalBefore ?? 0
+  document.getElementById("TotalAfter").innerText = result.totalAfter ?? 0
+  document.getElementById("RowCountDisplay").innerText = result.itemTotal ?? 0
+  document.getElementById("nextBtn").disabled = result.totalAfter === 0;
+  document.getElementById("prevBtn").disabled = result.totalBefore === 0;
 }
-function updateTotalItemsDisplay()
+function showNoMoreDataMessage(loadMoreBtnId, tableId)
 {
-  document.getElementById("RowCountDisplay").innerText = `มีข้อมูลทั้งหมด ${RowCount} รายการ`;
-}
-
-
-let PRcurrentPageLoad = 1, PRpageSizeLoad = 3, PRRowCount = 0;
-let ARcurrentPageLoad = 1, ARpageSizeLoad = 3, ARRowCount = 0;
-let PRTcurrentPageLoad = 1, PRTpageSizeLoad = 9, PRTRowCount = 0;
-
-function PRloadMore(fetchFunction)
-{
-  PRpageSizeLoad += 5;
-  fetchFunction();
-}
-function ARloadMore(fetchFunction)
-{
-  ARpageSizeLoad += 5;
-  fetchFunction();
-}
-function PRTloadMore(fetchFunction)
-{
-  PRTpageSizeLoad += 9;
-  fetchFunction();
-}
-function PRupdateLoadMoreButton(fetchFunction)
-{
-  const totalPages = Math.ceil(PRRowCount / PRpageSizeLoad);
-  const loadMoreBtn = document.getElementById("PRloadMoreBtn");
-  loadMoreBtn.onclick = () => PRloadMore(fetchFunction);
-
-  if (PRcurrentPageLoad >= totalPages)
+  const loadMoreBtn = document.getElementById(loadMoreBtnId);
+  if (loadMoreBtn)
   {
-    loadMoreBtn.style.display = "none";
-  } else
+    loadMoreBtn.remove();
+  }
+
+  const table = document.getElementById(tableId);
+  if (table)
   {
-    loadMoreBtn.style.display = "block";
+    const tbody = table.querySelector("tbody");
+    if (tbody)
+    {
+      const noDataRow = document.createElement("tr");
+      noDataRow.innerHTML = `<td colspan="5" style="text-align: center; color: red;">ไม่มีข้อมูลแล้ว</td>`;
+      tbody.appendChild(noDataRow);
+    }
   }
 }
-function ARupdateLoadMoreButton(fetchFunction)
+function updateLoadMoreButton(loadMoreBtnId, tableId, hasMore)
 {
-  const totalPages = Math.ceil(ARRowCount / ARpageSizeLoad);
-  const loadMoreBtn = document.getElementById("ARloadMoreBtn");
-  loadMoreBtn.onclick = () => ARloadMore(fetchFunction);
+  const loadMoreBtn = document.getElementById(loadMoreBtnId);
 
-  if (ARcurrentPageLoad >= totalPages)
+  if (!hasMore)
   {
-    loadMoreBtn.style.display = "none";
+    showNoMoreDataMessage(loadMoreBtnId, tableId);
+    if (loadMoreBtn)
+    {
+      loadMoreBtn.style.display = "none";
+    }
   } else
   {
-    loadMoreBtn.style.display = "block";
-  }
-}
-function PRTupdateLoadMoreButton(fetchFunction)
-{
-  const totalPages = Math.ceil(PRTRowCount / PRTpageSizeLoad);
-  const loadMoreBtn = document.getElementById("PRTloadMoreBtn");
-  loadMoreBtn.onclick = () => PRTloadMore(fetchFunction);
-
-  if (PRTcurrentPageLoad >= totalPages)
-  {
-    loadMoreBtn.style.display = "none";
-  } else
-  {
-    loadMoreBtn.style.display = "block";
+    if (loadMoreBtn)
+    {
+      loadMoreBtn.style.display = "block";
+    }
   }
 }
 
+function refreshTable(fetchFunction)
+{
+  if (fetchFunction == fetchGetPendingRequest)
+  {
+    P_NextCursor = null;
+    P_DayNextCursor = null
+    P_isLoading = false;
+    const table = document.getElementById("pending-table");
+    if (table) table.remove();
+    document.getElementById("pending-container").innerHTML = "";
+  }
+  else if (fetchFunction == fetchGetAllocatedRequest)
+  {
+    A_NextCursor = null;
+    A_DayNextCursor = null
+    A_isLoading = false;
+    const table = document.getElementById("allocated-table");
+    if (table) table.remove();
+    document.getElementById("allocated-container").innerHTML = "";
+  }
+  else
+  {
+    PT_NextCursor = null;
+    PT_isLoading = false;
+    const table = document.getElementById("returned-table");
+    if (table) table.remove();
+    document.getElementById("returned-container").innerHTML = "";
+  }
+
+  fetchFunction();
+}
+let P_NextCursor, A_NextCursor, PT_NextCursor = null;
+let P_DayNextCursor, A_DayNextCursor = null;
+let P_PageSize = 3
+let A_PageSize = 3
+let PT_PageSize = 9
+let P_isLoading = false;
+let A_isLoading = false;
+let PT_isLoading = false;
+let P_hasMore, A_hasMore, PT_hasMore;
 
 async function fetchGetPendingRequest()
 {
+  if (P_isLoading) return;
+  P_isLoading = true;
+
   try
   {
-    document.getElementById("footer").style.display = "none"
-    document.getElementById("multi-view").style.display = "grid"
-    document.getElementById("single-view").style.display = "none"
+    document.getElementById("footer").style.display = "none";
+    document.getElementById("multi-view").style.display = "grid";
+    document.getElementById("single-view").style.display = "none";
 
     const token = localStorage.getItem("token");
     const response = await fetch(`${API_URL}/RequestRequisition/GetPendingRequest`, {
@@ -152,24 +181,33 @@ async function fetchGetPendingRequest()
         'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify({
-        Page: PRcurrentPageLoad,
-        PageSize: PRpageSizeLoad
+        NextCursor: P_NextCursor,
+        DayNextCursor: P_DayNextCursor,
+        PageSize: P_PageSize
       }),
     });
 
     const result = await response.json();
-    PRRowCount = result.rowCount;
-    displayPendingRequest(result.data);
-    PRupdateLoadMoreButton(fetchGetPendingRequest)
 
+    P_NextCursor = result.nextCursor;
+    P_DayNextCursor = result.dayNextCursor;
+    P_hasMore = result.hasNextPage;
+
+    displayPendingRequest(result.data, true);
+    updateLoadMoreButton("PRloadMoreBtn", "pending-table", P_hasMore);
   } catch (error)
   {
     console.error("Error:", error);
   }
+
+  P_isLoading = false;
 }
 
 async function fetchGetAllocatedRequest()
 {
+  if (A_isLoading) return;
+  A_isLoading = true;
+
   try
   {
     const token = localStorage.getItem("token");
@@ -180,24 +218,33 @@ async function fetchGetAllocatedRequest()
         'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify({
-        Page: ARcurrentPageLoad,
-        PageSize: ARpageSizeLoad
+        NextCursor: A_NextCursor,
+        DayNextCursor: A_DayNextCursor,
+        PageSize: A_PageSize
       }),
     });
 
     const result = await response.json();
-    ARRowCount = result.rowCount;
-    displayAllocatedRequest(result.data);
-    ARupdateLoadMoreButton(fetchGetAllocatedRequest)
 
+    A_NextCursor = result.nextCursor;
+    A_DayNextCursor = result.dayNextCursor;
+    A_hasMore = result.hasNextPage;
+
+    displayAllocatedRequest(result.data, true);
+    updateLoadMoreButton("ARloadMoreBtn", "allocated-table", A_hasMore);
   } catch (error)
   {
     console.error("Error:", error);
   }
+
+  A_isLoading = false;
 }
 
 async function fetchGetPendingReturn()
 {
+  if (PT_isLoading) return;
+  PT_isLoading = true;
+
   try
   {
     const token = localStorage.getItem("token");
@@ -208,75 +255,112 @@ async function fetchGetPendingReturn()
         'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify({
-        Page: PRTcurrentPageLoad,
-        PageSize: PRTpageSizeLoad
+        NextCursor: PT_NextCursor,
+        PageSize: PT_PageSize
       }),
     });
 
     const result = await response.json();
-    PRTRowCount = result.rowCount;
-    displayPendingReturn(result.data);
-    PRTupdateLoadMoreButton(fetchGetPendingReturn)
 
+    PT_NextCursor = result.nextCursor;
+    PT_hasMore = result.hasNextPage;
+
+    displayPendingReturn(result.data, true);
+    updateLoadMoreButton("PTRloadMoreBtn", "returned-table", PT_hasMore);
   } catch (error)
   {
     console.error("Error:", error);
   }
+
+  PT_isLoading = false;
 }
 
-async function fetchGetRequestList()
+async function fetchGetRequestList(previousCursor, nextCursor)
 {
   try
   {
-    document.getElementById("footer").style.display = "flex"
+    document.getElementById("footer").style.display = "flex";
+
     const token = localStorage.getItem("token");
+
+    const requestBody = {
+      PageSize: pageSize,
+      PreviousCursor: previousCursor,
+      NextCursor: nextCursor,
+      firstName: document.getElementById("firstName")?.value,
+      lastName: document.getElementById("lastName")?.value,
+      categoryName: document.getElementById("categoryName")?.value,
+      dueDate: document.getElementById("dueDate")?.value,
+      status: document.getElementById("status")?.value,
+      firstNameResponsible: document.getElementById("firstNameResponsible")?.value,
+      lastNameResponsible: document.getElementById("lastNameResponsible")?.value,
+    };
+
+    const body = JSON.stringify(requestBody, (key, value) => (value === "" ? null : value));
+
     const response = await fetch(`${API_URL}/RequestRequisition/GetRequestList`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        'Authorization': `Bearer ${token}`
+        "Authorization": `Bearer ${token}`,
       },
-      body: JSON.stringify({
-        Page: currentPage,
-        PageSize: pageSize
-      }),
+      body: body,
     });
-
     const result = await response.json();
-    RowCount = result.rowCount;
+
+    TotalRow = result.totalRow;
+    PreviousCursor = result.previousCursor;
+    NextCursor = result.nextCursor;
+
     displayRequestList(result.data);
-    updatePaginationControls(fetchGetRequestList);
-    updateTotalItemsDisplay()
+    updatePaginationControls(fetchGetRequestList)
+    updatePage(result)
 
   } catch (error)
   {
-    console.error("Error:", error);
+    console.error("❌ Error:", error);
   }
 }
 
-async function fetchGetReturnList()
+async function fetchGetReturnList(previousCursor, nextCursor)
 {
   try
   {
     document.getElementById("footer").style.display = "flex"
+
     const token = localStorage.getItem("token");
+
+    const requestBody = {
+      PageSize: pageSize,
+      PreviousCursor: previousCursor,
+      NextCursor: nextCursor,
+      firstName: document.getElementById("firstName")?.value,
+      lastName: document.getElementById("lastName")?.value,
+      categoryName: document.getElementById("categoryName")?.value,
+      status: document.getElementById("status")?.value,
+      firstNameResponsible: document.getElementById("firstNameResponsible")?.value,
+      lastNameResponsible: document.getElementById("lastNameResponsible")?.value,
+    };
+
+    const body = JSON.stringify(requestBody, (key, value) => (value === "" ? null : value));
+
     const response = await fetch(`${API_URL}/ReturnRequisition/GetReturnList`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify({
-        Page: currentPage,
-        PageSize: pageSize
-      }),
+      body: body,
     });
-
     const result = await response.json();
-    RowCount = result.rowCount;
+
+    TotalRow = result.totalRow;
+    PreviousCursor = result.previousCursor;
+    NextCursor = result.nextCursor;
+
     displayReturnList(result.data);
     updatePaginationControls(fetchGetReturnList);
-    updateTotalItemsDisplay()
+    updatePage(result)
 
   } catch (error)
   {
@@ -285,17 +369,23 @@ async function fetchGetReturnList()
 }
 
 
-function displayPendingRequest(data) {
+function displayPendingRequest(data, append = false)
+{
   const container = document.getElementById('pending-container');
-  container.innerHTML = `<div class="table-header">รายการใบขอเบิกรอดำเนินการ</div>`;
 
-  if (data.length === 0) {
-    container.innerHTML += `<p style="text-align: center;">ไม่มีใบขอเบิกที่รอดำเนินการ</p>`;
+  if (!append && data.length === 0)
+  {
+    container.innerHTML = `<p style="text-align: center;">ไม่มีใบขอเบิกที่รอดำเนินการ</p>`;
     return;
   }
 
-  const table = document.createElement("table");
-  table.innerHTML = `
+  let table = document.getElementById("pending-table");
+
+  if (!table)
+  {
+    table = document.createElement("table");
+    table.id = "pending-table";
+    table.innerHTML = `
         <thead>
           <tr>
             <th>ใบขอเบิกลำดับที่</th>
@@ -305,102 +395,146 @@ function displayPendingRequest(data) {
             <th>เหลืออีก(วัน)</th> 
           </tr>
         </thead>
-        <tbody>
-          ${data
-      .map((item) => {
-        const today = new Date(); 
-        const dueDate = new Date(item.dueDate); 
-        const timeDiff = dueDate - today; 
-        const daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24)); 
-        
-        return `
-          <tr>
-            <td>${padNumber(item.requestId,5)}</td>
-            <td>${item.username}</td>
-            <td>${item.categoryName}</td>
-            <td>${item.dueDate}</td>
-            <td>${daysLeft > 0 ? daysLeft : "ครบกำหนด"}</td>
-          </tr>
-        `;
-      })
-      .join("")}
-        </tbody>
+        <tbody></tbody>
       `;
+    container.appendChild(table);
+  }
 
-  const assetsContainer = document.createElement("div");
-  assetsContainer.id = "assetsContainer";
-  assetsContainer.style.textAlign = "center";
-  assetsContainer.innerHTML = `<button id="PRloadMoreBtn">Load More</button>`;
+  const tbody = table.querySelector("tbody");
+  if (!append)
+  {
+    tbody.innerHTML = "";
+  }
 
-  container.appendChild(table);
-  container.appendChild(assetsContainer); 
+  data.forEach(item =>
+  {
+    const today = new Date();
+    const dueDate = new Date(item.dueDate);
+    const timeDiff = dueDate - today;
+    const daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+
+    const row = `
+      <tr>
+        <td>${padNumber(item.requestId, 5)}</td>
+        <td>${(item.firstName || item.lastName) ? `${item.firstName} ${item.lastName}` : '-'}</td>
+        <td>${item.categoryName}</td>
+        <td>${item.dueDate}</td>
+        <td>${daysLeft > 0 ? daysLeft : "ครบกำหนด"}</td>
+      </tr>
+    `;
+
+    tbody.insertAdjacentHTML("beforeend", row);
+  });
+  let loadMoreBtn = document.getElementById("PRloadMoreBtn");
+
+  if (!loadMoreBtn)
+  {
+    const assetsContainer = document.createElement("div");
+    assetsContainer.id = "assetsContainer";
+    assetsContainer.style.textAlign = "center";
+
+    loadMoreBtn = document.createElement("button");
+    loadMoreBtn.id = "PRloadMoreBtn";
+    loadMoreBtn.textContent = "Load More";
+    loadMoreBtn.addEventListener("click", fetchGetPendingRequest);
+
+    assetsContainer.appendChild(loadMoreBtn);
+    container.appendChild(assetsContainer);
+  }
 }
 
-function displayAllocatedRequest(data)
+function displayAllocatedRequest(data, append = false)
 {
-  const container = document.getElementById("allocated-container");
-  container.innerHTML = `<div class="table-header">รายการใบขอเบิกที่ยังไม่สมบูรณ์</div>`;
+  const container = document.getElementById('allocated-container');
 
-  if (data.length === 0)
+  if (data.length === 0 && !append)
   {
-    container.innerHTML += `<p style="text-align: center;">ไม่มีใบขอเบิกที่ยังไม่สมบูรณ์</p>`;
+    container.innerHTML += `<p style="text-align: center;">ไม่มีใบขอเบิกที่รอดำเนินการ</p>`;
     return;
   }
 
-  const table = document.createElement("table");
-  table.innerHTML = `
+  let table = document.getElementById("allocated-table");
+
+  if (!table)
+  {
+    table = document.createElement("table");
+    table.id = "allocated-table";
+    table.innerHTML = `
         <thead>
           <tr>
             <th>ใบขอเบิกลำดับที่</th>
             <th>ชื่อผู้ขอเบิก</th>
             <th>หมวดหมู่ของทรัพย์สิน</th>
             <th>วันที่ต้องการใช้งาน</th>
-            <th>เหลืออีก(วัน)</th>
+            <th>เหลืออีก(วัน)</th> 
           </tr>
         </thead>
-        <tbody>
-          ${data
-      .map((item) =>{ 
-        const today = new Date(); 
-        const dueDate = new Date(item.dueDate); 
-        const timeDiff = dueDate - today; 
-        const daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24)); 
-        return`
-        <tr>
-              <td>${padNumber(item.requestId,5)}</td>
-              <td>${item.username}</td>
-              <td>${item.categoryName}</td>
-              <td>${item.dueDate}</td>
-              <td>${daysLeft > 0 ? daysLeft : "ครบกำหนด"}</td>
-            </tr>
-          `
-          })
-      .join("")}
-        </tbody>
+        <tbody></tbody>
       `;
+    container.appendChild(table);
+  }
 
-      const assetsContainer = document.createElement("div");
-      assetsContainer.id = "assetsContainer";
-      assetsContainer.style.textAlign = "center";
-      assetsContainer.innerHTML = `<button id="ARloadMoreBtn">Load More</button>`;
-    
-      container.appendChild(table);
-      container.appendChild(assetsContainer);
+  const tbody = table.querySelector("tbody");
+  if (!append)
+  {
+    tbody.innerHTML = "";
+  }
+
+  data.forEach(item =>
+  {
+    const today = new Date();
+    const dueDate = new Date(item.dueDate);
+    const timeDiff = dueDate - today;
+    const daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+
+    const row = `
+      <tr>
+        <td>${padNumber(item.requestId, 5)}</td>
+        <td>${(item.firstName || item.lastName) ? `${item.firstName} ${item.lastName}` : '-'}</td>
+        <td>${item.categoryName}</td>
+        <td>${item.dueDate}</td>
+        <td>${daysLeft > 0 ? daysLeft : "ครบกำหนด"}</td>
+      </tr>
+    `;
+
+    tbody.insertAdjacentHTML("beforeend", row);
+  });
+
+  let loadMoreBtn = document.getElementById("ARloadMoreBtn");
+
+  if (!loadMoreBtn)
+  {
+    const assetsContainer = document.createElement("div");
+    assetsContainer.id = "assetsContainer";
+    assetsContainer.style.textAlign = "center";
+
+    loadMoreBtn = document.createElement("button");
+    loadMoreBtn.id = "ARloadMoreBtn";
+    loadMoreBtn.textContent = "Load More";
+    loadMoreBtn.addEventListener("click", fetchGetAllocatedRequest);
+
+    assetsContainer.appendChild(loadMoreBtn);
+    container.appendChild(assetsContainer);
+  }
 }
 
-function displayPendingReturn(data)
+function displayPendingReturn(data, append = false)
 {
   const container = document.getElementById("returned-container");
-  container.innerHTML = `<div class="table-header">รายการใบคืนทรัพย์สินรอดำเนินการ</div>`;
 
-  if (data.length === 0)
+  if (data.length === 0 && !append)
   {
-    container.innerHTML += `<p style="text-align: center;">ไม่มีใบคืนทรัพย์สิน</p>`;
+    container.innerHTML += `<p style="text-align: center;">ไม่มีใบขอเบิกที่รอดำเนินการ</p>`;
     return;
   }
 
-  const table = document.createElement("table");
-  table.innerHTML = `
+  let table = document.getElementById("returned-table");
+
+  if (!table)
+  {
+    table = document.createElement("table");
+    table.id = "returned-table";
+    table.innerHTML = `
             <thead>
               <tr>
                 <th>ใบขอคืนลำดับที่</th>
@@ -410,107 +544,321 @@ function displayPendingReturn(data)
                 <th>รหัสทรัพย์สิน</th>
               </tr>
             </thead>
-            <tbody>
-              ${data
-      .map(
-        (item) => `
-                <tr>
-                  <td>${padNumber(item.returnId,5)}</td>
-                  <td>${item.username}</td>
-                  <td>${item.categoryName}</td>
-                  <td>${item.classificationName}</td>
-                  <td>${item.assetId}</td>
-                </tr>
-              `
-      )
-      .join("")}
-            </tbody>
-          `;
+            <tbody></tbody>
+      `;
+    container.appendChild(table);
+  }
 
-          const assetsContainer = document.createElement("div");
-          assetsContainer.id = "assetsContainer";
-          assetsContainer.style.textAlign = "center";
-          assetsContainer.innerHTML = `<button id="PRTloadMoreBtn">Load More</button>`;
-        
-          container.appendChild(table);
-          container.appendChild(assetsContainer);
+  const tbody = table.querySelector("tbody");
+  if (!append)
+  {
+    tbody.innerHTML = "";
+  }
+
+  data.forEach(item =>
+  {
+    const row = `
+      <tr>
+        <td>${padNumber(item.returnId, 5)}</td>
+        <td>${(item.firstName || item.lastName) ? `${item.firstName} ${item.lastName}` : '-'}</td>
+        <td>${item.categoryName}</td>
+        <td>${item.classificationName}</td>
+        <td>${item.assetId}</td>
+      </tr>
+    `;
+
+    tbody.insertAdjacentHTML("beforeend", row);
+  });
+
+  let loadMoreBtn = document.getElementById("PTRloadMoreBtn");
+
+  if (!loadMoreBtn)
+  {
+    const assetsContainer = document.createElement("div");
+    assetsContainer.id = "assetsContainer";
+    assetsContainer.style.textAlign = "center";
+
+    loadMoreBtn = document.createElement("button");
+    loadMoreBtn.id = "PTRloadMoreBtn";
+    loadMoreBtn.textContent = "Load More";
+    loadMoreBtn.addEventListener("click", fetchGetPendingReturn);
+
+    assetsContainer.appendChild(loadMoreBtn);
+    container.appendChild(assetsContainer);
+  }
 }
 
+// function displayRequestList(data)
+// {
+//   document.getElementById("multi-view").style.display = "none"
+//   document.getElementById("single-view").style.display = "flex"
+//   const container = document.getElementById("asset-container");
+//   container.innerHTML =
+//     `
+//     <div class="table-header">
+//   <h2>รายการใบขอเบิกทั้งหมดในระบบ</h2>
+// </div>
+
+// <div class="table-controls">
+//   <span>ข้อมูลทั้งหมด: <span id="RowCountDisplay">0</span> รายการ</span>
+
+//   <div class="page-size">
+//     <label for="pageSizeSelect">จำนวนต่อหน้า:</label>
+//     <select id="pageSizeSelect" onchange="changePageSize(Number(this.value), fetchGetRequestList)">
+//       <option value="3">3</option>
+//       <option value="7">7</option>
+//       <option value="10" selected>10</option>
+//     </select>
+//   </div>
+// </div>
+//     <div>
+//         <label for="firstName">ชื่อผู้ขอเบิก:</label>
+//         <input type="text" id="firstName" name="firstName">
+//         <label for="lastName">นามสกุล:</label>
+//         <input type="text" id="lastName" name="lastName">
+//         <label for="categoryName">หมวดหมู่:</label>
+//         <input type="text" id="categoryName" name="categoryName">
+//         <label for="dueDate">วันที่:</label>
+//         <input type="date" id="dueDate" name="dueDate">
+//         <label for="status">สถานะ:</label>
+//         <select name="status" id="status">
+//           <option value="">-</option>
+//           <option value="0">Pending</option>
+//           <option value="1">Allocated</option>
+//           <option value="2">Rejected</option>
+//           <option value="3">Completed</option>
+//         </select><br>
+//         <label for="firstNameResponsible">ชื่อผู้ดำเนินการ:</label>
+//         <input type="text" id="firstNameResponsible" name="firstNameResponsible">
+//         <label for="lastNameResponsible">นามสกุล:</label>
+//         <input type="text" id="lastNameResponsible" name="lastNameResponsible">
+//         <button onclick="search(fetchGetRequestList)">ค้นหา</button>
+//     </div>`;
+
+//   if (data.length === 0)
+//   {
+//     container.innerHTML += `<p style="text-align: center;">ไม่มีใบขอเบิก</p>`;
+//     return;
+//   }
+
+//   const table = document.createElement("table");
+//   table.innerHTML = `
+//         <thead>
+//           <tr>
+//             <th>ใบขอเบิกลำดับที่</th>
+//             <th>ชื่อผู้ขอเบิก</th>
+//             <th>หมวดหมู่ของทรัพย์สิน</th>
+//             <th>คุณสมบัติที่ต้องการ</th>
+//             <th>วันที่ต้องการใช้งาน</th>
+//             <th>เหตุผลในการขอเบิก</th>
+//             <th>สถานะคำร้อง</th>
+//             <th>ผู้ดำเนินการคำร้อง</th>
+//             <th>ดำเนินการคำร้อง</th>
+//           </tr>
+//         </thead>
+//         <tbody>
+//           ${data
+//       .map(
+//         (item) => `
+//             <tr>
+//               <td>${padNumber(item.requestId, 5)}</td>
+//               <td>${(item.firstName || item.lastName) ? `${item.firstName} ${item.lastName}` : '-'}</td>
+//               <td>${item.categoryName}</td>
+//               <td>${item.requirement}</td>
+//               <td>${item.dueDate}</td>
+//               <td>${item.reasonRequest}</td>
+//               <td>${RequestStatus[item.status]}</td>
+//               <td>${(item.firstNameResponsible || item.lastNameResponsible) ? `${item.firstNameResponsible} ${item.lastNameResponsible}` : '-'}</td>
+//               <td>
+//                 ${RequestStatus[item.status] === RequestStatus[0]
+//             ? `<button class="btn-confirm" onclick="confirmRequestAction(${item.requestId})">ดำเนินการ</button>`
+//             : ""
+//           }
+//               </td>
+//             </tr>
+//           `
+//       )
+//       .join("")}
+//         </tbody>
+//       `;
+
+//   container.appendChild(table);
+// }
 function displayRequestList(data)
 {
-  document.getElementById("multi-view").style.display = "none"
-  document.getElementById("single-view").style.display = "flex"
+  document.getElementById("multi-view").style.display = "none";
+  document.getElementById("single-view").style.display = "flex";
   const container = document.getElementById("asset-container");
-  container.innerHTML =
-    `<label for="pageSizeSelect">จำนวนต่อหน้า:</label>
-  <select id="pageSizeSelect" onchange="changePageSize(Number(this.value), fetchGetRequestList)">
-    <option value="3">3</option>
-    <option value="7">7</option>
-    <option value="10" selected>10</option>
-  </select>
-    <div class="table-header">รายการใบขอเบิกทั้งหมดในระบบ</div>`;
 
+  // ⬇️ เก็บค่าของ input ก่อนอัปเดต HTML
+  const filters = {
+    firstName: document.getElementById("firstName")?.value || "",
+    lastName: document.getElementById("lastName")?.value || "",
+    categoryName: document.getElementById("categoryName")?.value || "",
+    dueDate: document.getElementById("dueDate")?.value || "",
+    status: document.getElementById("status")?.value || "",
+    firstNameResponsible: document.getElementById("firstNameResponsible")?.value || "",
+    lastNameResponsible: document.getElementById("lastNameResponsible")?.value || "",
+  };
+
+  // ⬇️ อัปเดต HTML
+  container.innerHTML = `
+    <div class="table-header">
+      <h2>รายการใบขอเบิกทั้งหมดในระบบ</h2>
+    </div>
+
+    <div class="table-controls">
+      <span>ข้อมูลทั้งหมด: <span id="RowCountDisplay">0</span> รายการ</span>
+      <div class="page-size">
+        <label for="pageSizeSelect">จำนวนต่อหน้า:</label>
+        <select id="pageSizeSelect" onchange="changePageSize(Number(this.value), fetchGetRequestList)">
+          <option value="3">3</option>
+          <option value="7">7</option>
+          <option value="10" selected>10</option>
+        </select>
+      </div>
+    </div>
+
+    <div>
+        <label for="firstName">ชื่อผู้ขอเบิก:</label>
+        <input type="text" id="firstName" name="firstName">
+        <label for="lastName">นามสกุล:</label>
+        <input type="text" id="lastName" name="lastName">
+        <label for="categoryName">หมวดหมู่:</label>
+        <input type="text" id="categoryName" name="categoryName">
+        <label for="dueDate">วันที่:</label>
+        <input type="date" id="dueDate" name="dueDate">
+        <label for="status">สถานะ:</label>
+        <select name="status" id="status">
+          <option value="">-</option>
+          <option value="0">Pending</option>
+          <option value="1">Allocated</option>
+          <option value="2">Rejected</option>
+          <option value="3">Completed</option>
+        </select><br>
+        <label for="firstNameResponsible">ชื่อผู้ดำเนินการ:</label>
+        <input type="text" id="firstNameResponsible" name="firstNameResponsible">
+        <label for="lastNameResponsible">นามสกุล:</label>
+        <input type="text" id="lastNameResponsible" name="lastNameResponsible">
+        <button onclick="search(fetchGetRequestList)">ค้นหา</button>
+    </div>`;
+
+  // ⬇️ ใส่ค่ากลับเข้าไปใน input
+  document.getElementById("firstName").value = filters.firstName;
+  document.getElementById("lastName").value = filters.lastName;
+  document.getElementById("categoryName").value = filters.categoryName;
+  document.getElementById("dueDate").value = filters.dueDate;
+  document.getElementById("status").value = filters.status;
+  document.getElementById("firstNameResponsible").value = filters.firstNameResponsible;
+  document.getElementById("lastNameResponsible").value = filters.lastNameResponsible;
+
+  // ⬇️ ถ้าไม่มีข้อมูล ให้แสดงข้อความ
   if (data.length === 0)
   {
     container.innerHTML += `<p style="text-align: center;">ไม่มีใบขอเบิก</p>`;
     return;
   }
 
+  // ⬇️ สร้างตารางข้อมูล
   const table = document.createElement("table");
   table.innerHTML = `
-        <thead>
-          <tr>
-            <th>ใบขอเบิกลำดับที่</th>
-            <th>ชื่อผู้ขอเบิก</th>
-            <th>หมวดหมู่ของทรัพย์สิน</th>
-            <th>คุณสมบัติที่ต้องการ</th>
-            <th>วันที่ต้องการใช้งาน</th>
-            <th>เหตุผลในการขอเบิก</th>
-            <th>สถานะคำร้อง</th>
-            <th>แก้ไขสถานะ</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${data
-      .map(
-        (item) => `
-            <tr>
-              <td>${padNumber(item.requestId,5)}</td>
-              <td>${item.username}</td>
-              <td>${item.categoryName}</td>
-              <td>${item.requirement}</td>
-              <td>${item.dueDate}</td>
-              <td>${item.reasonRequest}</td>
-              <td>${RequestStatus[item.status]}</td>
-              <td>
-                ${RequestStatus[item.status] === RequestStatus[0]
-            ? `<button class="btn-confirm" onclick="confirmRequestAction(${item.requestId})">แก้ไข</button>`
-            : ""
-          }
-              </td>
-            </tr>
-          `
-      )
-      .join("")}
-        </tbody>
-      `;
+    <thead>
+      <tr>
+        <th>ใบขอเบิกลำดับที่</th>
+        <th>ชื่อผู้ขอเบิก</th>
+        <th>หมวดหมู่ของทรัพย์สิน</th>
+        <th>คุณสมบัติที่ต้องการ</th>
+        <th>วันที่ต้องการใช้งาน</th>
+        <th>เหตุผลในการขอเบิก</th>
+        <th>สถานะคำร้อง</th>
+        <th>ผู้ดำเนินการคำร้อง</th>
+        <th>ดำเนินการคำร้อง</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${data.map(item => `
+        <tr>
+          <td>${padNumber(item.requestId, 5)}</td>
+          <td>${(item.firstName || item.lastName) ? `${item.firstName} ${item.lastName}` : '-'}</td>
+          <td>${item.categoryName}</td>
+          <td>${item.requirement}</td>
+          <td>${item.dueDate}</td>
+          <td>${item.reasonRequest}</td>
+          <td>${RequestStatus[item.status]}</td>
+          <td>${(item.firstNameResponsible || item.lastNameResponsible) ? `${item.firstNameResponsible} ${item.lastNameResponsible}` : '-'}</td>
+          <td>
+            ${RequestStatus[item.status] === RequestStatus[0]
+      ? `<button class="btn-confirm" onclick="confirmRequestAction(${item.requestId})">ดำเนินการ</button>`
+      : ""}
+          </td>
+        </tr>
+      `).join("")}
+    </tbody>
+  `;
 
   container.appendChild(table);
 }
+
 
 function displayReturnList(data)
 {
   document.getElementById("multi-view").style.display = "none"
   document.getElementById("single-view").style.display = "flex"
   const container = document.getElementById("asset-container");
+
+  const filters = {
+    firstName: document.getElementById("firstName")?.value || "",
+    lastName: document.getElementById("lastName")?.value || "",
+    categoryName: document.getElementById("categoryName")?.value || "",
+    status: document.getElementById("status")?.value || "",
+    firstNameResponsible: document.getElementById("firstNameResponsible")?.value || "",
+    lastNameResponsible: document.getElementById("lastNameResponsible")?.value || "",
+  };
   container.innerHTML =
-    `<label for="pageSizeSelect">จำนวนต่อหน้า:</label>
-  <select id="pageSizeSelect" onchange="changePageSize(Number(this.value), fetchGetReturnList)">
-    <option value="3">3</option>
-    <option value="7">7</option>
-    <option value="10" selected>10</option>
-  </select>
-    <div class="table-header">รายการใบคืนทรัพย์สินทั้งหมดในระบบ</div>`;
+    `
+    <div class="table-header">
+  <h2>รายการใบคืนทรัพย์สินทั้งหมดในระบบ</h2>
+</div>
+
+<div class="table-controls">
+  <span>ข้อมูลทั้งหมด: <span id="RowCountDisplay">0</span> รายการ</span>
+  
+  <div class="page-size">
+    <label for="pageSizeSelect">จำนวนต่อหน้า:</label>
+    <select id="pageSizeSelect" onchange="changePageSize(Number(this.value), fetchGetReturnList)">
+      <option value="3">3</option>
+      <option value="7">7</option>
+      <option value="10" selected>10</option>
+    </select>
+  </div>
+</div>
+    <div>
+        <label for="firstName">ชื่อผู้ขอเบิก:</label>
+        <input type="text" id="firstName" name="firstName">
+        <label for="lastName">นามสกุล:</label>
+        <input type="text" id="lastName" name="lastName">
+        <label for="categoryName">หมวดหมู่:</label>
+        <input type="text" id="categoryName" name="categoryName">
+        <label for="status">สถานะ:</label>
+        <select name="status" id="status">
+          <option value="">-</option>
+          <option value="0">Pending</option>
+          <option value="1">Allocated</option>
+        </select><br>
+        <label for="firstNameResponsible">ชื่อผู้ดำเนินการ:</label>
+        <input type="text" id="firstNameResponsible" name="firstNameResponsible">
+        <label for="lastNameResponsible">นามสกุล:</label>
+        <input type="text" id="lastNameResponsible" name="lastNameResponsible">
+        <button onclick="search(fetchGetReturnList)">ค้นหา</button>
+    </div>
+    `;
+
+  document.getElementById("firstName").value = filters.firstName;
+  document.getElementById("lastName").value = filters.lastName;
+  document.getElementById("categoryName").value = filters.categoryName;
+  document.getElementById("status").value = filters.status;
+  document.getElementById("firstNameResponsible").value = filters.firstNameResponsible;
+  document.getElementById("lastNameResponsible").value = filters.lastNameResponsible;
 
   if (data.length === 0)
   {
@@ -529,6 +877,7 @@ function displayReturnList(data)
             <th>รหัสทรัพย์สิน</th>
             <th>เหตุผลในการคืน</th>
             <th>สถานะใบคืน</th>
+            <th>ผู้ดำเนินการคำร้อง</th>
             <th>ยืนยัน</th>
           </tr>
         </thead>
@@ -537,13 +886,14 @@ function displayReturnList(data)
       .map(
         (item) => `
             <tr>
-              <td>${padNumber(item.returnId,5)}</td>
-              <td>${item.username}</td>
+              <td>${padNumber(item.returnId, 5)}</td>
+              <td>${(item.firstName || item.lastName) ? `${item.firstName} ${item.lastName}` : '-'}</td>
               <td>${item.categoryName}</td>
               <td>${item.classificationName}</td>
               <td>${item.assetId}</td>
               <td>${item.reasonReturn}</td>
               <td>${ReturnStatus[item.status]}</td>
+              <td>${(item.firstNameResponsible || item.lastNameResponsible) ? `${item.firstNameResponsible} ${item.lastNameResponsible}` : '-'}</td>
               <td>
                 ${ReturnStatus[item.status] === ReturnStatus[0]
             ? `<button class="btn-confirm" onclick="confirmAction('${item.returnId}', '${item.instanceId}')">ยืนยัน</button>`
@@ -574,12 +924,12 @@ async function confirmRequestAction(requestId)
     });
     const data = await response.json();
 
-    document.getElementById("Username").textContent = data.username || "-";
+    document.getElementById("Username").textContent = (data.firstName && data.lastName) ? `${data.firstName} ${data.lastName}` : "-";
     document.getElementById("CategoryName").textContent = data.categoryName || "-";
     document.getElementById("Requirement").textContent = data.requirement || "-";
     document.getElementById("DueDate").textContent = data.dueDate || "-";
     document.getElementById("ReasonRequest").textContent = data.reasonRequest || "-";
-    document.getElementById("Status").textContent = RequestStatus[data.status]|| "-";
+    document.getElementById("Status").textContent = RequestStatus[data.status] || "-";
 
     document.getElementById("submitDecisionBtn").setAttribute("data-request-id", requestId);
 
@@ -734,12 +1084,22 @@ async function confirmAction(returnId, instanceId)
   }
 }
 
-
+window.changePageSize = changePageSize;
 window.confirmRequestAction = confirmRequestAction;
-window.handleDecisionChange = handleDecisionChange; submitDecision
+window.handleDecisionChange = handleDecisionChange;
 window.submitDecision = submitDecision;
 window.confirmAction = confirmAction;
-window.changePage = changePage;
-window.changePageSize = changePageSize;
 window.fetchGetReturnList = fetchGetReturnList;
 window.fetchGetRequestList = fetchGetRequestList;
+window.search = search;
+window.nextPage = nextPage;
+window.previousPage = previousPage;
+window.refreshTable = refreshTable;
+window.fetchGetPendingRequest = fetchGetPendingRequest;
+window.fetchGetAllocatedRequest = fetchGetAllocatedRequest;
+window.fetchGetPendingReturn = fetchGetPendingReturn;
+
+
+refreshTable(fetchGetPendingRequest);
+refreshTable(fetchGetAllocatedRequest);
+refreshTable(fetchGetPendingReturn);

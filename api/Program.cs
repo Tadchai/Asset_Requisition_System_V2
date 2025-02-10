@@ -45,7 +45,8 @@ builder.Services.AddAuthentication(options =>
     options.RequireHttpsMetadata = false;
     options.TokenValidationParameters = new TokenValidationParameters
     {
-        ValidateAudience = false
+        ValidateAudience = false,
+        ValidateLifetime = false,
     };
 });
 

@@ -1,4 +1,4 @@
-import { clientId } from './config.js'
+import { clientId, Front_URL, Auth_URL, Logout_URL } from './config.js'
 
 async function generateCodeVerifier()
 {
@@ -32,13 +32,13 @@ document.getElementById('loginButton').addEventListener('click', async () =>
 
     const codeChallenge = await generateCodeChallenge(codeVerifier);
 
-    const url = new URL("http://localhost:8080/realms/Requisition/protocol/openid-connect/auth");
+    const url = new URL(`${Auth_URL}`);
 
     const searchParams = url.searchParams;
     searchParams.append("response_type", "code");
     searchParams.append("client_id", `${clientId}`);
     searchParams.append("scope", "openid profile");
-    searchParams.append("redirect_uri", "http://127.0.0.1:5002/Frontend/Callback.html");
+    searchParams.append("redirect_uri", `${Front_URL}/Frontend/Callback.html`);
     searchParams.append("state", state);
     searchParams.append("code_challenge", codeChallenge);
     searchParams.append("code_challenge_method", "S256")
@@ -52,10 +52,10 @@ document.getElementById('logoutButton').addEventListener('click', () =>
     localStorage.removeItem('state');
     localStorage.removeItem('code_verifier');
 
-    const url = new URL("http://localhost:8080/realms/Requisition/protocol/openid-connect/logout");
+    const url = new URL(`${Logout_URL}`);
 
     const searchParams = url.searchParams;
-    searchParams.append("redirect_uri", "http://127.0.0.1:5002/Frontend/login.html");
+    searchParams.append("redirect_uri", `${Front_URL}/Frontend/login.html`);
 
     window.location.href = url.toString();
 });

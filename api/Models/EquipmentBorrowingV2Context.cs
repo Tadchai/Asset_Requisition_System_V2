@@ -134,10 +134,9 @@ public partial class EquipmentBorrowingV2Context : DbContext
         {
             entity.HasKey(e => e.UserId).HasName("PRIMARY");
 
+            entity.Property(e => e.FirstName).HasMaxLength(50);
+            entity.Property(e => e.LastName).HasMaxLength(50);
             entity.Property(e => e.SubjectId).HasMaxLength(50);
-            entity.Property(e => e.Username)
-                .HasMaxLength(50)
-                .UseCollation("utf8mb4_bin");
         });
 
         OnModelCreatingPartial(modelBuilder);

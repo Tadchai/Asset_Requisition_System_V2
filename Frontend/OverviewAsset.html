@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Asset Management</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" type="text/css" href="/Frontend/CSS/ManageAsset.css" />
+  <style>.chart-item { width: 200px; display: inline-block; margin: 10px; }</style>
+</head>
+
+<body>
+  <!-- Navbar -->
+  <div class="navbar">
+    <div class="nav-title">Asset Management System</div>
+    <div class="nav-menu">
+      <div class="nav-item" id="List">ความพร้อมใช้งานของทรัพย์สิน</div>
+      <div class="nav-item" id="Pie">การใช้ทรัพย์สิน</div>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-item" id="ToManageAssetPage">จัดการทรัพย์สินที่ถือครอง</div>
+    <div class="sidebar-item" id="ToManageAssetInSystemPage">
+      จัดการทรัพย์สินในระบบ
+    </div>
+    <div class="sidebar-item" id="ToManageRequestReturnPage">
+      จัดการใบขอเบิก/คืน
+    </div>
+    <div class="sidebar-item">ภาพรวมของทรัพย์สิน</div>
+    <div class="sidebar-item" id="ToLoginPage">ออกจากระบบ</div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div id="asset-container" class="asset-container">
+      <!-- ข้อมูลทรัพย์สินจะถูกแสดงที่นี่ -->
+    </div>
+  </div>
+
+
+  <script type="module" src="assets/OverviewAsset.js" defer></script>
+</body>
+
+</html>

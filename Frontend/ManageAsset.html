@@ -33,7 +33,7 @@
     <div class="sidebar-item" id="ToManageRequestReturnPage">
       จัดการใบขอเบิก/คืน
     </div>
-    <div class="sidebar-item">ภาพรวมของทรัพย์สิน</div>
+    <div class="sidebar-item" id="ToOverviewAssetPage">ภาพรวมของทรัพย์สิน</div>
     <div class="sidebar-item" id="ToLoginPage">ออกจากระบบ</div>
   </div>
 
@@ -44,10 +44,15 @@
     </div>
   </div>
 
+  <!-- Footer -->
   <div class="pagination-footer">
-    <button id="prevBtn" onclick="changePage(-1)" disabled>⬅️ย้อนกลับ</button>
-    <span id="RowCountDisplay"></span>
-    <button id="nextBtn" onclick="changePage(1)">ถัดไป➡️</button>
+    <span>ข้อมูลก่อนหน้า: <span id="TotalBefore">0</span> รายการ</span>
+    <button id="prevBtn" onclick="previousPage()">⬅️ย้อนกลับ</button>
+
+    <span>ข้อมูลที่แสดง: <span id="TotalRow">0</span> รายการ</span>
+
+    <button id="nextBtn" onclick="nextPage()">ถัดไป➡️</button>
+    <span>ข้อมูลหลังจากนี้: <span id="TotalAfter">0</span> รายการ</span>
   </div>
 
   <!-- Modal สำหรับใบคืนทรัพย์สิน -->

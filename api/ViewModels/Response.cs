@@ -28,4 +28,27 @@ namespace api.ViewModels
         public int PageSize { get; set; }
         public int Page { get; set; }
     }
+
+    public class PaginatedResponse<T>
+    {
+        public bool HasNextPage { get; set; }
+        public DateOnly? DayNextCursor { get; set; }
+        public int ItemTotal { get; set; }
+        public int TotalRow { get; set; }
+        public int PreviousCursor { get; set; }
+        public int? NextCursor { get; set; }
+        public int TotalBefore { get; set; }
+        public int TotalAfter { get; set; }
+        public T Data { get; set; }
+    }
+
+    public class PendingReturnRequest
+    {
+        public int? NextCursor { get; set; }
+        public int PageSize { get; set; }
+    }
+
+    
+    
+    
 }

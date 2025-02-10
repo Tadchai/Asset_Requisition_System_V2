@@ -8,15 +8,14 @@ document.getElementById("ToManageRequestReturnPage").addEventListener("click", a
 {
   window.location.href = "/Frontend/ManageRequestReturn.html"
 });
+document.getElementById("ToOverviewAssetPage").addEventListener("click", async () =>
+  {
+    window.location.href = "/Frontend/OverviewAsset.html"
+  });
 document.getElementById("ToLoginPage").addEventListener("click", async () =>
 {
   localStorage.removeItem('token');
   window.location.href = "/Frontend/login.html"
-});
-
-document.addEventListener("DOMContentLoaded", async () =>
-{
-  fetchGetAssetId()
 });
 
 document.getElementById("AssetSystem").addEventListener("click", async () =>
@@ -39,60 +38,79 @@ document.getElementById("ManageInstance").addEventListener("click", async () =>
   fetchGetInstance()
 });
 
-let currentPage = 1;
 let pageSize = 10;
-let RowCount = 0;
-
-function changePage(offset, fetchFunction)
+let PreviousCursor = null;
+let NextCursor = null;
+let TotalRow = 0;
+function search(fetchFunction)
 {
-  currentPage += offset;
-  fetchFunction();
+  fetchFunction(null, null);
+}
+function nextPage(fetchFunction)
+{
+  fetchFunction(null, NextCursor);
+}
+function previousPage(fetchFunction)
+{
+  fetchFunction(PreviousCursor, null);
+}
+function updatePaginationControls(fetchFunction)
+{
+  document.getElementById("prevBtn").onclick = () => previousPage(fetchFunction);
+  document.getElementById("nextBtn").onclick = () => nextPage(fetchFunction);
+
+  document.getElementById("pageSizeSelect").value = pageSize;
 }
 function changePageSize(newSize, fetchFunction)
 {
   pageSize = newSize;
-  currentPage = 1;
   fetchFunction();
 }
-function updatePaginationControls(fetchFunction)
+function updatePage(result)
 {
-  const totalPages = Math.ceil(RowCount / pageSize);
-  document.getElementById("prevBtn").disabled = currentPage === 1;
-  document.getElementById("nextBtn").disabled = currentPage >= totalPages;
-
-  document.getElementById("prevBtn").onclick = () => changePage(-1, fetchFunction);
-  document.getElementById("nextBtn").onclick = () => changePage(1, fetchFunction);
-
-  document.getElementById("pageSizeSelect").value = pageSize;
-}
-function updateTotalItemsDisplay()
-{
-  document.getElementById("RowCountDisplay").innerText = `มีข้อมูลทั้งหมด ${RowCount} รายการ`;
+  document.getElementById("TotalRow").innerText = result.totalRow ?? 0
+  document.getElementById("TotalBefore").innerText = result.totalBefore ?? 0
+  document.getElementById("TotalAfter").innerText = result.totalAfter ?? 0
+  document.getElementById("RowCountDisplay").innerText = result.itemTotal ?? 0
+  document.getElementById("nextBtn").disabled = result.totalAfter === 0;
+  document.getElementById("prevBtn").disabled = result.totalBefore === 0;
 }
 
-
-async function fetchGetAssetId()
+async function fetchGetAssetId(previousCursor, nextCursor)
 {
   try
   {
     const token = localStorage.getItem("token");
+
+    const requestBody = {
+      PageSize: pageSize,
+      PreviousCursor: previousCursor,
+      NextCursor: nextCursor,
+      firstName: document.getElementById("firstName")?.value,
+      lastName: document.getElementById("lastName")?.value,
+      categoryName: document.getElementById("categoryName")?.value,
+      status: document.getElementById("status")?.value
+    };
+
+    const body = JSON.stringify(requestBody, (key, value) => (value === "" ? null : value));
+
     const response = await fetch(`${API_URL}/Item/GetAssetId`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify({
-        Page: currentPage,
-        PageSize: pageSize
-      }),
+      body: body
     });
-
     const result = await response.json();
-    RowCount = result.rowCount;
+
+    TotalRow = result.totalRow;
+    PreviousCursor = result.previousCursor;
+    NextCursor = result.nextCursor;
+
     displayAssetId(result.data);
-    updatePaginationControls(fetchGetAssetId);
-    updateTotalItemsDisplay();
+    updatePaginationControls(fetchGetAssetId)
+    updatePage(result)
 
   } catch (error)
   {
@@ -100,87 +118,111 @@ async function fetchGetAssetId()
   }
 }
 
-async function fetchGetCategory()
+async function fetchGetCategory(previousCursor, nextCursor)
 {
   try
   {
     const token = localStorage.getItem("token");
+
+    const requestBody = {
+      PageSize: pageSize,
+      PreviousCursor: previousCursor,
+      NextCursor: nextCursor,
+    };
+
+    const body = JSON.stringify(requestBody, (key, value) => (value === "" ? null : value));
+
     const response = await fetch(`${API_URL}/Item/GetCategory`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify({
-        Page: currentPage,
-        PageSize: pageSize
-      }),
+      body: body
     });
-
     const result = await response.json();
-    RowCount = result.rowCount;
-    displayCategory(result.data);
-    updatePaginationControls(fetchGetCategory);
-    updateTotalItemsDisplay()
 
+    TotalRow = result.totalRow;
+    PreviousCursor = result.previousCursor;
+    NextCursor = result.nextCursor;
+
+    displayCategory(result.data);
+    updatePaginationControls(fetchGetCategory)
+    updatePage(result)
   } catch (error)
   {
     console.error("Error:", error);
   }
 }
 
-async function fetchGetClassification()
+async function fetchGetClassification(previousCursor, nextCursor)
 {
   try
   {
     const token = localStorage.getItem("token");
+
+    const requestBody = {
+      PageSize: pageSize,
+      PreviousCursor: previousCursor,
+      NextCursor: nextCursor,
+    };
+
+    const body = JSON.stringify(requestBody, (key, value) => (value === "" ? null : value));
+
     const response = await fetch(`${API_URL}/Item/GetClassification`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify({
-        Page: currentPage,
-        PageSize: pageSize
-      }),
+      body: body
     });
-
     const result = await response.json();
-    RowCount = result.rowCount;
-    displayClassification(result.data);
-    updatePaginationControls(fetchGetClassification);
-    updateTotalItemsDisplay()
 
+    TotalRow = result.totalRow;
+    PreviousCursor = result.previousCursor;
+    NextCursor = result.nextCursor;
+
+    displayClassification(result.data);
+    updatePaginationControls(fetchGetClassification)
+    updatePage(result)
   } catch (error)
   {
     console.error("Error:", error);
   }
 }
 
-async function fetchGetInstance()
+async function fetchGetInstance(previousCursor, nextCursor)
 {
   try
   {
     const token = localStorage.getItem("token");
+
+    const requestBody = {
+      PageSize: pageSize,
+      PreviousCursor: previousCursor,
+      NextCursor: nextCursor,
+    };
+
+    const body = JSON.stringify(requestBody, (key, value) => (value === "" ? null : value));
+
     const response = await fetch(`${API_URL}/Item/GetInstance`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify({
-        Page: currentPage,
-        PageSize: pageSize
-      }),
+      body: body
     });
-
     const result = await response.json();
-    RowCount = result.rowCount;
-    displayInstance(result.data);
-    updatePaginationControls(fetchGetInstance);
-    updateTotalItemsDisplay()
 
+    TotalRow = result.totalRow;
+    PreviousCursor = result.previousCursor;
+    NextCursor = result.nextCursor;
+
+    displayInstance(result.data);
+    updatePaginationControls(fetchGetInstance)
+    updatePage(result)
   } catch (error)
   {
     console.error("Error:", error);
@@ -191,14 +233,52 @@ async function fetchGetInstance()
 function displayAssetId(data)
 {
   const container = document.getElementById("asset-container");
+
+  const filters = {
+    firstName: document.getElementById("firstName")?.value || "",
+    lastName: document.getElementById("lastName")?.value || "",
+    categoryName: document.getElementById("categoryName")?.value || "",
+    status: document.getElementById("status")?.value || "",
+  };
+
   container.innerHTML =
-    `<label for="pageSizeSelect">จำนวนต่อหน้า:</label>
-  <select id="pageSizeSelect" onchange="changePageSize(Number(this.value), fetchGetAssetId)">
-    <option value="3">3</option>
-    <option value="7">7</option>
-    <option value="10" selected>10</option>
-  </select>
-    <div class="table-header">ทรัพย์สินทั้งหมดในระบบ</div>`;
+    `
+    <div class="table-header">
+  <h2>ทรัพย์สินทั้งหมดในระบบ</h2>
+</div>
+<div class="table-controls">
+  <span>ข้อมูลทั้งหมด: <span id="RowCountDisplay">0</span> รายการ</span>
+  <div class="page-size">
+    <label for="pageSizeSelect">จำนวนต่อหน้า:</label>
+    <select id="pageSizeSelect" onchange="changePageSize(Number(this.value), fetchGetAssetId)">
+      <option value="3">3</option>
+      <option value="7">7</option>
+      <option value="10" selected>10</option>
+    </select>
+  </div>
+</div>
+    <div>
+        <label for="firstName">ชื่อผู้ถือครอง:</label>
+        <input type="text" id="firstName" name="firstName">
+        <label for="lastName">นามสกุล:</label>
+        <input type="text" id="lastName" name="lastName">
+        <label for="categoryName">หมวดหมู่:</label>
+        <input type="text" id="categoryName" name="categoryName">
+        <label for="status">สถานะ:</label>
+        <select name="status" id="status">
+          <option value="">-</option>
+          <option value="0">Available</option>
+          <option value="1">EndofLife</option>
+          <option value="2">Missing</option>
+        </select>
+        <button onclick="search(fetchGetAssetId)">ค้นหา</button>
+    </div>
+    `;
+
+    document.getElementById("firstName").value = filters.firstName;
+  document.getElementById("lastName").value = filters.lastName;
+  document.getElementById("categoryName").value = filters.categoryName;
+  document.getElementById("status").value = filters.status;
 
   if (data.length === 0)
   {
@@ -228,7 +308,7 @@ function displayAssetId(data)
             <td>${item.categoryName}</td>
             <td>${item.classificationName}</td>
             <td>${item.assetId}</td>
-            <td>${item.username || '-'}</td>
+            <td>${(item.firstName || item.lastName) ? `${item.firstName} ${item.lastName}` : '-'}</td>
             <td>${AssetIdStatus[item.status] || '-'}</td>
             <td><button class="btn-confirm" onclick="editStatusAction(${item.instanceId})">แก้ไข</button></td>
           </tr>
@@ -245,15 +325,24 @@ function displayCategory(data)
 {
   const container = document.getElementById("asset-container");
   container.innerHTML =
-    `<label for="pageSizeSelect">จำนวนต่อหน้า:</label>
-  <select id="pageSizeSelect" onchange="changePageSize(Number(this.value), fetchGetCategory)">
-    <option value="3">3</option>
-    <option value="7">7</option>
-    <option value="10" selected>10</option>
-  </select>
-    <div style="display: flex; align-items: center;">
-     <div style="flex-grow: 1; text-align: center;" class="table-header">หมวดหมู่ของทรัพย์สินทั้งหมดในระบบ</div>
-     <div><button id="openCategoryModalBtn">สร้างหมวดหมู่ของทรัพย์สิน</button></div></div>`;
+    `
+    <div class="table-header">
+  <h2>หมวดหมู่ของทรัพย์สินทั้งหมดในระบบ</h2>
+  <button id="openCategoryModalBtn">สร้างหมวดหมู่ของทรัพย์สิน</button>
+</div>
+
+<div class="table-controls">
+  <span>ข้อมูลทั้งหมด: <span id="RowCountDisplay">0</span> รายการ</span>
+  
+  <div class="page-size">
+    <label for="pageSizeSelect">จำนวนต่อหน้า:</label>
+    <select id="pageSizeSelect" onchange="changePageSize(Number(this.value), fetchGetCategory)">
+      <option value="3">3</option>
+      <option value="7">7</option>
+      <option value="10" selected>10</option>
+    </select>
+  </div>
+</div>`;
 
   if (data.length === 0)
   {
@@ -342,15 +431,24 @@ function displayClassification(data)
 {
   const container = document.getElementById("asset-container");
   container.innerHTML =
-    `<label for="pageSizeSelect">จำนวนต่อหน้า:</label>
-  <select id="pageSizeSelect" onchange="changePageSize(Number(this.value), fetchGetClassification)">
-    <option value="3">3</option>
-    <option value="7">7</option>
-    <option value="10" selected>10</option>
-  </select>
-    <div style="display: flex; align-items: center;">
-     <div style="flex-grow: 1; text-align: center;" class="table-header">การจำแนกประเภทของทรัพย์สินทั้งหมดในระบบ</div>
-     <div><button id="openClassificationModalBtn">สร้างการจำแนกประเภทของทรัพย์สิน</button></div></div>`;
+    `
+    <div class="table-header">
+  <h2>การจำแนกประเภทของทรัพย์สินทั้งหมดในระบบ</h2>
+  <button id="openClassificationModalBtn">สร้างการจำแนกประเภทของทรัพย์สิน</button>
+</div>
+
+<div class="table-controls">
+  <span>ข้อมูลทั้งหมด: <span id="RowCountDisplay">0</span> รายการ</span>
+  
+  <div class="page-size">
+    <label for="pageSizeSelect">จำนวนต่อหน้า:</label>
+    <select id="pageSizeSelect" onchange="changePageSize(Number(this.value), fetchGetClassification)">
+      <option value="3">3</option>
+      <option value="7">7</option>
+      <option value="10" selected>10</option>
+    </select>
+  </div>
+</div>`;
 
   if (data.length === 0)
   {
@@ -475,15 +573,24 @@ function displayInstance(data)
 {
   const container = document.getElementById("asset-container");
   container.innerHTML =
-    `<label for="pageSizeSelect">จำนวนต่อหน้า:</label>
-  <select id="pageSizeSelect" onchange="changePageSize(Number(this.value), fetchGetInstance)">
-    <option value="3">3</option>
-    <option value="7">7</option>
-    <option value="10" selected>10</option>
-  </select>
-    <div style="display: flex; align-items: center;">
-     <div style="flex-grow: 1; text-align: center;" class="table-header">รหัสทรัพย์สินทั้งหมดในระบบ</div>
-     <div><button id="openInstanceModalBtn">สร้างรหัสทรัพย์สิน</button></div></div>`;
+    `
+    <div class="table-header">
+  <h2>รหัสทรัพย์สินทั้งหมดในระบบ</h2>
+  <button id="openInstanceModalBtn">สร้างรหัสทรัพย์สิน</button>
+</div>
+
+<div class="table-controls">
+  <span>ข้อมูลทั้งหมด: <span id="RowCountDisplay">0</span> รายการ</span>
+  
+  <div class="page-size">
+    <label for="pageSizeSelect">จำนวนต่อหน้า:</label>
+    <select id="pageSizeSelect" onchange="changePageSize(Number(this.value), fetchGetInstance)">
+      <option value="3">3</option>
+      <option value="7">7</option>
+      <option value="10" selected>10</option>
+    </select>
+  </div>
+</div>`;
 
   if (data.length === 0)
   {
@@ -835,14 +942,14 @@ async function editStatusAction(instanceId)
     document.getElementById("classificationName").textContent = data.classificationName || "-";
     document.getElementById("classificationDescription").textContent = data.classificationDescription || "-";
     document.getElementById("assetId").textContent = data.assetId || "-";
-    document.getElementById("username").textContent = data.username || "-";
+    document.getElementById("username").textContent = (data.firstName && data.lastName) ? `${data.firstName} ${data.lastName}` : "-";
     document.getElementById("status").textContent = AssetIdStatus[data.status] || "-";
 
     document.getElementById("btnLost").setAttribute("data-instance-id", instanceId);
     document.getElementById("btnEnd").setAttribute("data-instance-id", instanceId);
     document.getElementById("btnRestore").setAttribute("data-instance-id", instanceId);
 
-    usernameValue = data.username;
+    usernameValue = data.firstName;
     updateButtonVisibility()
 
   } catch (error)
@@ -946,9 +1053,12 @@ window.editStatusAction = editStatusAction;
 window.editCategoryAction = editCategoryAction;
 window.editClassificationAction = editClassificationAction;
 window.editInstanceAction = editInstanceAction;
-window.changePage = changePage;
 window.changePageSize = changePageSize;
 window.fetchGetInstance = fetchGetInstance;
 window.fetchGetClassification = fetchGetClassification;
 window.fetchGetCategory = fetchGetCategory;
 window.fetchGetAssetId = fetchGetAssetId;
+window.search = search;
+
+
+fetchGetAssetId()
