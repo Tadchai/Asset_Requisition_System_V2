@@ -15,7 +15,17 @@ public partial class Instance
 
     public int? RequestId { get; set; }
 
+    public int? Price { get; set; }
+
+    public string? StoreName { get; set; }
+
+    public bool Preparation { get; set; }
+
+    public DateOnly AcquisitonDate { get; set; }
+
     public virtual Classification Classification { get; set; } = null!;
+
+    public virtual ICollection<ItemInstanceStatusTimeline> ItemInstanceStatusTimelines { get; set; } = new List<ItemInstanceStatusTimeline>();
 
     public virtual ICollection<RequisitionRequest> RequisitionRequests { get; set; } = new List<RequisitionRequest>();
 }

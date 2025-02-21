@@ -39,9 +39,18 @@ namespace api.Controllers
                         DueDate = request.DueDate,
                         ReasonRequest = request.ReasonRequest,
                         Status = (int)RequestStatus.Pending,
-                        RequesterId = int.Parse(userId)
+                        RequesterId = int.Parse(userId),
+                        RequestDate = DateOnly.FromDateTime(DateTime.Now),
                     };
                     await _context.RequisitionRequests.AddAsync(requisitionRequestModel);
+                    await _context.SaveChangesAsync();
+
+                    var historyModel = new History
+                    {
+                        RequestId = requisitionRequestModel.RequestId,
+                        RequestDate = DateOnly.FromDateTime(DateTime.Now)
+                    };
+                    await _context.Histories.AddAsync(historyModel);
                     await _context.SaveChangesAsync();
 
                     await transaction.CommitAsync();
@@ -66,11 +75,14 @@ namespace api.Controllers
                             join c in _context.Categories on r.CategoryId equals c.CategoryId
                             join i in _context.Instances on r.InstanceId equals i.InstanceId into instanceJoin
                             from i in instanceJoin.DefaultIfEmpty()
+                            join ru in _context.Users on r.ResponsibleId equals ru.UserId into responsibleJoin
+                            from ru in responsibleJoin.DefaultIfEmpty()
                             where r.RequesterId == int.Parse(userId)
                             orderby r.RequestId
                             select new GetRequestResponse
                             {
                                 RequestId = r.RequestId,
+                                CategoryId = c.CategoryId,
                                 CategoryName = c.Name,
                                 Requirement = r.Requirement,
                                 DueDate = r.DueDate,
@@ -78,16 +90,21 @@ namespace api.Controllers
                                 Status = r.Status,
                                 AssetId = i.AssetId,
                                 ReasonRejected = r.ReasonRejected,
+                                ResponsibleFirstName = ru.FirstName,
+                                ResponsibleLastName = ru.LastName,
                             };
 
-                if (!string.IsNullOrWhiteSpace(request.CategoryName))
-                    query = query.Where(r => r.CategoryName.ToLower().Contains(request.CategoryName.ToLower()));
+                if (request.RequestId.HasValue)
+                    query = query.Where(r => r.RequestId == request.RequestId);
 
-                if (request.DueDate.HasValue)
-                    query = query.Where(r => r.DueDate == request.DueDate.Value);
+                if (request.CategoryId.HasValue)
+                    query = query.Where(r => r.CategoryId == request.CategoryId);
+
+                if (request.StartDueDate.HasValue || request.EndDueDate.HasValue)
+                    query = query.Where(r => (!request.StartDueDate.HasValue || r.DueDate >= request.StartDueDate) && (!request.EndDueDate.HasValue || r.DueDate <= request.EndDueDate));
 
                 if (request.Status.HasValue)
-                    query = query.Where(r => r.Status == request.Status.Value);
+                    query = query.Where(r => r.Status == request.Status);
 
                 int itemTotal = await query.CountAsync();
                 int countBefore = 0, countAfter = 0;
@@ -157,16 +174,29 @@ namespace api.Controllers
 
                         var instanceModel = await _context.Instances.SingleAsync(i => i.InstanceId == request.InstanceId);
                         instanceModel.RequestId = request.RequestId;
+
+                        var historyModel = await _context.Histories.SingleAsync(h => h.RequestId == request.RequestId);
+                        historyModel.ResponseRequestDate = DateOnly.FromDateTime(DateTime.Now);
+
+                        var TimelineModel = new ItemInstanceStatusTimeline
+                        {
+                            ItemInstanceId = request.InstanceId.Value,
+                            StatusChange = (int)TimelineStatusChange.Request,
+                            Date = DateOnly.FromDateTime(DateTime.Now)
+                        };
+                        await _context.ItemInstanceStatusTimelines.AddAsync(TimelineModel);
                     }
                     else
                     {
                         requisitionRequestModel.Status = (int)RequestStatus.Rejected;
                         requisitionRequestModel.ReasonRejected = request.ReasonRejected;
                         requisitionRequestModel.ResponsibleId = int.Parse(responsibleId);
+
+                        var historyModel = await _context.Histories.SingleAsync(h => h.RequestId == request.RequestId);
+                        historyModel.ResponseRequestDate = DateOnly.FromDateTime(DateTime.Now);
                     }
 
                     await _context.SaveChangesAsync();
-
                     await transaction.CommitAsync();
                     return new JsonResult(new MessageResponse { Message = "Set successfully.", StatusCode = HttpStatusCode.OK });
                 }
@@ -191,38 +221,38 @@ namespace api.Controllers
                             orderby r.RequestId
                             select new GetRequestListResponse
                             {
+                                UserId = u.UserId,
                                 FirstName = u.FirstName,
                                 LastName = u.LastName,
+                                CategoryId = c.CategoryId,
                                 CategoryName = c.Name,
                                 Requirement = r.Requirement,
                                 DueDate = r.DueDate,
                                 ReasonRequest = r.ReasonRequest,
                                 Status = r.Status,
                                 RequestId = r.RequestId,
+                                ResponsibleId = ur.UserId,
                                 FirstNameResponsible = ur.FirstName,
                                 LastNameResponsible = ur.LastName,
                             };
 
-                if (!string.IsNullOrWhiteSpace(request.FirstName))
-                    query = query.Where(r => r.FirstName.ToLower().Contains(request.FirstName.ToLower()));
+                if (request.RequestId.HasValue)
+                    query = query.Where(r => r.RequestId == request.RequestId);
 
-                if (!string.IsNullOrWhiteSpace(request.LastName))
-                    query = query.Where(r => r.LastName.ToLower().Contains(request.LastName.ToLower()));
+                if (request.UserId.HasValue)
+                    query = query.Where(r => r.UserId == request.UserId);
 
-                if (!string.IsNullOrWhiteSpace(request.CategoryName))
-                    query = query.Where(r => r.CategoryName.ToLower().Contains(request.CategoryName.ToLower()));
+                if (request.CategoryId.HasValue)
+                    query = query.Where(r => r.CategoryId == request.CategoryId);
 
-                if (request.DueDate.HasValue)
-                    query = query.Where(r => r.DueDate == request.DueDate.Value);
+                if (request.ResponsibleId.HasValue)
+                    query = query.Where(r => r.ResponsibleId == request.ResponsibleId);
+
+                if (request.StartDueDate.HasValue || request.EndDueDate.HasValue)
+                    query = query.Where(r => (!request.StartDueDate.HasValue || r.DueDate >= request.StartDueDate) && (!request.EndDueDate.HasValue || r.DueDate <= request.EndDueDate));
 
                 if (request.Status.HasValue)
-                    query = query.Where(r => r.Status == request.Status.Value);
-
-                if (!string.IsNullOrWhiteSpace(request.FirstNameResponsible))
-                    query = query.Where(r => r.FirstNameResponsible.ToLower().Contains(request.FirstNameResponsible.ToLower()));
-
-                if (!string.IsNullOrWhiteSpace(request.LastNameResponsible))
-                    query = query.Where(r => r.LastNameResponsible.ToLower().Contains(request.LastNameResponsible.ToLower()));
+                    query = query.Where(r => r.Status == request.Status);
 
                 int itemTotal = await query.CountAsync();
                 int countBefore = 0, countAfter = 0;
@@ -234,7 +264,7 @@ namespace api.Controllers
                 else if (request.PreviousCursor.HasValue)
                 {
                     query = query.Where(r => r.RequestId < request.PreviousCursor)
-                                    .OrderByDescending(r => r.RequestId);
+                                 .OrderByDescending(r => r.RequestId);
                 }
 
                 List<GetRequestListResponse> result;
@@ -325,8 +355,8 @@ namespace api.Controllers
             }
         }
 
-        [HttpPost]
-        public async Task<IActionResult> GetConfirmList([FromBody] GetConfirmListRequest request)
+        [HttpGet]
+        public async Task<IActionResult> GetConfirmList()
         {
             try
             {
@@ -337,7 +367,6 @@ namespace api.Controllers
                             join cs in _context.Classifications on i.ClassificationId equals cs.ClassificationId
                             join c in _context.Categories on cs.CategoryId equals c.CategoryId
                             where r.RequesterId == int.Parse(userId) && r.Status == (int)RequestStatus.Allocated
-                            orderby r.RequestId
                             select new ConfirmListResponse
                             {
                                 RequestId = r.RequestId,
@@ -346,144 +375,9 @@ namespace api.Controllers
                                 AssetId = i.AssetId
                             };
 
-                int itemTotal = await query.CountAsync();
-                int countBefore = 0, countAfter = 0;
-                var queryWithFilter = query;
-                if (request.NextCursor.HasValue)
-                {
-                    query = query.Where(r => r.RequestId > request.NextCursor);
-                }
-                else if (request.PreviousCursor.HasValue)
-                {
-                    query = query.Where(r => r.RequestId < request.PreviousCursor)
-                                    .OrderByDescending(r => r.RequestId);
-                }
+                var result = await query.ToListAsync();
 
-                List<ConfirmListResponse> result;
-                if (request.PreviousCursor.HasValue)
-                {
-                    var queryWithTake = query.Take(request.PageSize);
-                    result = await queryWithTake.ToListAsync();
-                    result.Reverse();
-                }
-                else
-                {
-                    result = await query.Take(request.PageSize).ToListAsync();
-                }
-                var firstId = result.First().RequestId;
-                var lastId = result.Last().RequestId;
-                countBefore = await queryWithFilter.Where(r => r.RequestId < firstId).CountAsync();
-                countAfter = await queryWithFilter.Where(r => r.RequestId > lastId).CountAsync();
-                int rowCount = result.Count;
-
-                return new JsonResult(new PaginatedResponse<List<ConfirmListResponse>>
-                {
-                    ItemTotal = itemTotal,
-                    TotalRow = rowCount,
-                    PreviousCursor = firstId,
-                    NextCursor = lastId,
-                    TotalBefore = countBefore,
-                    TotalAfter = countAfter,
-                    Data = result,
-                });
-            }
-            catch (Exception ex)
-            {
-                return new JsonResult(new MessageResponse { Message = $"An error occurred: {ex.Message}", StatusCode = HttpStatusCode.InternalServerError });
-            }
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> GetUserAsset()
-        {
-            try
-            {
-                var userId = User.FindFirst("userId")?.Value;
-
-                var itemList = await (from r in _context.RequisitionRequests
-                                      join i in _context.Instances on r.InstanceId equals i.InstanceId
-                                      join cs in _context.Classifications on i.ClassificationId equals cs.ClassificationId
-                                      join c in _context.Categories on cs.CategoryId equals c.CategoryId
-                                      where r.RequesterId == int.Parse(userId) && i.RequestId == r.RequestId && r.Status == (int)RequestStatus.Completed
-                                      select new AssetListResponse
-                                      {
-                                          RequestId = r.RequestId,
-                                          CategoryName = c.Name,
-                                          ClassificationName = cs.Name,
-                                          AssetId = i.AssetId,
-                                          InstanceId = i.InstanceId
-                                      }).ToListAsync();
-
-                return new JsonResult(itemList);
-            }
-            catch (Exception ex)
-            {
-                return new JsonResult(new MessageResponse { Message = $"An error occurred: {ex.Message}", StatusCode = HttpStatusCode.InternalServerError });
-            }
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> GetUserAsset([FromBody] GetUserAssetRequest request)
-        {
-            try
-            {
-                var userId = User.FindFirst("userId")?.Value;
-
-                var query = from r in _context.RequisitionRequests
-                            join i in _context.Instances on r.InstanceId equals i.InstanceId
-                            join cs in _context.Classifications on i.ClassificationId equals cs.ClassificationId
-                            join c in _context.Categories on cs.CategoryId equals c.CategoryId
-                            where r.RequesterId == int.Parse(userId) && i.RequestId == r.RequestId && r.Status == (int)RequestStatus.Completed
-                            orderby r.RequestId
-                            select new AssetListResponse
-                            {
-                                RequestId = r.RequestId,
-                                CategoryName = c.Name,
-                                ClassificationName = cs.Name,
-                                AssetId = i.AssetId,
-                                InstanceId = i.InstanceId
-                            };
-
-                int itemTotal = await query.CountAsync();
-                int countBefore = 0, countAfter = 0;
-                var queryWithFilter = query;
-                if (request.NextCursor.HasValue)
-                {
-                    query = query.Where(r => r.RequestId > request.NextCursor);
-                }
-                else if (request.PreviousCursor.HasValue)
-                {
-                    query = query.Where(r => r.RequestId < request.PreviousCursor)
-                                    .OrderByDescending(r => r.RequestId);
-                }
-
-                List<AssetListResponse> result;
-                if (request.PreviousCursor.HasValue)
-                {
-                    var queryWithTake = query.Take(request.PageSize);
-                    result = await queryWithTake.ToListAsync();
-                    result.Reverse();
-                }
-                else
-                {
-                    result = await query.Take(request.PageSize).ToListAsync();
-                }
-                var firstId = result.First().RequestId;
-                var lastId = result.Last().RequestId;
-                countBefore = await queryWithFilter.Where(r => r.RequestId < firstId).CountAsync();
-                countAfter = await queryWithFilter.Where(r => r.RequestId > lastId).CountAsync();
-                int rowCount = result.Count;
-
-                return new JsonResult(new PaginatedResponse<List<AssetListResponse>>
-                {
-                    ItemTotal = itemTotal,
-                    TotalRow = rowCount,
-                    PreviousCursor = firstId,
-                    NextCursor = lastId,
-                    TotalBefore = countBefore,
-                    TotalAfter = countAfter,
-                    Data = result,
-                });
+                return new JsonResult(result);
             }
             catch (Exception ex)
             {
@@ -518,13 +412,14 @@ namespace api.Controllers
                     query = query.Where(r => r.DueDate > request.DayNextCursor ||
                                          (r.DueDate == request.DayNextCursor && r.RequestId > request.NextCursor));
                 }
-               
-                var result = await query.Take(request.PageSize).ToListAsync();
+
+                var resultToCheck = await query.Take(request.PageSize + 1).ToListAsync();
+                var result = resultToCheck.Take(request.PageSize).ToList();
                 var lastResult = result.LastOrDefault();
                 var NextCursor = lastResult?.RequestId;
                 var DayNextCursor = lastResult?.DueDate;
 
-                bool hasNextPage = await query.Skip(request.PageSize).AnyAsync();
+                bool hasNextPage = resultToCheck.Count() > request.PageSize;
 
                 return new JsonResult(new PaginatedResponse<List<GetRequestListResponse>>
                 {
@@ -567,13 +462,18 @@ namespace api.Controllers
                     query = query.Where(r => r.DueDate > request.DayNextCursor ||
                                          (r.DueDate == request.DayNextCursor && r.RequestId > request.NextCursor));
                 }
-                var result = await query.Take(request.PageSize).ToListAsync();
+
+                var resultToCheck = await query.Take(request.PageSize + 1).ToListAsync();
+                var result = resultToCheck.Take(request.PageSize).ToList();
                 var lastResult = result.LastOrDefault();
                 var NextCursor = lastResult?.RequestId;
                 var DayNextCursor = lastResult?.DueDate;
 
+                bool hasNextPage = resultToCheck.Count() > request.PageSize;
+
                 return new JsonResult(new PaginatedResponse<List<GetRequestListResponse>>
                 {
+                    HasNextPage = hasNextPage,
                     DayNextCursor = DayNextCursor,
                     NextCursor = NextCursor,
                     Data = result

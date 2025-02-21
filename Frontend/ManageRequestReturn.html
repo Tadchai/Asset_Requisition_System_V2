@@ -4,14 +4,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Asset Management</title>
+  <title>Asset Requisition System</title>
   <link rel="stylesheet" type="text/css" href="/Frontend/CSS/ManageRequestReturn.css" />
 </head>
 
 <body>
   <!-- Navbar -->
   <div class="navbar">
-    <div class="nav-title">Asset Management System</div>
+    <div class="nav-title">Asset Requisition System</div>
     <div class="nav-menu">
       <div class="nav-item" id="RequestReturnList">ภาพรวมของใบขอเบิก/คืน</div>
       <div class="nav-item" id="RequestList">ใบขอเบิกทั้งหมดในระบบ</div>
@@ -21,40 +21,37 @@
 
   <!-- Sidebar -->
   <div class="sidebar">
-    <div class="sidebar-item" id="ToManageAssetPage">จัดการทรัพย์สินที่ถือครอง</div>
+    <div class="sidebar-item" id="ToManageAssetPage">ทรัพย์สินที่ถือครอง</div>
     <div class="sidebar-item" id="ToManageAssetInSystemPage">จัดการทรัพย์สินในระบบ</div>
     <div class="sidebar-item">จัดการใบขอเบิก/คืน</div>
-    <div class="sidebar-item" id="ToOverviewAssetPage">ภาพรวมของทรัพย์สิน</div>
-    <div class="sidebar-item" id="ToLoginPage">ออกจากระบบ</div>
+    <div class="sidebar-item" id="ToOverviewAssetPage">วิเคราะห์การใช้งานทรัพย์สิน</div>
+    <div class="sidebar-item" id="ToOverviewUserPage">วิเคราะห์ผู้ใช้งานในระบบ</div>
+    <div style="margin-bottom: 15px;" class="sidebar-item" id="ToLoginPage">ออกจากระบบ</div>
+    <div style="text-align: center;" id="yourname"></div>
   </div>
 
   <!-- New Main Content -->
   <div class="main-content" id="multi-view">
-    <!-- คอลัมน์ซ้าย -->
-    <div id="left-column">
+    
       <div class="table-header">
       <h2>รายการใบขอเบิกรอดำเนินการ</h2>
       <button onclick="refreshTable(fetchGetPendingRequest)">Refresh</button>
-      </div>
-      
+      </div><br>
       <div id="pending-container" class="asset-container">
         <!-- Pending จะถูกแสดงที่นี่ -->
-      </div>
+      </div><br>
       <div class="table-header">
         <h2>รายการใบขอเบิกที่ยังไม่เสร็จสมบูรณ์</h2>
         <button onclick="refreshTable(fetchGetAllocatedRequest)">Refresh</button>
-      </div>
+      </div><br>
       <div id="allocated-container" class="asset-container">
         <!-- Allocated จะถูกแสดงที่นี่ -->
-      </div>
-    </div>
-
-    <!-- คอลัมน์ขวา -->
-    <div id="right-column">
+      </div><br>
+      
       <div class="table-header">
         <h2>รายการใบคืนรอดำเนินการ</h2>
         <button onclick="refreshTable(fetchGetPendingReturn)">Refresh</button>
-      </div>
+      </div><br>
       <div id="returned-container" class="asset-container">
         <!-- Returned จะถูกแสดงที่นี่ -->
       </div>

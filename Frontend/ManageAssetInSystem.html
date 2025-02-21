@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Asset Management</title>
+  <title>Asset Requisition System</title>
   <link rel="stylesheet" type="text/css" href="/Frontend/CSS/ManageAssetInSystem.css" />
   <style>
     .button-container {
@@ -19,22 +19,31 @@
 <body>
   <!-- Navbar -->
   <div class="navbar">
-    <div class="nav-title">Asset Management System</div>
+    <div class="nav-title">Asset Requisition System</div>
     <div class="nav-menu">
       <div class="nav-item" id="AssetSystem">ทรัพย์สินทั้งหมดในระบบ</div>
       <div class="nav-item" id="ManageCategory">หมวดหมู่ของทรัพย์สิน</div>
-      <div class="nav-item" id="ManageClassification">การจำแนกประเภทของทรัพย์สิน</div>
-      <div class="nav-item" id="ManageInstance">รหัสทรัพย์สิน</div>
+      <div class="nav-item" id="ManageClassification">
+        การจำแนกประเภทของทรัพย์สิน
+      </div>
     </div>
   </div>
 
   <!-- Sidebar -->
   <div class="sidebar">
-    <div class="sidebar-item" id="ToManageAssetPage">จัดการทรัพย์สินที่ถือครอง</div>
+    <div class="sidebar-item" id="ToManageAssetPage">
+      ทรัพย์สินที่ถือครอง
+    </div>
     <div class="sidebar-item">จัดการทรัพย์สินในระบบ</div>
-    <div class="sidebar-item" id="ToManageRequestReturnPage">จัดการใบขอเบิก/คืน</div>
-    <div class="sidebar-item" id="ToOverviewAssetPage">ภาพรวมของทรัพย์สิน</div>
-    <div class="sidebar-item" id="ToLoginPage">ออกจากระบบ</div>
+    <div class="sidebar-item" id="ToManageRequestReturnPage">
+      จัดการใบขอเบิก/คืน
+    </div>
+    <div class="sidebar-item" id="ToOverviewAssetPage">
+      วิเคราะห์การใช้งานทรัพย์สิน
+    </div>
+    <div class="sidebar-item" id="ToOverviewUserPage">วิเคราะห์ผู้ใช้งานในระบบ</div>
+    <div style="margin-bottom: 15px;" class="sidebar-item" id="ToLoginPage">ออกจากระบบ</div>
+    <div style="text-align: center;" id="yourname"></div>
   </div>
 
   <!-- Main Content -->
@@ -60,23 +69,72 @@
     <div class="modal-content">
       <span id="closeAssetModalBtn" class="close-btn">&times;</span>
       <h2>รายละเอียดของทรัพย์สิน</h2>
-      <p style="text-align: left;"><strong>หมวดหมู่ของทรัพย์สิน:</strong> <br><span id="categoryName"></span></p>
-      <p style="text-align: left;"><strong>คำอธิบายของหมวดหมู่ของทรัพย์สิน:</strong> <br><span
-          id="categoryDescription"></span></p>
-      <p style="text-align: left;"><strong>การจำแนกประเภทของทรัพย์สิน:</strong> <br><span
-          id="classificationName"></span></p>
-      <p style="text-align: left;"><strong>คำอธิบายการจำแนกประเภทของทรัพย์สิน:</strong> <br><span
-          id="classificationDescription"></span></p>
-      <p style="text-align: left;"><strong>รหัสทรัพย์สิน:</strong> <br><span id="assetId"></span></p>
-      <p style="text-align: left;"><strong>ชื่อผู้ถือครอง:</strong> <br><span id="username"></span></p>
-      <p style="text-align: left;"><strong>สถานะของทรัพย์สิน:</strong> <br><span id="status"></span></p><br>
-      <div><strong>แก้ไขสถานะของทรัพย์สิน:</strong></div><br>
+      <hr />
+      <br />
+
+      <div class="request-details">
+        <div class="detail-row">
+          <span class="detail-label">หมวดหมู่ของทรัพย์สิน:</span>
+          <span id="categoryName"></span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">คำอธิบายของหมวดหมู่ของทรัพย์สิน:</span>
+          <span id="categoryDescription"></span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">การจำแนกประเภทของทรัพย์สิน:</span>
+          <span id="classificationName"></span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">คำอธิบายการจำแนกประเภทของทรัพย์สิน:</span>
+          <span id="classificationDescription"></span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">รหัสทรัพย์สิน:</span>
+          <span id="assetIdModal"></span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">ราคาของทรัพย์สิน:</span>
+          <span id="price"></span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">ร้านค้าหรือแหล่งที่ซื้อ:</span>
+          <span id="storeName"></span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">วันที่ได้มา:</span>
+          <span id="acquisitonDate"></span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">สำหรับจัดเตรียม:</span>
+          <span id="preparation"></span>
+        </div>
+
+        <div class="detail-row">
+          <span class="detail-label">สถานะของทรัพย์สิน:</span>
+          <span id="statusModal"></span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">ชื่อผู้ถือครอง:</span>
+          <span id="username"></span>
+        </div>
+      </div>
+      <br />
+      <hr />
+      <br />
+
+      <div><strong>เปลี่ยนสถานะของทรัพย์สิน:</strong></div>
+      <br />
       <div class="button-container">
-        <button id="btnLost" class="submit-btn" data-status=2>สูญหาย</button>
-        <button id="btnEnd" class="submit-btn" data-status=1
-          style="display: none; background-color: red;">สิ้นสุดการใช้งาน</button>
-        <button id="btnRestore" class="submit-btn" data-status=0
-          style="display: none; background-color: gray;">เรียกคืน</button>
+        <button id="btnLost" class="submit-btn" data-status="2">
+          สูญหาย
+        </button>
+        <button id="btnEnd" class="submit-btn" data-status="1" style="display: none; background-color: red">
+          สิ้นสุดการใช้งาน
+        </button>
+        <button id="btnRestore" class="submit-btn" data-status="0" style="display: none; background-color: gray">
+          เรียกคืน
+        </button>
       </div>
     </div>
   </div>
@@ -89,13 +147,23 @@
       <form id="userForm">
         <div class="form-group">
           <label for="CategoryName">ชื่อหมวดหมู่ของทรัพย์สิน</label>
-          <input type="text" id="CategoryName" name="CategoryName" required>
+          <input type="text" id="CategoryName" name="CategoryName" required />
         </div>
         <div class="form-group">
           <label for="CategoryDescription">คำอธิบายหมวดหมู่ของทรัพย์สิน</label>
-          <input type="text" id="CategoryDescription" name="CategoryDescription" required>
+          <input type="text" id="CategoryDescription" name="CategoryDescription" required />
         </div>
-        <button type="button" id="submitCategory" class="submit-btn">ยืนยัน</button>
+        <div class="form-group">
+          <label for="CategoryUnit">หน่วยนับ (ex. ชิ้น)</label>
+          <input type="text" id="CategoryUnit" name="CategoryUnit" required />
+        </div>
+        <div class="form-group">
+          <label for="CategoryPreparation">จำนวนที่ต้องการสำรอง</label>
+          <input type="number" id="CategoryPreparation" name="CategoryPreparation" value="0" required />
+        </div>
+        <button type="button" id="submitCategory" class="submit-btn">
+          ยืนยัน
+        </button>
       </form>
     </div>
   </div>
@@ -107,13 +175,23 @@
       <form id="userForm">
         <div class="form-group">
           <label for="CategoryEditName">ชื่อหมวดหมู่ของทรัพย์สิน</label>
-          <input type="text" id="CategoryEditName" name="CategoryEditName" required>
+          <input type="text" id="CategoryEditName" name="CategoryEditName" required />
         </div>
         <div class="form-group">
           <label for="CategoryEditDescription">คำอธิบายของหมวดหมู่ของทรัพย์สิน</label>
-          <input type="text" id="CategoryEditDescription" name="CategoryEditDescription" required>
+          <input type="text" id="CategoryEditDescription" name="CategoryEditDescription" required />
         </div>
-        <button type="button" id="submitEditCategory" class="submit-btn">ยืนยัน</button>
+        <div class="form-group">
+          <label for="CategoryEditUnit">หน่วยนับ (ex. ชิ้น)</label>
+          <input type="text" id="CategoryEditUnit" name="CategoryEditUnit" required />
+        </div>
+        <div class="form-group">
+          <label for="CategoryEditPreparation">จำนวนที่ต้องการสำรอง</label>
+          <input type="number" id="CategoryEditPreparation" name="CategoryEditPreparation" required />
+        </div>
+        <button type="button" id="submitEditCategory" class="submit-btn">
+          ยืนยัน
+        </button>
       </form>
     </div>
   </div>
@@ -132,13 +210,15 @@
         </div>
         <div class="form-group">
           <label for="ClassificationName">ชื่อการจำแนกประเภทของทรัพย์สิน</label>
-          <input type="text" id="ClassificationName" name="ClassificationName" required>
+          <input type="text" id="ClassificationName" name="ClassificationName" required />
         </div>
         <div class="form-group">
           <label for="ClassificationDescription">คำอธิบายการจำแนกประเภทของทรัพย์สิน</label>
-          <input type="text" id="ClassificationDescription" name="ClassificationDescription" required>
+          <input type="text" id="ClassificationDescription" name="ClassificationDescription" required />
         </div>
-        <button type="button" id="submitClassification" class="submit-btn">ยืนยัน</button>
+        <button type="button" id="submitClassification" class="submit-btn">
+          ยืนยัน
+        </button>
       </form>
     </div>
   </div>
@@ -150,13 +230,15 @@
       <form id="userForm">
         <div class="form-group">
           <label for="ClassificationEditName">ชื่อการจำแนกประเภทของทรัพย์สิน</label>
-          <input type="text" id="ClassificationEditName" name="ClassificationEditName" required>
+          <input type="text" id="ClassificationEditName" name="ClassificationEditName" required />
         </div>
         <div class="form-group">
           <label for="ClassificationEditDescription">คำอธิบายการจำแนกประเภทของทรัพย์สิน</label>
-          <input type="text" id="ClassificationEditDescription" name="ClassificationEditDescription" required>
+          <input type="text" id="ClassificationEditDescription" name="ClassificationEditDescription" required />
         </div>
-        <button type="button" id="submitEditClassification" class="submit-btn">ยืนยัน</button>
+        <button type="button" id="submitEditClassification" class="submit-btn">
+          ยืนยัน
+        </button>
       </form>
     </div>
   </div>
@@ -164,20 +246,38 @@
   <!-- Modal Instance-->
   <div id="InstanceModal" class="modal">
     <div class="modal-content">
-      <span id="closeInstanceModal" class="close-btn">&times;</span>
-      <h2>สร้างรหัสทรัพย์สิน</h2>
+      <span id="closeInstanceModal" class="close-btn" onclick="closeCreateAsset()">&times;</span>
+      <h2>เพิ่มทรัพย์สินใหม่</h2>
       <form id="userForm">
         <div class="form-group">
-          <label for="SelectClassification">เลือกการจำแนกประเภทของทรัพย์สิน</label>
-          <select id="SelectClassification">
-            <option value="">-- กรุณาเลือกการจำแนกประเภทของทรัพย์สิน --</option>
+          <label for="classificationId">เลือกการจำแนกประเภทของทรัพย์สิน</label>
+          <select id="classificationId">
+            <option value="">
+              -- กรุณาเลือกการจำแนกประเภทของทรัพย์สิน --
+            </option>
           </select>
         </div>
         <div class="form-group">
           <label for="InstanceName">ชื่อรหัสทรัพย์สิน</label>
-          <input type="text" id="InstanceName" name="InstanceName" required>
+          <input type="text" id="InstanceName" name="InstanceName" required />
         </div>
-        <button type="button" id="submitInstance" class="submit-btn">ยืนยัน</button>
+        <div class="form-group">
+          <label for="AssetPrice">ราคาทรัพย์สิน</label>
+          <input type="number" id="AssetPrice" name="AssetPrice" required />
+        </div>
+        <div class="form-group">
+          <label for="AcquisitonDate">วันที่ได้มา</label>
+          <input type="date" id="AcquisitonDate" name="AcquisitonDate" required />
+        </div>
+        <div class="form-group">
+          <label for="StoreName">ร้านค้าหรือแหล่งที่ซื้อ</label>
+          <input type="text" id="StoreName" name="StoreName" required />
+        </div>
+        <input type="checkbox" id="Preparation" name="Preparation" required />
+        <label for="Preparation"><strong>สำหรับสำรอง</strong></label><br /><br />
+        <button type="button" onclick="submitInstance()" class="submit-btn">
+          ยืนยัน
+        </button>
       </form>
     </div>
   </div>
@@ -185,13 +285,21 @@
   <div id="InstanceEditModal" class="modal">
     <div class="modal-content">
       <span id="closeEditInstanceModal" class="close-btn">&times;</span>
-      <h2>แก้ไขรหัสทรัพย์สิน</h2>
+      <h2>แก้ไขรายละเอียดทรัพย์สิน</h2>
       <form id="userForm">
         <div class="form-group">
-          <label for="InstanceEditName">ชื่อรหัสทรัพย์สิน</label>
-          <input type="text" id="InstanceEditName" name="InstanceEditName" required>
+          <label for="EditAssetPrice">ราคาทรัพย์สิน</label>
+          <input type="int" id="EditAssetPrice" name="EditAssetPrice" required />
         </div>
-        <button type="button" id="submitEditInstance" class="submit-btn">ยืนยัน</button>
+        <div class="form-group">
+          <label for="EditStoreName">ร้านค้าหรือแหล่งที่ซื้อ</label>
+          <input type="text" id="EditStoreName" name="EditStoreName" required />
+        </div>
+        <input type="checkbox" id="EditPreparation" name="EditPreparation" required />
+        <label for="EditPreparation"><strong>สำหรับสำรอง</strong></label><br /><br />
+        <button type="button" id="submitEditInstance" class="submit-btn">
+          ยืนยัน
+        </button>
       </form>
     </div>
   </div>

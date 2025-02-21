@@ -20,7 +20,7 @@ namespace api.ViewModels
     {
         public int? Id { get; set; }
         public string Message { get; set; }
-        public HttpStatusCode StatusCode{ get; set; }
+        public HttpStatusCode StatusCode { get; set; }
     }
 
     public class PaginatedRequest
@@ -39,7 +39,7 @@ namespace api.ViewModels
         public int? NextCursor { get; set; }
         public int TotalBefore { get; set; }
         public int TotalAfter { get; set; }
-        public T Data { get; set; }
+        public T? Data { get; set; }
     }
 
     public class PendingReturnRequest
@@ -48,7 +48,21 @@ namespace api.ViewModels
         public int PageSize { get; set; }
     }
 
-    
-    
-    
+    public class GetUserRequest
+    {
+        public int UserId { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+    }
+
+    public class GetUserNameRequest
+    {
+        public int UserId { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+    }
+
+
+
+
 }

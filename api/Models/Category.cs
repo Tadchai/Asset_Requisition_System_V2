@@ -11,6 +11,10 @@ public partial class Category
 
     public string Description { get; set; } = null!;
 
+    public string Unit { get; set; } = null!;
+
+    public int ReservedQuantity { get; set; }
+
     public virtual ICollection<Classification> Classifications { get; set; } = new List<Classification>();
 
     public virtual ICollection<RequisitionRequest> RequisitionRequests { get; set; } = new List<RequisitionRequest>();

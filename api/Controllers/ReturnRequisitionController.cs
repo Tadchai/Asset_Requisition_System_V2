@@ -44,10 +44,14 @@ namespace api.Controllers
                         Status = (int)ReturnStatus.Pending,
                         RequestId = requestId.Value
                     };
-
                     await _context.RequisitionReturns.AddAsync(requisitionReturnModel);
                     await _context.SaveChangesAsync();
 
+                    var historyModel = await _context.Histories.SingleAsync(h => h.RequestId == requestId);
+                    historyModel.ReturnId = requisitionReturnModel.ReturnId;
+                    historyModel.ReturnDate = DateOnly.FromDateTime(DateTime.Now);
+
+                    await _context.SaveChangesAsync();
                     await transaction.CommitAsync();
                     return new JsonResult(new MessageResponse { Message = "Create ReturnAsset successfully.", StatusCode = HttpStatusCode.Created });
                 }
@@ -60,7 +64,7 @@ namespace api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> GetReturnList([FromBody]ReturnListRequest request)
+        public async Task<IActionResult> GetReturnList([FromBody] ReturnListRequest request)
         {
             try
             {
@@ -74,6 +78,7 @@ namespace api.Controllers
                                       select new
                                       {
                                           i.InstanceId,
+                                          CategoryId = c.CategoryId,
                                           CategoryName = c.Name,
                                           ClassificationName = cs.Name,
                                           i.AssetId
@@ -83,36 +88,35 @@ namespace api.Controllers
                             orderby rt.ReturnId
                             select new GetReturnAssetListResponse
                             {
+                                UserId = u.UserId,
                                 FirstName = u.FirstName,
                                 LastName = u.LastName,
+                                CategoryId = z.CategoryId,
                                 CategoryName = z.CategoryName,
                                 ClassificationName = z.ClassificationName,
                                 AssetId = z.AssetId,
                                 ReasonReturn = rt.ReasonReturn,
                                 Status = rt.Status,
-                                InstanceId = z.InstanceId,
                                 ReturnId = rt.ReturnId,
+                                ResponsibleId = ur.UserId,
                                 FirstNameResponsible = ur.FirstName,
                                 LastNameResponsible = ur.LastName,
                             };
-                
-                if (!string.IsNullOrWhiteSpace(request.FirstName))
-                    query = query.Where(r => r.FirstName.ToLower().Contains(request.FirstName.ToLower()));
 
-                if (!string.IsNullOrWhiteSpace(request.LastName))
-                    query = query.Where(r => r.LastName.ToLower().Contains(request.LastName.ToLower()));
+                if (request.ReturnId.HasValue)
+                    query = query.Where(r => r.ReturnId == request.ReturnId);
 
-                if (!string.IsNullOrWhiteSpace(request.CategoryName))
-                    query = query.Where(r => r.CategoryName.ToLower().Contains(request.CategoryName.ToLower()));
+                if (request.UserId.HasValue)
+                    query = query.Where(r => r.UserId == request.UserId);
+
+                if (request.CategoryId.HasValue)
+                    query = query.Where(r => r.CategoryId == request.CategoryId);
+
+                if (request.ResponsibleId.HasValue)
+                    query = query.Where(r => r.ResponsibleId == request.ResponsibleId);
 
                 if (request.Status.HasValue)
                     query = query.Where(r => r.Status == request.Status.Value);
-
-                if (!string.IsNullOrWhiteSpace(request.FirstNameResponsible))
-                    query = query.Where(r => r.FirstNameResponsible.ToLower().Contains(request.FirstNameResponsible.ToLower()));
-
-                if (!string.IsNullOrWhiteSpace(request.LastNameResponsible))
-                    query = query.Where(r => r.LastNameResponsible.ToLower().Contains(request.LastNameResponsible.ToLower()));
 
                 int itemTotal = await query.CountAsync();
                 int countBefore = 0, countAfter = 0;
@@ -177,6 +181,17 @@ namespace api.Controllers
                     requisitionReturnModel.Status = (int)ReturnStatus.Completed;
                     requisitionReturnModel.ResponsibleId = int.Parse(responsibleId);
 
+                    var historyModel = await _context.Histories.SingleAsync(h => h.ReturnId == request.ReturnId);
+                    historyModel.ResponseReturnDate = DateOnly.FromDateTime(DateTime.Now);
+
+                    var TimelineModel = new ItemInstanceStatusTimeline
+                    {
+                        ItemInstanceId = request.InstanceId,
+                        StatusChange = (int)TimelineStatusChange.Return,
+                        Date = DateOnly.FromDateTime(DateTime.Now)
+                    };
+                    await _context.ItemInstanceStatusTimelines.AddAsync(TimelineModel);
+
                     await _context.SaveChangesAsync();
                     await transaction.CommitAsync();
                     return new JsonResult(new MessageResponse { Message = "Confirm ReturnAsset successfully.", StatusCode = HttpStatusCode.OK });
@@ -190,7 +205,7 @@ namespace api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> GetPendingReturn([FromBody]PendingReturnRequest request)
+        public async Task<IActionResult> GetPendingReturn([FromBody] PendingReturnRequest request)
         {
             try
             {
@@ -210,7 +225,7 @@ namespace api.Controllers
                             join u in _context.Users on rq.RequesterId equals u.UserId
                             where rt.Status == (int)ReturnStatus.Pending
                             orderby rt.ReturnId
-                            select new GetReturnAssetListResponse
+                            select new GetPendingReturnResponse
                             {
                                 FirstName = u.FirstName,
                                 LastName = u.LastName,
@@ -226,14 +241,15 @@ namespace api.Controllers
                 {
                     query = query.Where(r => r.ReturnId > request.NextCursor);
                 }
-               
-                var result = await query.Take(request.PageSize).ToListAsync();
+
+                var resultToCheck = await query.Take(request.PageSize + 1).ToListAsync();
+                var result = resultToCheck.Take(request.PageSize).ToList();
                 var lastResult = result.LastOrDefault();
                 var NextCursor = lastResult?.ReturnId;
 
-                bool hasNextPage = await query.Skip(request.PageSize).AnyAsync();
+                bool hasNextPage = resultToCheck.Count() > request.PageSize;
 
-                return new JsonResult(new PaginatedResponse<List<GetReturnAssetListResponse>>
+                return new JsonResult(new PaginatedResponse<List<GetPendingReturnResponse>>
                 {
                     HasNextPage = hasNextPage,
                     NextCursor = NextCursor,

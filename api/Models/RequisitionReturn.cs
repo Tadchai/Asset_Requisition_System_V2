@@ -15,6 +15,8 @@ public partial class RequisitionReturn
 
     public int? ResponsibleId { get; set; }
 
+    public virtual ICollection<History> Histories { get; set; } = new List<History>();
+
     public virtual RequisitionRequest Request { get; set; } = null!;
 
     public virtual User? Responsible { get; set; }

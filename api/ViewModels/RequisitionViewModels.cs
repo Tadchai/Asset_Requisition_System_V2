@@ -28,6 +28,7 @@ namespace api.ViewModels
     public class GetRequestResponse
     {
         public int RequestId { get; set; }
+        public int CategoryId { get; set; }
         public string CategoryName { get; set; }
         public string Requirement { get; set; }
         public DateOnly DueDate { get; set; }
@@ -35,6 +36,8 @@ namespace api.ViewModels
         public int Status { get; set; }
         public string? AssetId { get; set; }
         public string? ReasonRejected { get; set; }
+        public string? ResponsibleFirstName { get; set; }
+        public string? ResponsibleLastName { get; set; }
     }
 
     public class SetRequest
@@ -47,16 +50,19 @@ namespace api.ViewModels
 
     public class GetRequestListResponse
     {
+        public int UserId { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
+        public int CategoryId { get; set; }
         public string CategoryName { get; set; }
         public string Requirement { get; set; }
         public DateOnly DueDate { get; set; }
         public string ReasonRequest { get; set; }
         public int Status { get; set; }
         public int RequestId { get; set; }
-        public string FirstNameResponsible { get; set; }
-        public string LastNameResponsible { get; set; }
+        public int? ResponsibleId { get; set; }
+        public string? FirstNameResponsible { get; set; }
+        public string? LastNameResponsible { get; set; }
     }
 
     public class ConfirmRequest
@@ -79,6 +85,7 @@ namespace api.ViewModels
         public string ClassificationName { get; set; }
         public string AssetId { get; set; }
         public int InstanceId { get; set; }
+        public bool HasReturn { get; set; }
     }
 
     public class CreateReturnAssetRequest
@@ -89,17 +96,30 @@ namespace api.ViewModels
 
     public class GetReturnAssetListResponse
     {
+        public int UserId { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public int CategoryId { get; set; }
+        public string CategoryName { get; set; }
+        public string ClassificationName { get; set; }
+        public string AssetId { get; set; }
+        public string ReasonReturn { get; set; }
+        public int Status { get; set; }
+        public int ReturnId { get; set; }
+        public int? ResponsibleId { get; set; }
+        public string? FirstNameResponsible { get; set; }
+        public string? LastNameResponsible { get; set; }
+    }
+    public class GetPendingReturnResponse
+    {
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string CategoryName { get; set; }
         public string ClassificationName { get; set; }
         public string AssetId { get; set; }
         public string ReasonReturn { get; set; }
-        public int Status { get; set; }
-        public int InstanceId { get; set; }
         public int ReturnId { get; set; }
-        public string FirstNameResponsible { get; set; }
-        public string LastNameResponsible { get; set; }
+        public int InstanceId { get; set; }
     }
 
     public class ConfirmReturnAssetRequest
@@ -126,19 +146,11 @@ namespace api.ViewModels
         public int PageSize { get; set; }
         public int? PreviousCursor { get; set; }
         public int? NextCursor { get; set; }
-        public string? FirstName { get; set; }
-        public string? LastName { get; set; }
-        public string? CategoryName { get; set; }
+        public int? ReturnId { get; set; }
+        public int? UserId { get; set; }
+        public int? CategoryId { get; set; }
         public int? Status { get; set; }
-        public string? FirstNameResponsible { get; set; }
-        public string? LastNameResponsible { get; set; }
-    }
-
-    public class GetUserAssetRequest
-    {
-        public int PageSize { get; set; }
-        public int? PreviousCursor { get; set; }
-        public int? NextCursor { get; set; }
+        public int? ResponsibleId { get; set; }
     }
 
     public class GetRequestRequest
@@ -146,9 +158,11 @@ namespace api.ViewModels
         public int PageSize { get; set; }
         public int? PreviousCursor { get; set; }
         public int? NextCursor { get; set; }
-        public string? CategoryName { get; set; }
+        public int? RequestId { get; set; }
+        public int? CategoryId { get; set; }
         public int? Status { get; set; }
-        public DateOnly? DueDate { get; set; }
+        public DateOnly? StartDueDate { get; set; }
+        public DateOnly? EndDueDate { get; set; }
     }
 
     public class GetConfirmListRequest
@@ -163,12 +177,12 @@ namespace api.ViewModels
         public int PageSize { get; set; }
         public int? PreviousCursor { get; set; }
         public int? NextCursor { get; set; }
-        public string? FirstName { get; set; }
-        public string? LastName { get; set; }
-        public string? CategoryName { get; set; }
-        public DateOnly? DueDate { get; set; }
+        public int? RequestId { get; set; }
+        public int? UserId { get; set; }
+        public int? CategoryId { get; set; }
+        public DateOnly? StartDueDate { get; set; }
+        public DateOnly? EndDueDate { get; set; }
         public int? Status { get; set; }
-        public string? FirstNameResponsible { get; set; }
-        public string? LastNameResponsible { get; set; }
+        public int? ResponsibleId { get; set; }
     }
 }

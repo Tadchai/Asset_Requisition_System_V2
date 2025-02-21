@@ -30,11 +30,10 @@
 
       .nav-menu {
         display: flex;
-        gap: 20px;
       }
 
       .nav-item {
-        padding: 10px 20px;
+        padding: 10px 15px;
         cursor: pointer;
         font-weight: bold;
         color: #343a40;
@@ -84,6 +83,14 @@
         /* กรณีมีข้อมูลเกินหน้าจอ */
       }
 
+      .asset-container {
+        margin-top: 20px;
+        padding: 20px;
+        border: 1px solid #ddd;
+        background-color: #fff;
+        border-radius: 10px;
+      }
+
       /* Table Styles */
       table {
         width: 100%;
@@ -114,10 +121,9 @@
       .table-header {
         font-size: 20px;
         font-weight: bold;
+        margin-bottom: 10px;
         text-align: center;
       }
-
-
       /* Style สำหรับ Modal */
       .modal {
         display: none;
@@ -155,13 +161,18 @@
         font-weight: bold;
       }
 
-      .form-group input,
-      .form-group select {
+      .form-group select,
+      .form-group textarea {
         width: 100%;
         padding: 8px;
         margin-top: 5px;
         border: 1px solid #ccc;
         border-radius: 5px;
+      }
+
+      .form-group textarea {
+        resize: none;
+        height: 100px;
       }
 
       .submit-btn {
@@ -177,64 +188,9 @@
         background-color: #0056b3;
       }
 
-      /* ปรับขนาดของคอนเทนเนอร์ให้เหมาะสม */
-      .main-content {
-        margin-top: 40px;
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        /* 2 คอลัมน์ */
-      }
-
-      .asset-container {
-        margin-top: 0px;
-        border: 1px solid #ddd;
-        padding: 10px;
-        border-radius: 8px;
-        background-color: #fff;
-        overflow: auto;
-        width: 1210px;
-        /* เปิดการเลื่อนดู */
-      }
-
-      .main-content-2 {
-        margin-left: 180px;
-        /* เพื่อเว้นที่สำหรับ sidebar */
-        margin-top: 20px;
-        /* เพื่อเว้นที่สำหรับ navbar */
-        padding: 20px;
-        height: 800px;
-      }
-
-      .asset-container-2 {
-        width: 1350px;
-        margin-top: 20px;
-        padding: 20px;
-        border: 1px solid #ddd;
-        background-color: #fff;
-        border-radius: 10px;
-        overflow: auto;
-      }
-
-      #pending-container {
-        height: 250px;
-      }
-
-      #allocated-container {
-        height: 250px;
-      }
-
-      #returned-container {
-        height: 250px;
-      }
-
-      #single-view {
-        padding-right: 0;
-      }
-
       .pagination-footer {
         display: flex;
-        justify-content: center;
-        /* ให้อยู่ตรงกลาง */
+        justify-content: center; /* ให้อยู่ตรงกลาง */
         align-items: center;
         gap: 100px;
         width: 100%;
@@ -244,91 +200,53 @@
         position: fixed;
         bottom: 0;
         left: 0;
-        margin-left: 100px;
-        /* ขยับไปทางขวา */
-      }
-
-      .pagination-footer button {
+        margin-left: 100px; /* ขยับไปทางขวา */
+    }
+        
+    .pagination-footer button {
         padding: 8px 12px;
         border: 1px solid #ccc;
         background: #f8f8f8;
         cursor: pointer;
         border-radius: 5px;
-      }
-
-      .pagination-footer button:disabled {
+    }
+    
+    .pagination-footer button:disabled {
         opacity: 0.5;
         cursor: not-allowed;
-      }
-
-      #PRloadMoreBtn,
-      #ARloadMoreBtn,
-      #PTRloadMoreBtn {
-        display: none;
-        /* ซ่อนปุ่มตอนแรก */
-        padding: 10px 15px;
-        font-size: 16px;
-        background-color: #007bff;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        margin: 10px auto;
-        display: block;
-      }
-
-      #PRloadMoreBtn:hover {
-        background-color: #0056b3;
-      }
-
-      #ARloadMoreBtn:hover {
-        background-color: #0056b3;
-      }
-
-      #PTRloadMoreBtn:hover {
-        background-color: #0056b3;
-      }
-
-      .table-header {
-        display: flex;
-        align-items: center;
-        position: relative;
-        justify-content: center; /* จัดให้หัวข้ออยู่ตรงกลาง */
-        padding: 10px;
-      }
-      
-      .table-header h2 {
-        position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
-        margin: 0;
-        font-size: 18px;
-      }
-      
-      .table-header button {
-        margin-left: auto; /* ทำให้ปุ่มไปอยู่ขวาสุด */
-      }
-      
-      .table-controls {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 10px;
-      }
-      
-      .page-size {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-      }
-
-      .detail-row {
-        display: flex;
-        justify-content: space-between;
-        padding: 5px 0;
-      }
-      
-      .detail-label {
-        font-weight: bold;
-        color: #333;
-      }
+    }
+    
+    .table-header {
+      display: flex;
+      align-items: center;
+      position: relative;
+      justify-content: center; /* จัดให้หัวข้ออยู่ตรงกลาง */
+      padding: 10px;
+    }
+    
+    .table-header h2 {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      margin: 0;
+      font-size: 18px;
+    }
+    
+    .table-header button {
+      margin-left: auto; /* ทำให้ปุ่มไปอยู่ขวาสุด */
+    }
+    
+    .table-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    
+    .page-size {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .chart-item { width: 200px; display: inline-block; margin: 10px; }
+    

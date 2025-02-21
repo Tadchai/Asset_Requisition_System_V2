@@ -25,7 +25,11 @@ public partial class RequisitionRequest
 
     public int? ResponsibleId { get; set; }
 
+    public DateOnly RequestDate { get; set; }
+
     public virtual Category Category { get; set; } = null!;
+
+    public virtual ICollection<History> Histories { get; set; } = new List<History>();
 
     public virtual Instance? Instance { get; set; }
 

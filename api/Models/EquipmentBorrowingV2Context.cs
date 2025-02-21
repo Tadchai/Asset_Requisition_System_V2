@@ -20,7 +20,11 @@ public partial class EquipmentBorrowingV2Context : DbContext
 
     public virtual DbSet<Classification> Classifications { get; set; }
 
+    public virtual DbSet<History> Histories { get; set; }
+
     public virtual DbSet<Instance> Instances { get; set; }
+
+    public virtual DbSet<ItemInstanceStatusTimeline> ItemInstanceStatusTimelines { get; set; }
 
     public virtual DbSet<RequisitionRequest> RequisitionRequests { get; set; }
 
@@ -44,6 +48,7 @@ public partial class EquipmentBorrowingV2Context : DbContext
 
             entity.Property(e => e.Description).HasMaxLength(250);
             entity.Property(e => e.Name).HasMaxLength(50);
+            entity.Property(e => e.Unit).HasMaxLength(50);
         });
 
         modelBuilder.Entity<Classification>(entity =>
@@ -61,6 +66,26 @@ public partial class EquipmentBorrowingV2Context : DbContext
                 .HasConstraintName("FK_Classifications_CategoryId");
         });
 
+        modelBuilder.Entity<History>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
+
+            entity.HasIndex(e => e.RequestId, "FK_History_RequestId");
+
+            entity.HasIndex(e => e.ReturnId, "FK_History_ReturnId");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+
+            entity.HasOne(d => d.Request).WithMany(p => p.Histories)
+                .HasForeignKey(d => d.RequestId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_History_RequestId");
+
+            entity.HasOne(d => d.Return).WithMany(p => p.Histories)
+                .HasForeignKey(d => d.ReturnId)
+                .HasConstraintName("FK_History_ReturnId");
+        });
+
         modelBuilder.Entity<Instance>(entity =>
         {
             entity.HasKey(e => e.InstanceId).HasName("PRIMARY");
@@ -68,11 +93,28 @@ public partial class EquipmentBorrowingV2Context : DbContext
             entity.HasIndex(e => e.ClassificationId, "FK_Instances_ClassificationId");
 
             entity.Property(e => e.AssetId).HasMaxLength(50);
+            entity.Property(e => e.StoreName).HasMaxLength(50);
 
             entity.HasOne(d => d.Classification).WithMany(p => p.Instances)
                 .HasForeignKey(d => d.ClassificationId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Instances_ClassificationId");
+        });
+
+        modelBuilder.Entity<ItemInstanceStatusTimeline>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
+
+            entity.ToTable("ItemInstanceStatusTimeline");
+
+            entity.HasIndex(e => e.ItemInstanceId, "FK_ItemInstanceStatusTimeline_ItemInstanceId");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+
+            entity.HasOne(d => d.ItemInstance).WithMany(p => p.ItemInstanceStatusTimelines)
+                .HasForeignKey(d => d.ItemInstanceId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ItemInstanceStatusTimeline_ItemInstanceId");
         });
 
         modelBuilder.Entity<RequisitionRequest>(entity =>

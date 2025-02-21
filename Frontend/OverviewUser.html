@@ -6,8 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Asset Requisition System</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link rel="stylesheet" type="text/css" href="/Frontend/CSS/OverviewAsset.css" />
-  <style>.chart-item { width: 200px; display: inline-block; margin: 10px; }</style>
+  <link rel="stylesheet" type="text/css" href="/Frontend/CSS/OverviewUser.css" />
 </head>
 
 <body>
@@ -15,11 +14,8 @@
   <div class="navbar">
     <div class="nav-title">Asset Requisition System</div>
     <div class="nav-menu">
-      <div class="nav-item" id="List">ความพร้อมใช้งานของทรัพย์สิน</div>
-      <div class="nav-item" id="Efficiency">ประสิทธิภาพการสำรองทรัพย์สิน</div>
-      <div class="nav-item" id="Pie">การใช้ทรัพย์สิน</div>
-      <div class="nav-item" id="UseTime">ระยะเวลาในการจัดสรรทรัพย์สินเฉลี่ย</div>
-      <div class="nav-item" id="Lifespan">วิเคราะห์อายุการใช้งานทรัพย์สิน</div>
+      <div class="nav-item" id="RequestCount">จำนวนการส่งใบขอเบิกของผู้ใช้งาน</div>
+      <div class="nav-item" id="ResponsibleCount">จำนวนการจัดสรรของทีมจัดซื้อ</div>
     </div>
   </div>
 
@@ -32,10 +28,8 @@
     <div class="sidebar-item" id="ToManageRequestReturnPage">
       จัดการใบขอเบิก/คืน
     </div>
-    <div class="sidebar-item">วิเคราะห์การใช้งานทรัพย์สิน</div>
-    <div class="sidebar-item" id="ToOverviewUserPage">
-      วิเคราะห์ผู้ใช้งานในระบบ
-    </div>
+    <div class="sidebar-item" id="ToOverviewAssetPage">วิเคราะห์การใช้งานทรัพย์สิน</div>
+    <div class="sidebar-item">วิเคราะห์ผู้ใช้งานในระบบ</div>
     <div style="margin-bottom: 15px;" class="sidebar-item" id="ToLoginPage">ออกจากระบบ</div>
     <div style="text-align: center;" id="yourname"></div>
   </div>
@@ -48,7 +42,7 @@
   </div>
 
 
-  <script type="module" src="assets/OverviewAsset.js" defer></script>
+  <script type="module" src="assets/OverviewUser.js" defer></script>
 </body>
 
 </html>
