@@ -232,7 +232,6 @@ function displayRequest(data) {
   container.innerHTML = `
 <div class="table-header">
   <h2>รายการใบขอเบิกทรัพย์สินทั้งหมด</h2>
-  <button onclick="openRequisitionModalBtn()">สร้างใบขอเบิกทรัพย์สิน</button>
 </div>
 
 <div class="table-controls">

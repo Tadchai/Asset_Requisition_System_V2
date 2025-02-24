@@ -1,144 +1,169 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Asset Requisition System</title>
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="/Frontend/CSS/ManageAsset.css"
+    />
+  </head>
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Asset Requisition System</title>
-  <link rel="stylesheet" type="text/css" href="/Frontend/CSS/ManageAsset.css" />
-</head>
-
-<body>
-  <!-- Navbar -->
-  <div class="navbar">
-    <div class="nav-title">Asset Requisition System</div>
-    <div class="nav-menu">
-      <div class="nav-item" id="assets">ทรัพย์สินที่ถือครอง</div>
-      <div class="nav-item" id="request">ใบขอเบิกทรัพย์สิน</div>
-      <div class="nav-item" id="Confirm">
-        ยืนยันการได้รับทรัพย์สิน
-      </div>
-      <div class="nav-item" id="openReturnAssetModalBtn">
-        สร้างใบคืนทรัพย์สิน
-      </div>
-    </div>
-  </div>
-
-  <!-- Sidebar -->
-  <div class="sidebar">
-    <div class="sidebar-item">ทรัพย์สินที่ถือครอง</div>
-    <div class="sidebar-item" id="ToManageAssetInSystemPage">
-      จัดการทรัพย์สินในระบบ
-    </div>
-    <div class="sidebar-item" id="ToManageRequestReturnPage">
-      จัดการใบขอเบิก/คืน
-    </div>
-    <div class="sidebar-item" id="ToOverviewAssetPage">วิเคราะห์การใช้งานทรัพย์สิน</div>
-    <div class="sidebar-item" id="ToOverviewUserPage">วิเคราะห์ผู้ใช้งานในระบบ</div>
-    <div style="margin-bottom: 15px;" class="sidebar-item" id="ToLoginPage">ออกจากระบบ</div>
-    <div style="text-align: center;" id="yourname"></div>
-  </div>
-
-  <!-- Main Content -->
-  <div class="main-content">
-    <div id="asset-container" class="asset-container">
-      <!-- ข้อมูลทรัพย์สินจะถูกแสดงที่นี่ -->
-    </div>
-  </div>
-
-  <!-- Footer -->
-  <div class="pagination-footer" id="footer">
-    <span>ข้อมูลก่อนหน้า: <span id="TotalBefore">0</span> รายการ</span>
-    <button id="prevBtn" onclick="previousPage()">⬅️ย้อนกลับ</button>
-
-    <span>ข้อมูลที่แสดง: <span id="TotalRow">0</span> รายการ</span>
-
-    <button id="nextBtn" onclick="nextPage()">ถัดไป➡️</button>
-    <span>ข้อมูลหลังจากนี้: <span id="TotalAfter">0</span> รายการ</span>
-  </div>
-
-  <!-- Modal สำหรับใบคืนทรัพย์สิน -->
-  <div class="modal" id="returnAssetModal">
-    <div class="modal-content">
-      <span class="close-btn" id="closeReturnAssetModalBtn">&times;</span>
-      <h3>สร้างใบคืนทรัพย์สิน</h3>
-      <div class="form-group">
-        <label for="assetSelect">เลือกทรัพย์สิน</label>
-        <select id="assetSelect">
-          <option value="">-- กรุณาเลือกทรัพย์สิน --</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="returnMessage">เหตุผลในการคืน</label>
-        <textarea id="returnMessage" placeholder="กรุณาใส่ข้อความ"></textarea>
-      </div>
-      <button class="submit-btn" id="submitReturnBtn">ส่งข้อมูล</button>
-    </div>
-  </div>
-
-  <!-- Modal สำหรับใบคำขออนุมัติการเบิก -->
-  <div class="modal" id="requisitionModal">
-    <div class="modal-content">
-      <span class="close-btn" id="closeRequisitionModalBtn" onclick="closeRequisitionModalBtn()">&times;</span>
-      <h3>สร้างใบขอเบิก</h3>
-      <div class="form-group">
-        <label for="assetSelectRequisition">เลือกทรัพย์สิน</label>
-        <select id="assetSelectRequisition">
-          <option value="">-- กรุณาเลือกทรัพย์สิน --</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="returnMessageRequisition">คุณสมบัติที่ต้องการ</label>
-        <textarea id="returnMessageRequisition" placeholder="กรุณาใส่ข้อความ"></textarea>
-      </div>
-      <div class="form-group">
-        <label for="reasonMessageRequisition">เหตุผลในการขอเบิก</label>
-        <textarea id="reasonMessageRequisition" placeholder="กรุณาใส่ข้อความ"></textarea>
-      </div>
-      <div class="form-group">
-        <label for="dateSelectRequisition">วันที่ต้องการใช้งาน</label>
-        <input type="date" id="dateSelectRequisition" />
-      </div>
-      <button class="submit-btn" id="submitRequisitionBtn">ส่งข้อมูล</button>
-    </div>
-  </div>
-
-  <!-- Modal สำหรับรายละเอียดใบคำขออนุมัติการเบิก -->
-  <div id="detailRequestModal" class="modal">
-    <div class="modal-content">
-      <span id="closeDetailRequestModalBtn" class="close-btn">&times;</span>
-      <h2>รายละเอียดคำร้องการขอเบิก</h2><hr><br>
-  
-      <div class="request-details">
-        <div class="detail-row">
-          <span class="detail-label">ชื่อผู้ขอเบิก:</span>
-          <span id="Username"></span>
+  <body>
+    <!-- Navbar -->
+    <div class="navbar">
+      <div class="nav-title">Asset Requisition System</div>
+      <div class="nav-menu">
+        <div class="nav-item" id="assets">ทรัพย์สินที่ถือครอง</div>
+        <div class="nav-item" id="request">ใบขอเบิกทรัพย์สิน</div>
+        <div class="nav-item" id="Confirm">ยืนยันการได้รับทรัพย์สิน</div>
+        <div>
+          <button onclick="openRequisitionModalBtn()">
+            สร้างใบขอเบิกทรัพย์สิน</button
+          ><br />
+          <button id="openReturnAssetModalBtn">สร้างใบคืนทรัพย์สิน</button>
         </div>
-        <div class="detail-row">
-          <span class="detail-label">หมวดหมู่ของทรัพย์สิน:</span>
-          <span id="CategoryName"></span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">คุณสมบัติที่ต้องการ:</span>
-          <span id="Requirement"></span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">วันที่ต้องการใช้งาน:</span>
-          <span id="DueDate"></span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">เหตุผลในการขอเบิก:</span>
-          <span id="ReasonRequest"></span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">สถานะคำร้อง:</span>
-          <span id="Status"></span>
-        </div>
-      </div><br><hr><br>
+      </div>
     </div>
-  </div>
 
-  <script type="module" src="assets/ManageAsset.js" defer></script>
-</body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-item">ทรัพย์สินที่ถือครอง</div>
+      <div class="sidebar-item" id="ToManageAssetInSystemPage">
+        จัดการทรัพย์สินในระบบ
+      </div>
+      <div class="sidebar-item" id="ToManageRequestReturnPage">
+        จัดการใบขอเบิก/คืน
+      </div>
+      <div class="sidebar-item" id="ToOverviewAssetPage">
+        วิเคราะห์การใช้งานทรัพย์สิน
+      </div>
+      <div class="sidebar-item" id="ToOverviewUserPage">
+        วิเคราะห์ผู้ใช้งานในระบบ
+      </div>
+      <div style="margin-bottom: 15px" class="sidebar-item" id="ToLoginPage">
+        ออกจากระบบ
+      </div>
+      <div style="text-align: center" id="yourname"></div>
+    </div>
 
+    <!-- Main Content -->
+    <div class="main-content">
+      <div id="asset-container" class="asset-container">
+        <!-- ข้อมูลทรัพย์สินจะถูกแสดงที่นี่ -->
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="pagination-footer" id="footer">
+      <span>ข้อมูลก่อนหน้า: <span id="TotalBefore">0</span> รายการ</span>
+      <button id="prevBtn" onclick="previousPage()">⬅️ย้อนกลับ</button>
+
+      <span>ข้อมูลที่แสดง: <span id="TotalRow">0</span> รายการ</span>
+
+      <button id="nextBtn" onclick="nextPage()">ถัดไป➡️</button>
+      <span>ข้อมูลหลังจากนี้: <span id="TotalAfter">0</span> รายการ</span>
+    </div>
+
+    <!-- Modal สำหรับใบคืนทรัพย์สิน -->
+    <div class="modal" id="returnAssetModal">
+      <div class="modal-content">
+        <span class="close-btn" id="closeReturnAssetModalBtn">&times;</span>
+        <h3>สร้างใบคืนทรัพย์สิน</h3>
+        <div class="form-group">
+          <label for="assetSelect">เลือกทรัพย์สิน</label>
+          <select id="assetSelect">
+            <option value="">-- กรุณาเลือกทรัพย์สิน --</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="returnMessage">เหตุผลในการคืน</label>
+          <textarea id="returnMessage" placeholder="กรุณาใส่ข้อความ"></textarea>
+        </div>
+        <button class="submit-btn" id="submitReturnBtn">ส่งข้อมูล</button>
+      </div>
+    </div>
+
+    <!-- Modal สำหรับใบคำขออนุมัติการเบิก -->
+    <div class="modal" id="requisitionModal">
+      <div class="modal-content">
+        <span
+          class="close-btn"
+          id="closeRequisitionModalBtn"
+          onclick="closeRequisitionModalBtn()"
+          >&times;</span
+        >
+        <h3>สร้างใบขอเบิก</h3>
+        <div class="form-group">
+          <label for="assetSelectRequisition">เลือกทรัพย์สิน</label>
+          <select id="assetSelectRequisition">
+            <option value="">-- กรุณาเลือกทรัพย์สิน --</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="returnMessageRequisition">คุณสมบัติที่ต้องการ</label>
+          <textarea
+            id="returnMessageRequisition"
+            placeholder="กรุณาใส่ข้อความ"
+          ></textarea>
+        </div>
+        <div class="form-group">
+          <label for="reasonMessageRequisition">เหตุผลในการขอเบิก</label>
+          <textarea
+            id="reasonMessageRequisition"
+            placeholder="กรุณาใส่ข้อความ"
+          ></textarea>
+        </div>
+        <div class="form-group">
+          <label for="dateSelectRequisition">วันที่ต้องการใช้งาน</label>
+          <input type="date" id="dateSelectRequisition" />
+        </div>
+        <button class="submit-btn" id="submitRequisitionBtn">ส่งข้อมูล</button>
+      </div>
+    </div>
+
+    <!-- Modal สำหรับรายละเอียดใบคำขออนุมัติการเบิก -->
+    <div id="detailRequestModal" class="modal">
+      <div class="modal-content">
+        <span id="closeDetailRequestModalBtn" class="close-btn">&times;</span>
+        <h2>รายละเอียดคำร้องการขอเบิก</h2>
+        <hr />
+        <br />
+
+        <div class="request-details">
+          <div class="detail-row">
+            <span class="detail-label">ชื่อผู้ขอเบิก:</span>
+            <span id="Username"></span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">หมวดหมู่ของทรัพย์สิน:</span>
+            <span id="CategoryName"></span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">คุณสมบัติที่ต้องการ:</span>
+            <span id="Requirement"></span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">วันที่ต้องการใช้งาน:</span>
+            <span id="DueDate"></span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">เหตุผลในการขอเบิก:</span>
+            <span id="ReasonRequest"></span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">สถานะคำร้อง:</span>
+            <span id="Status"></span>
+          </div>
+        </div>
+        <br />
+        <hr />
+        <br />
+      </div>
+    </div>
+
+    <script type="module" src="assets/ManageAsset.js" defer></script>
+  </body>
 </html>
